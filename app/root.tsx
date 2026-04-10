@@ -7,11 +7,13 @@ import {
   ScrollRestoration,
 } from "react-router";
 
-import { ConfigProvider, App as AntApp, theme } from "antd";
+import { Button, Result , ConfigProvider, App as AntApp, theme } from "antd";
 
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { Link } from "react-router";
+
 
 
 // 🎨 Theme الخاص بـ AcadTrak
@@ -72,30 +74,22 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
-  let stack: string | undefined;
-
-  if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details =
-      error.status === 404
-        ? "The requested page could not be found."
-        : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
-  }
-
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
+    <div style={{ padding: 40, textAlign: "center", background: "#fff", minHeight: "100vh" }}>
+      <Result
+        status="500"
+        title="An unexpected error occurred"
+        subTitle={
+          import.meta.env.DEV && error instanceof Error
+            ? error.message
+            : "Please try again"
+        }
+        extra={
+          <Button type="primary">
+            <Link to="/">Back to Home</Link>
+          </Button>
+        }
+      />
+    </div>
   );
 }
