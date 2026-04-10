@@ -47,5 +47,6 @@ export default [
     route("dashboard/admin/courses",          "routes/admin/courses.tsx"),
     route("dashboard/admin/settings",         "routes/admin/settings.tsx"),
   ]),
+   route("*", "routes/not-found.tsx"),
 
 ] satisfies RouteConfig;
