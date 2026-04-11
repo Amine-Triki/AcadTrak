@@ -13,10 +13,10 @@ export default [
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   // 🌐 الصفحات العامة — Navbar أفقي
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  layout("routes/_public.tsx", [
-    index("routes/_public.home.tsx"),              // /
-    route("about",   "routes/_public.about.tsx"),  // /about
-    route("contact", "routes/_public.contact.tsx"),// /contact
+  layout("routes/guest/_public.tsx", [
+    index("routes/guest/_public.home.tsx"),              // /
+    route("about",   "routes/guest/_public.about.tsx"),  // /about
+    route("contact", "routes/guest/_public.contact.tsx"),// /contact
   ]),
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -28,24 +28,24 @@ export default [
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   // 📊 لوحة التحكم — Sidebar جانبي
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  layout("routes/_dashboard.tsx", [
+  layout("routes/dashboard/_dashboard.tsx", [
 
     // الطالب
-    route("dashboard/student",                "routes/student/index.tsx"),
-    route("dashboard/student/courses",        "routes/student/courses.tsx"),
-    route("dashboard/student/courses/:id",    "routes/student/course-detail.tsx"),
-    route("dashboard/student/grades",         "routes/student/grades.tsx"),
+    route("dashboard/dashboard/student",                "routes/student/index.tsx"),
+    route("dashboard/dashboard/student/courses",        "routes/student/courses.tsx"),
+    route("dashboard/dashboard/student/courses/:id",    "routes/student/course-detail.tsx"),
+    route("dashboard/dashboard/student/grades",         "routes/student/grades.tsx"),
 
     // الأستاذ
-    route("dashboard/teacher",                "routes/teacher/index.tsx"),
-    route("dashboard/teacher/courses",        "routes/teacher/courses.tsx"),
-    route("dashboard/teacher/students",       "routes/teacher/students.tsx"),
+    route("dashboard/dashboard/teacher",                "routes/teacher/index.tsx"),
+    route("dashboard/dashboard/teacher/courses",        "routes/teacher/courses.tsx"),
+    route("dashboard/dashboard/teacher/students",       "routes/teacher/students.tsx"),
 
     // المسؤول
-    route("dashboard/admin",                  "routes/admin/index.tsx"),
-    route("dashboard/admin/users",            "routes/admin/users.tsx"),
-    route("dashboard/admin/courses",          "routes/admin/courses.tsx"),
-    route("dashboard/admin/settings",         "routes/admin/settings.tsx"),
+    route("dashboard/dashboard/admin",                  "routes/admin/index.tsx"),
+    route("dashboard/dashboard/admin/users",            "routes/admin/users.tsx"),
+    route("dashboard/dashboard/admin/courses",          "routes/admin/courses.tsx"),
+    route("dashboard/dashboard/admin/settings",         "routes/admin/settings.tsx"),
   ]),
    route("*", "routes/not-found.tsx"),
 

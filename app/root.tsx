@@ -7,29 +7,25 @@ import {
   ScrollRestoration,
 } from "react-router";
 
-import { Button, Result , ConfigProvider, App as AntApp, theme } from "antd";
-
+import { Button, Result, ConfigProvider, App as AntApp, theme } from "antd";
 
 import type { Route } from "./+types/root";
 import "./app.css";
 import { Link } from "react-router";
 
-
-
 // 🎨 Theme الخاص بـ AcadTrak
 const acadTrakTheme = {
   token: {
-    colorPrimary: "#4f46e5",    // بنفسجي - لون المنصة
+    colorPrimary: "#4f46e5", // بنفسجي - لون المنصة
     colorSuccess: "#10b981",
     borderRadius: 8,
     fontFamily: "Inter, sans-serif",
   },
   components: {
     Button: { borderRadius: 8 },
-    Card:   { borderRadius: 12 },
+    Card: { borderRadius: 12 },
   },
 };
-
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -54,13 +50,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-                <ConfigProvider
-          theme={acadTrakTheme}
-          direction="ltr"
-          >
-            <AntApp>
-        {children}
-</AntApp>
+        <ConfigProvider theme={acadTrakTheme} direction="ltr">
+          <AntApp>{children}</AntApp>
         </ConfigProvider>
         <ScrollRestoration />
         <Scripts />
@@ -75,7 +66,14 @@ export default function App() {
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return (
-    <div style={{ padding: 40, textAlign: "center", background: "#fff", minHeight: "100vh" }}>
+    <div
+      style={{
+        padding: 40,
+        textAlign: "center",
+        background: "#fff",
+        minHeight: "100vh",
+      }}
+    >
       <Result
         status="500"
         title="An unexpected error occurred"
