@@ -5,13 +5,15 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  Link,
 } from "react-router";
 
 import { Button, Result, ConfigProvider, App as AntApp, theme } from "antd";
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { Link } from "react-router";
+
+import { AuthProvider } from "./context/auth";
 
 // 🎨 Theme الخاص بـ AcadTrak
 const acadTrakTheme = {
@@ -51,7 +53,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <ConfigProvider theme={acadTrakTheme} direction="ltr">
-          <AntApp>{children}</AntApp>
+          <AntApp>
+            <AuthProvider> {children} </AuthProvider>
+          </AntApp>
         </ConfigProvider>
         <ScrollRestoration />
         <Scripts />

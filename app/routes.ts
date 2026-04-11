@@ -31,21 +31,21 @@ export default [
   layout("routes/dashboard/_dashboard.tsx", [
 
     // الطالب
-    route("dashboard/dashboard/student",                "routes/student/index.tsx"),
-    route("dashboard/dashboard/student/courses",        "routes/student/courses.tsx"),
-    route("dashboard/dashboard/student/courses/:id",    "routes/student/course-detail.tsx"),
-    route("dashboard/dashboard/student/grades",         "routes/student/grades.tsx"),
+    route("dashboard/student",                "routes/dashboard/student/index.tsx"),
+    route("dashboard/student/courses",        "routes/dashboard/student/courses.tsx"),
+    route("dashboard/student/courses/:id",    "routes/dashboard/student/course-detail.tsx"),
+    route("dashboard/student/grades",         "routes/dashboard/student/grades.tsx"),
 
     // الأستاذ
-    route("dashboard/dashboard/teacher",                "routes/teacher/index.tsx"),
-    route("dashboard/dashboard/teacher/courses",        "routes/teacher/courses.tsx"),
-    route("dashboard/dashboard/teacher/students",       "routes/teacher/students.tsx"),
+    route("dashboard/teacher",                "routes/dashboard/teacher/index.tsx"),
+    route("dashboard/teacher/courses",        "routes/dashboard/teacher/courses.tsx"),
+    route("dashboard/teacher/students",       "routes/dashboard/teacher/students.tsx"),
 
     // المسؤول
-    route("dashboard/dashboard/admin",                  "routes/admin/index.tsx"),
-    route("dashboard/dashboard/admin/users",            "routes/admin/users.tsx"),
-    route("dashboard/dashboard/admin/courses",          "routes/admin/courses.tsx"),
-    route("dashboard/dashboard/admin/settings",         "routes/admin/settings.tsx"),
+    route("dashboard/admin",                  "routes/dashboard/admin/index.tsx"),
+    route("dashboard/admin/users",            "routes/dashboard/admin/users.tsx"),
+    route("dashboard/admin/courses",          "routes/dashboard/admin/courses.tsx"),
+    route("dashboard/admin/settings",         "routes/dashboard/admin/settings.tsx"),
   ]),
    route("*", "routes/not-found.tsx"),
 
