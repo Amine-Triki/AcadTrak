@@ -11,8 +11,9 @@ const { useBreakpoint } = Grid;
 type MenuItem = MenuProps["items"];
 
 const navItems: MenuItem = [
-  { key: "/",        label: <Link to="/">Home</Link> },
-  { key: "/about",   label: <Link to="/about">About Us</Link> },
+  { key: "/", label: <Link to="/">Home</Link> },
+  { key: "/about", label: <Link to="/about">About Us</Link> },
+  { key: "/courses", label: <Link to="/courses">Courses</Link> },
   { key: "/contact", label: <Link to="/contact">Contact Us</Link> },
 ];
 
@@ -27,7 +28,6 @@ export default function PublicLayout() {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-
       {/* ━━━━━━ Header ━━━━━━ */}
       <Header
         style={{
@@ -36,8 +36,8 @@ export default function PublicLayout() {
           top: 0,
           zIndex: 100,
           height: 64,
-          padding: 0,                              // إلغاء padding الافتراضي لـ Ant Design
-          background: token.colorBgContainer,      // #fff أو dark تلقائياً
+          padding: 0, // إلغاء padding الافتراضي لـ Ant Design
+          background: token.colorBgContainer, // #fff أو dark تلقائياً
           borderBottom: `1px solid ${token.colorBorderSecondary}`,
           boxShadow: "none",
         }}
@@ -57,9 +57,7 @@ export default function PublicLayout() {
             display: "grid",
             // على الحاسوب: Logo | Menu يمتد | Buttons
             // على الهاتف:  Logo | فراغ | زر Hamburger
-            gridTemplateColumns: isMobile
-              ? "auto 1fr auto"
-              : "200px 1fr 200px",
+            gridTemplateColumns: isMobile ? "auto 1fr auto" : "200px 1fr 200px",
             alignItems: "center",
             gap: 16,
           }}
@@ -74,9 +72,7 @@ export default function PublicLayout() {
               textDecoration: "none",
             }}
           >
-            <BookOutlined
-              style={{ fontSize: 22, color: token.colorPrimary }}
-            />
+            <BookOutlined style={{ fontSize: 22, color: token.colorPrimary }} />
             <span
               style={{
                 fontSize: 18,
@@ -99,7 +95,7 @@ export default function PublicLayout() {
               style={{
                 border: "none",
                 background: "transparent",
-                justifyContent: "center",  // ✅ توسيط عناصر القائمة
+                justifyContent: "center", // ✅ توسيط عناصر القائمة
                 flex: 1,
               }}
             />
@@ -119,10 +115,10 @@ export default function PublicLayout() {
               }}
             >
               <Button size="middle">
-                <Link to="/login">دخول</Link>
+                <Link to="/login">login</Link>
               </Button>
               <Button type="primary" size="middle">
-                <Link to="/register">تسجيل</Link>
+                <Link to="/register">register</Link>
               </Button>
             </div>
           ) : (
@@ -190,12 +186,8 @@ export default function PublicLayout() {
             gap: 8,
           }}
         >
-          <Button
-            block
-            size="large"
-            onClick={() => setDrawerOpen(false)}
-          >
-            <Link to="/login">تسجيل الدخول</Link>
+          <Button block size="large" onClick={() => setDrawerOpen(false)}>
+            <Link to="/login">login</Link>
           </Button>
           <Button
             type="primary"
@@ -203,7 +195,7 @@ export default function PublicLayout() {
             size="large"
             onClick={() => setDrawerOpen(false)}
           >
-            <Link to="/register">إنشاء حساب</Link>
+            <Link to="/register">register</Link>
           </Button>
         </div>
       </Drawer>
@@ -224,9 +216,9 @@ export default function PublicLayout() {
           fontSize: 13,
         }}
       >
-        AcadTrak ©{new Date().getFullYear()} — منصة التعلم الذكي
+        AcadTrak ©{new Date().getFullYear()} — made with ❤️ by
+        <Link to="https://amine-triki.tn">Amine Triki</Link>
       </Footer>
-
     </Layout>
   );
 }

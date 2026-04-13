@@ -17,6 +17,7 @@ export default [
     index("routes/guest/_public.home.tsx"),              // /
     route("about",   "routes/guest/_public.about.tsx"),  // /about
     route("contact", "routes/guest/_public.contact.tsx"),// /contact
+    route("courses", "routes/guest/_public.courses.tsx"),// /courses
   ]),
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━

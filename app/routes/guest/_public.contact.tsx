@@ -1,4 +1,4 @@
-import type { Route } from "./+types/_public.home";
+import type { Route } from "./+types/_public.contact";
 
 export function meta({}: Route.MetaArgs) {
   return [

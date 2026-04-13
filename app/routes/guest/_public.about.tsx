@@ -1,11 +1,15 @@
+import type { Route } from "./+types/_public.about";
+
 import { Typography, Card } from "antd";
 import {
-  TeamOutlined, RocketOutlined, GlobalOutlined,
-  SafetyCertificateOutlined, TrophyOutlined,
+  TeamOutlined,
+  RocketOutlined,
+  GlobalOutlined,
+  SafetyCertificateOutlined,
+  TrophyOutlined,
 } from "@ant-design/icons";
 
-
-export function meta() {
+export function meta({}: Route.MetaArgs) {
   return [
     { title: "AcadTrak | About Us" },
     {
@@ -16,37 +20,79 @@ export function meta() {
   ];
 }
 
-
 const { Title, Text, Paragraph } = Typography;
 
 const TEAM = [
-  { name: "Sarah Chen",    role: "CEO & Founder",      img: "https://i.pravatar.cc/80?img=10" },
-  { name: "Alex Rivera",   role: "Head of Design",     img: "https://i.pravatar.cc/80?img=11" },
-  { name: "Mark Thompson", role: "Lead Engineer",      img: "https://i.pravatar.cc/80?img=12" },
-  { name: "Lena Müller",   role: "Head of Content",    img: "https://i.pravatar.cc/80?img=13" },
-  { name: "James Park",    role: "Product Manager",    img: "https://i.pravatar.cc/80?img=14" },
-  { name: "Nina Patel",    role: "Marketing Director", img: "https://i.pravatar.cc/80?img=20" },
+  {
+    name: "Sarah Chen",
+    role: "CEO & Founder",
+    img: "https://i.pravatar.cc/80?img=10",
+  },
+  {
+    name: "Alex Rivera",
+    role: "Head of Design",
+    img: "https://i.pravatar.cc/80?img=11",
+  },
+  {
+    name: "Mark Thompson",
+    role: "Lead Engineer",
+    img: "https://i.pravatar.cc/80?img=12",
+  },
+  {
+    name: "Lena Müller",
+    role: "Head of Content",
+    img: "https://i.pravatar.cc/80?img=13",
+  },
+  {
+    name: "James Park",
+    role: "Product Manager",
+    img: "https://i.pravatar.cc/80?img=14",
+  },
+  {
+    name: "Nina Patel",
+    role: "Marketing Director",
+    img: "https://i.pravatar.cc/80?img=20",
+  },
 ];
 
 const STATS = [
   { value: "15,000+", label: "Active Students" },
-  { value: "200+",    label: "Expert Courses" },
-  { value: "50+",     label: "Instructors" },
-  { value: "98.2%",   label: "Success Rate" },
+  { value: "200+", label: "Expert Courses" },
+  { value: "50+", label: "Instructors" },
+  { value: "98.2%", label: "Success Rate" },
 ];
 
 const VALUES = [
-  { icon: <TrophyOutlined />,              title: "Excellence",     desc: "We deliver only top-quality, rigorously vetted course content." },
-  { icon: <GlobalOutlined />,              title: "Accessibility",  desc: "World-class education for every learner, anywhere on the planet." },
-  { icon: <TeamOutlined />,               title: "Community",      desc: "A thriving network where students and instructors grow together." },
-  { icon: <RocketOutlined />,             title: "Innovation",     desc: "Constantly evolving our platform to meet tomorrow's demands." },
-  { icon: <SafetyCertificateOutlined />,  title: "Trust",          desc: "Transparent pricing, honest reviews, and real career outcomes." },
+  {
+    icon: <TrophyOutlined />,
+    title: "Excellence",
+    desc: "We deliver only top-quality, rigorously vetted course content.",
+  },
+  {
+    icon: <GlobalOutlined />,
+    title: "Accessibility",
+    desc: "World-class education for every learner, anywhere on the planet.",
+  },
+  {
+    icon: <TeamOutlined />,
+    title: "Community",
+    desc: "A thriving network where students and instructors grow together.",
+  },
+  {
+    icon: <RocketOutlined />,
+    title: "Innovation",
+    desc: "Constantly evolving our platform to meet tomorrow's demands.",
+  },
+  {
+    icon: <SafetyCertificateOutlined />,
+    title: "Trust",
+    desc: "Transparent pricing, honest reviews, and real career outcomes.",
+  },
 ];
 
 export default function AboutPage() {
   return (
     <div style={{ background: "#f8f9fc" }}>
-
       {/* ━━━━━━ Hero ━━━━━━ */}
       <section
         style={{
@@ -72,7 +118,11 @@ export default function AboutPage() {
         </span>
         <Title
           level={1}
-          style={{ color: "#fff", fontSize: "clamp(28px, 4vw, 48px)", marginBottom: 16 }}
+          style={{
+            color: "#fff",
+            fontSize: "clamp(28px, 4vw, 48px)",
+            marginBottom: 16,
+          }}
         >
           Built for the Future of Learning
         </Title>
@@ -85,14 +135,16 @@ export default function AboutPage() {
             lineHeight: 1.8,
           }}
         >
-          We believe education should be accessible, engaging, and career-focused.
-          AcadTrak was founded in 2021 to bridge the gap between traditional learning and
-          modern industry demands.
+          We believe education should be accessible, engaging, and
+          career-focused. AcadTrak was founded in 2021 to bridge the gap between
+          traditional learning and modern industry demands.
         </Paragraph>
       </section>
 
       {/* ━━━━━━ Stats ━━━━━━ */}
-      <section style={{ background: "#fff", borderBottom: "1px solid #f0f0f0" }}>
+      <section
+        style={{ background: "#fff", borderBottom: "1px solid #f0f0f0" }}
+      >
         <div
           style={{
             maxWidth: 1200,
@@ -106,7 +158,14 @@ export default function AboutPage() {
         >
           {STATS.map((s) => (
             <div key={s.label}>
-              <div style={{ fontSize: 40, fontWeight: 700, color: "#4f46e5", lineHeight: 1 }}>
+              <div
+                style={{
+                  fontSize: 40,
+                  fontWeight: 700,
+                  color: "#4f46e5",
+                  lineHeight: 1,
+                }}
+              >
                 {s.value}
               </div>
               <Text type="secondary" style={{ marginTop: 8, display: "block" }}>
@@ -118,7 +177,9 @@ export default function AboutPage() {
       </section>
 
       {/* ━━━━━━ Mission ━━━━━━ */}
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 48px" }}>
+      <section
+        style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 48px" }}
+      >
         <div
           style={{
             display: "grid",
@@ -147,16 +208,18 @@ export default function AboutPage() {
               type="secondary"
               style={{ fontSize: 15, lineHeight: 1.8, marginBottom: 24 }}
             >
-              AcadTrak was born from a simple belief: everyone deserves access to
-              world-class education. We partner with industry experts to create courses
-              that are not just informative — they're transformative.
+              AcadTrak was born from a simple belief: everyone deserves access
+              to world-class education. We partner with industry experts to
+              create courses that are not just informative — they're
+              transformative.
             </Paragraph>
             <Paragraph
               type="secondary"
               style={{ fontSize: 15, lineHeight: 1.8 }}
             >
-              From beginners finding their path to professionals leveling up their skills,
-              our platform serves learners at every stage of their journey.
+              From beginners finding their path to professionals leveling up
+              their skills, our platform serves learners at every stage of their
+              journey.
             </Paragraph>
           </div>
 
@@ -185,7 +248,9 @@ export default function AboutPage() {
       <section style={{ background: "#fff", padding: "80px 48px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <Title level={2} style={{ marginBottom: 8 }}>What We Stand For</Title>
+            <Title level={2} style={{ marginBottom: 8 }}>
+              What We Stand For
+            </Title>
             <Text type="secondary" style={{ fontSize: 15 }}>
               The principles that guide everything we do at AcadTrak.
             </Text>
@@ -219,8 +284,12 @@ export default function AboutPage() {
                 >
                   {v.icon}
                 </div>
-                <Title level={4} style={{ marginBottom: 8 }}>{v.title}</Title>
-                <Text type="secondary" style={{ lineHeight: 1.7 }}>{v.desc}</Text>
+                <Title level={4} style={{ marginBottom: 8 }}>
+                  {v.title}
+                </Title>
+                <Text type="secondary" style={{ lineHeight: 1.7 }}>
+                  {v.desc}
+                </Text>
               </Card>
             ))}
           </div>
@@ -228,9 +297,13 @@ export default function AboutPage() {
       </section>
 
       {/* ━━━━━━ Team ━━━━━━ */}
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 48px" }}>
+      <section
+        style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 48px" }}
+      >
         <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <Title level={2} style={{ marginBottom: 8 }}>Meet the Team</Title>
+          <Title level={2} style={{ marginBottom: 8 }}>
+            Meet the Team
+          </Title>
           <Text type="secondary" style={{ fontSize: 15 }}>
             The people behind AcadTrak's mission.
           </Text>
@@ -245,7 +318,11 @@ export default function AboutPage() {
           {TEAM.map((member) => (
             <Card
               key={member.name}
-              style={{ borderRadius: 14, border: "1px solid #e5e7eb", textAlign: "center" }}
+              style={{
+                borderRadius: 14,
+                border: "1px solid #e5e7eb",
+                textAlign: "center",
+              }}
               styles={{ body: { padding: 28 } }}
             >
               <img
@@ -260,8 +337,12 @@ export default function AboutPage() {
                   border: "3px solid #eef2ff",
                 }}
               />
-              <Title level={5} style={{ marginBottom: 4 }}>{member.name}</Title>
-              <Text type="secondary" style={{ fontSize: 13 }}>{member.role}</Text>
+              <Title level={5} style={{ marginBottom: 4 }}>
+                {member.name}
+              </Title>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                {member.role}
+              </Text>
             </Card>
           ))}
         </div>
@@ -282,8 +363,15 @@ export default function AboutPage() {
           <Title level={2} style={{ color: "#fff", marginBottom: 16 }}>
             Join Our Growing Community
           </Title>
-          <Paragraph style={{ color: "rgba(255,255,255,0.8)", fontSize: 16, marginBottom: 32 }}>
-            Be part of 15,000+ learners transforming their careers with AcadTrak.
+          <Paragraph
+            style={{
+              color: "rgba(255,255,255,0.8)",
+              fontSize: 16,
+              marginBottom: 32,
+            }}
+          >
+            Be part of 15,000+ learners transforming their careers with
+            AcadTrak.
           </Paragraph>
           <a href="/register">
             <button
@@ -304,7 +392,6 @@ export default function AboutPage() {
           </a>
         </div>
       </section>
-
     </div>
   );
 }
