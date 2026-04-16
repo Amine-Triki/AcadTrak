@@ -8,6 +8,7 @@ import {
   UserOutlined, BookOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "~/context/auth";
+import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
 
@@ -20,27 +21,55 @@ export default function RegisterPage() {
   const handleRegister = async (values: {
     firstName: string;
     lastName: string;
+    userName: string;
+    country: string;
     email: string;
     password: string;
     confirmPassword: string;
   }) => {
     try {
-      // ستُستبدل بـ API call لاحقاً
-      await new Promise((r) => setTimeout(r, 800));
-
-      // الحساب الجديد = student دائماً
-      setUser({
-        id: Date.now().toString(),
-        name: `${values.firstName} ${values.lastName}`,
-        role: "student",
-        token: "new-token",
+      const response = await apiFetch("/api/users/register", {
+        method: "POST",
+        body: JSON.stringify({
+          firstName: values.firstName,
+          lastName: values.lastName,
+          userName: values.userName,
+          country: values.country,
+          email: values.email,
+          password: values.password,
+        }),
       });
+
+      const payload = (await response.json().catch(() => null)) as
+        | {
+            message?: string;
+            user?: {
+              id: string;
+              firstName: string;
+              lastName: string;
+              userName: string;
+              country: string;
+              email: string;
+              role: "student" | "teacher" | "admin";
+            };
+          }
+        | null;
+
+      if (!response.ok || !payload?.user) {
+        throw new Error(payload?.message || "فشل إنشاء الحساب");
+      }
+
+      setUser(payload.user);
 
       message.success("تم إنشاء حسابك بنجاح!");
       navigate("/dashboard/student");
 
-    } catch {
-      message.error("حدث خطأ أثناء التسجيل، حاول مرة أخرى");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "حدث خطأ أثناء التسجيل، حاول مرة أخرى";
+      message.error(errorMessage);
     }
   };
 
@@ -116,6 +145,29 @@ export default function RegisterPage() {
               />
             </Form.Item>
           </div>
+
+          <Form.Item
+            name="userName"
+            label="اسم المستخدم"
+            rules={[
+              { required: true, message: "اسم المستخدم مطلوب" },
+              { min: 3, message: "3 أحرف على الأقل" },
+            ]}
+          >
+            <Input
+              prefix={<UserOutlined />}
+              placeholder="ali123"
+              size="large"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="country"
+            label="الدولة"
+            rules={[{ required: true, message: "الدولة مطلوبة" }]}
+          >
+            <Input placeholder="Algeria" size="large" />
+          </Form.Item>
 
           <Form.Item
             name="email"

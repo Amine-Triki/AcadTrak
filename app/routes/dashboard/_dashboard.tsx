@@ -1,6 +1,6 @@
 // app/routes/dashboard/_dashboard.tsx
-import { useState } from "react";
-import { Outlet, Link, useLocation, useNavigate, Navigate } from "react-router";
+import { useEffect, useState } from "react";
+import { Outlet, Link, useLocation, useNavigate, Navigate, redirect, useLoaderData } from "react-router";
 import type { MenuProps } from "antd";
 import {
   Layout, Menu, Button, Avatar,
@@ -13,6 +13,7 @@ import {
   UploadOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "~/context/auth";
+import { apiFetch } from "~/utils/api";
 
 const { Header, Sider, Content } = Layout;
 
@@ -30,6 +31,34 @@ const ROLE_PATHS: Record<string, string[]> = {
 
 function hasAccess(role: string, pathname: string): boolean {
   return (ROLE_PATHS[role] ?? []).some((p) => pathname.startsWith(p));
+}
+
+export async function clientLoader() {
+  const response = await apiFetch("/api/users/me");
+
+  if (!response.ok) {
+    throw redirect("/login");
+  }
+
+  const payload = (await response.json().catch(() => null)) as
+    | {
+        user?: {
+          id: string;
+          firstName: string;
+          lastName: string;
+          userName: string;
+          country: string;
+          email: string;
+          role: "student" | "teacher" | "admin";
+        };
+      }
+    | null;
+
+  if (!payload?.user) {
+    throw redirect("/login");
+  }
+
+  return payload;
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━
@@ -126,20 +155,38 @@ const menuByRole: Record<string, MenuItem> = {
 export default function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const { user, isAuthenticated, setUser } = useAuth();
+  const loaderData = useLoaderData() as {
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      userName: string;
+      country: string;
+      email: string;
+      role: "student" | "teacher" | "admin";
+    };
+  };
   const location = useLocation();
   const navigate = useNavigate();
   const { token } = theme.useToken(); // ✅ Design Tokens من Ant Design
+  const authUser = user ?? loaderData?.user ?? null;
+
+  useEffect(() => {
+    if (!user && loaderData?.user) {
+      setUser(loaderData.user);
+    }
+  }, [loaderData, setUser, user]);
 
   // ── الحماية ──
-  if (!isAuthenticated || !user) {
+  if (!isAuthenticated && !authUser) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
-  if (!hasAccess(user.role!, location.pathname)) {
-    return <Navigate to={`/dashboard/${user.role}`} replace />;
+  if (!authUser || !hasAccess(authUser.role!, location.pathname)) {
+    return <Navigate to={`/dashboard/${authUser?.role || "student"}`} replace />;
   }
 
-  const menuItems = menuByRole[user.role!] ?? menuByRole.student;
+  const menuItems = menuByRole[authUser.role!] ?? menuByRole.student;
 
   const userMenuItems: MenuProps["items"] = [
     {
@@ -156,12 +203,13 @@ export default function DashboardLayout() {
     },
   ];
 
-  const handleUserMenuClick: MenuProps["onClick"] = ({ key }) => {
+  const handleUserMenuClick: MenuProps["onClick"] = async ({ key }) => {
     if (key === "logout") {
+      await apiFetch("/api/users/logout", { method: "POST" });
       setUser(null);
       navigate("/login");
     } else if (key === "profile") {
-      navigate(`/dashboard/${user.role}`);
+      navigate(`/dashboard/${authUser.role}`);
     }
   };
 
@@ -274,7 +322,9 @@ export default function DashboardLayout() {
                 />
                 {!collapsed && (
                   <span style={{ color: token.colorText }}>
-                    {user.name}
+                    {authUser.firstName && authUser.lastName
+                      ? `${authUser.firstName} ${authUser.lastName}`
+                      : authUser.userName || authUser.email || "User"}
                   </span>
                 )}
               </Space>

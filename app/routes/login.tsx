@@ -7,22 +7,9 @@ import {
   MailOutlined, LockOutlined, BookOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "~/context/auth";
+import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━
-// مؤقت — تُحذف عند ربط API
-// ━━━━━━━━━━━━━━━━━━━━━━━━
-async function fakeLogin(email: string, password: string) {
-  await new Promise((r) => setTimeout(r, 600)); // محاكاة تأخير
-  if (email === "student@test.com" && password === "123456")
-    return { id: "1", name: "علي محمد",   role: "student" as const, token: "tok1" };
-  if (email === "teacher@test.com" && password === "123456")
-    return { id: "2", name: "أحمد سالم",  role: "teacher" as const, token: "tok2" };
-  if (email === "admin@test.com"   && password === "123456")
-    return { id: "3", name: "سارة يوسف", role: "admin"   as const, token: "tok3" };
-  throw new Error("بيانات خاطئة");
-}
 
 const DEMO_ACCOUNTS = [
   { email: "student@test.com", label: "طالب" },
@@ -48,12 +35,40 @@ export default function LoginPage() {
 
   const handleLogin = async (values: { email: string; password: string }) => {
     try {
-      const res = await fakeLogin(values.email, values.password);
-      setUser({ id: res.id, name: res.name, role: res.role, token: res.token });
-      message.success(`أهلاً ${res.name} 👋`);
-      navigate(from ?? REDIRECT_MAP[res.role] ?? "/");
-    } catch {
-      message.error("البريد الإلكتروني أو كلمة المرور خاطئة");
+      const response = await apiFetch("/api/users/login", {
+        method: "POST",
+        body: JSON.stringify(values),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | {
+            message?: string;
+            user?: {
+              id: string;
+              firstName: string;
+              lastName: string;
+              userName: string;
+              country: string;
+              email: string;
+              role: "student" | "teacher" | "admin";
+            };
+          }
+        | null;
+
+      if (!response.ok || !payload?.user) {
+        throw new Error(payload?.message || "البريد الإلكتروني أو كلمة المرور خاطئة");
+      }
+
+      const userName = `${payload.user.firstName} ${payload.user.lastName}`.trim();
+      setUser(payload.user);
+      message.success(`أهلاً ${userName} 👋`);
+      navigate(from ?? REDIRECT_MAP[payload.user.role] ?? "/");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "البريد الإلكتروني أو كلمة المرور خاطئة";
+      message.error(errorMessage);
     }
   };
 

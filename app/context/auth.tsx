@@ -3,11 +3,15 @@ import type { ReactNode } from "react";
 
 type Role = "student" | "teacher" | "admin" | null;
 
-interface AuthUser {
+export interface AuthUser {
   id: string;
-  name: string;
+  firstName?: string;
+  lastName?: string;
+  userName?: string;
+  country?: string;
+  email?: string;
+  name?: string;
   role: Role;
-  token: string;
 }
 
 interface AuthContextType {
