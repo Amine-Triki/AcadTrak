@@ -5,8 +5,9 @@ export const apiUrl = (path: string) => `${API_BASE_URL}${path}`;
 
 export const apiFetch = async (path: string, init: RequestInit = {}) => {
   const headers = new Headers(init.headers);
+  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
 
-  if (init.body && !headers.has("Content-Type")) {
+  if (init.body && !isFormData && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
