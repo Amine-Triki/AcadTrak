@@ -1,5 +1,6 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { apiFetch } from "~/utils/api";
 
 type Role = "student" | "teacher" | "admin" | null;
 
@@ -18,37 +19,44 @@ interface AuthContextType {
   user: AuthUser | null;
   setUser: (user: AuthUser | null) => void;
   isAuthenticated: boolean;
+  isAuthLoading: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// ✅ دالة آمنة للقراءة من localStorage
-function getStoredUser(): AuthUser | null {
-  // typeof window !== "undefined" = نحن في المتصفح وليس السيرفر
-  if (typeof window === "undefined") return null;
-  try {
-    const saved = localStorage.getItem("acadtrak_user");
-    return saved ? JSON.parse(saved) : null;
-  } catch {
-    return null;
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    return getStoredUser(); // ✅ آمنة الآن
-  });
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   const handleSetUser = (newUser: AuthUser | null) => {
     setUser(newUser);
-    // ✅ نفس الحماية عند الكتابة
-    if (typeof window === "undefined") return;
-    if (newUser) {
-      localStorage.setItem("acadtrak_user", JSON.stringify(newUser));
-    } else {
-      localStorage.removeItem("acadtrak_user");
-    }
   };
+
+  const refreshUser = useCallback(async () => {
+    try {
+      const response = await apiFetch("/api/users/me");
+      const payload = (await response.json().catch(() => null)) as
+        | {
+            user?: AuthUser;
+          }
+        | null;
+
+      if (response.ok && payload?.user) {
+        handleSetUser(payload.user);
+      } else {
+        handleSetUser(null);
+      }
+    } catch {
+      handleSetUser(null);
+    } finally {
+      setIsAuthLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshUser();
+  }, [refreshUser]);
 
   return (
     <AuthContext.Provider
@@ -56,6 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         setUser: handleSetUser,
         isAuthenticated: !!user,
+        isAuthLoading,
+        refreshUser,
       }}
     >
       {children}
