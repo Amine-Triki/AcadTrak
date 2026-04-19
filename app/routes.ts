@@ -49,6 +49,7 @@ export default [
     route("dashboard/admin",                  "routes/dashboard/admin/index.tsx"),
     route("dashboard/admin/users",            "routes/dashboard/admin/users.tsx"),
     route("dashboard/admin/courses",          "routes/dashboard/admin/courses.tsx"),
+    route("dashboard/admin/messages",         "routes/dashboard/admin/messages.tsx"),
     route("dashboard/admin/settings",         "routes/dashboard/admin/settings.tsx"),
   ]),
    route("*", "routes/not-found.tsx"),

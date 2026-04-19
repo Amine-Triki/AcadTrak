@@ -12,6 +12,7 @@ import {
   MenuUnfoldOutlined, LogoutOutlined, BellOutlined,
   UploadOutlined,
   FileTextOutlined,
+  MailOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "~/context/auth";
 import { apiFetch } from "~/utils/api";
@@ -146,6 +147,11 @@ const menuByRole: Record<string, MenuItem> = {
       key: "/dashboard/admin/courses",
       icon: <BookOutlined />,
       label: <Link to="/dashboard/admin/courses">الكورسات</Link>,
+    },
+    {
+      key: "/dashboard/admin/messages",
+      icon: <MailOutlined />,
+      label: <Link to="/dashboard/admin/messages">رسائل التواصل</Link>,
     },
     {
       key: "/dashboard/admin/settings",

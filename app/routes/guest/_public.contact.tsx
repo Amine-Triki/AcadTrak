@@ -1,4 +1,10 @@
 import type { Route } from "./+types/_public.contact";
+import { useState } from "react";
+import { apiFetch } from "~/utils/api";
+import {
+  contactFormSchema,
+  type ContactFormInput,
+} from "~/lib/validations/contact";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -19,6 +25,14 @@ import {
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
+
+const generateIdempotencyKey = () => {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
 
 const CONTACT_INFO = [
   {
@@ -78,12 +92,54 @@ const FAQ_ITEMS = [
 export default function ContactPage() {
   const [form] = Form.useForm();
   const { message } = App.useApp();
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (values: object) => {
-    console.log(values);
-    await new Promise((r) => setTimeout(r, 800));
-    message.success("Message sent! We'll get back to you within 24 hours.");
-    form.resetFields();
+  const handleSubmit = async (values: ContactFormInput) => {
+    if (submitting) {
+      return;
+    }
+
+    const parsed = contactFormSchema.safeParse(values);
+    if (!parsed.success) {
+      message.error(parsed.error.issues[0]?.message || "Invalid form data");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const response = await apiFetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "X-Idempotency-Key": generateIdempotencyKey(),
+        },
+        body: JSON.stringify(parsed.data),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: string; duplicate?: boolean }
+        | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.message || "Failed to send your message");
+      }
+
+      if (payload?.duplicate) {
+        message.info("This message was already sent recently.");
+        return;
+      }
+
+      message.success("Message sent! We'll get back to you within 24 hours.");
+      form.resetFields();
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to send your message. Please try again.";
+      message.error(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -261,6 +317,8 @@ export default function ContactPage() {
                 htmlType="submit"
                 block
                 size="large"
+                loading={submitting}
+                disabled={submitting}
                 icon={<SendOutlined />}
                 iconPlacement="end"
                 style={{
