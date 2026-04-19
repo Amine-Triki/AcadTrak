@@ -216,8 +216,8 @@ export default function PublicLayout() {
           fontSize: 13,
         }}
       >
-        AcadTrak ©{new Date().getFullYear()} — made with ❤️ by
-        <Link to="https://amine-triki.tn">Amine Triki</Link>
+        AcadTrak ©{new Date().getFullYear()} — made with ❤️ by  
+        <Link to="https://amine-triki.tn"> Amine Triki</Link>
       </Footer>
     </Layout>
   );
