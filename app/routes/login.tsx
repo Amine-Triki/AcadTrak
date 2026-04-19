@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router";
 import {
   Form, Input, Button, Card,
-  Typography, Divider, Tag, App, Space,
+  Typography, App, Space,
 } from "antd";
 import {
   MailOutlined, LockOutlined, BookOutlined,
@@ -10,12 +10,6 @@ import { useAuth } from "~/context/auth";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
-
-const DEMO_ACCOUNTS = [
-  { email: "student@test.com", label: "طالب" },
-  { email: "teacher@test.com", label: "أستاذ" },
-  { email: "admin@test.com",   label: "مسؤول" },
-];
 
 const REDIRECT_MAP: Record<string, string> = {
   student: "/dashboard/student",
@@ -70,11 +64,6 @@ export default function LoginPage() {
           : "البريد الإلكتروني أو كلمة المرور خاطئة";
       message.error(errorMessage);
     }
-  };
-
-  // ملء بيانات الحساب التجريبي بضغطة واحدة
-  const fillDemo = (email: string) => {
-    form.setFieldsValue({ email, password: "123456" });
   };
 
   return (
@@ -165,24 +154,6 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* ── حسابات تجريبية ── */}
-        <Divider plain>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            حسابات تجريبية (كلمة المرور: 123456)
-          </Text>
-        </Divider>
-        <Space wrap style={{ justifyContent: "center", width: "100%" }}>
-          {DEMO_ACCOUNTS.map((acc) => (
-            <Tag
-              key={acc.email}
-              color="purple"
-              style={{ cursor: "pointer", padding: "4px 10px" }}
-              onClick={() => fillDemo(acc.email)}
-            >
-              {acc.label}
-            </Tag>
-          ))}
-        </Space>
       </Card>
     </div>
   );

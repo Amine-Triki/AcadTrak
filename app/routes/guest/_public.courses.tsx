@@ -1,14 +1,13 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import {
+  Alert,
   Input,
   Select,
   Card,
   Tag,
-  Rate,
   Button,
   Typography,
-  Spin,
   Empty,
   Pagination,
   Row,
@@ -21,14 +20,55 @@ import {
   ArrowRightOutlined,
 } from "@ant-design/icons";
 import type { Route } from "./+types/_public.courses";
+import { apiFetch } from "~/utils/api";
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// Types
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-interface Course {
-  id: number;
+type CourseType = "free" | "paid";
+type CourseStatus = "draft" | "published";
+
+interface ApiCourse {
+  id: string;
+  title: string;
+  description: string;
+  category:
+    | string
+    | {
+        id?: string;
+        _id?: string;
+        name?: string;
+        slug?: string;
+      };
+  categoryDetails?: {
+    id: string;
+    name: string;
+    slug?: string;
+  };
+  instructor:
+    | string
+    | {
+        id?: string;
+        _id?: string;
+        firstName?: string;
+        lastName?: string;
+        userName?: string;
+      };
+  instructorDetails?: {
+    id: string;
+    name: string;
+    userName?: string;
+  };
+  type: CourseType;
+  status: CourseStatus;
+  price: number;
+  effectivePrice?: number;
+  thumbnail?: string;
+  averageRating?: number;
+  totalRatingsCount?: number;
+}
+
+interface CourseCardItem {
+  id: string;
   title: string;
   description: string;
   category: string;
@@ -37,281 +77,185 @@ interface Course {
   students: number;
   price: number;
   img: string;
-  level: "Beginner" | "Intermediate" | "Advanced";
+  type: CourseType;
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// بيانات وهمية — تُحذف عند ربط API
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const MOCK_COURSES: Course[] = [
-  {
-    id: 1,
-    title: "Advanced Fullstack React Architect",
-    description:
-      "Build scalable enterprise applications using React and Tailwind.",
-    category: "Development",
-    instructor: "Sarah Chen",
-    rating: 4.8,
-    students: 2100,
-    price: 129,
-    img: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=60",
-    level: "Advanced",
-  },
-  {
-    id: 2,
-    title: "Digital Product Design Mastery",
-    description:
-      "Master Figma and learn psychological principles of world-class UI.",
-    category: "Design",
-    instructor: "Alex Rivera",
-    rating: 4.9,
-    students: 1240,
-    price: 89,
-    img: "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400&q=60",
-    level: "Intermediate",
-  },
-  {
-    id: 3,
-    title: "Growth Marketing for Startups",
-    description:
-      "Customer acquisition and viral growth strategies for startups.",
-    category: "Marketing",
-    instructor: "Mark Thompson",
-    rating: 5.0,
-    students: 980,
-    price: 54,
-    img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=60",
-    level: "Beginner",
-  },
-  {
-    id: 4,
-    title: "Financial Analysis Fundamentals",
-    description: "Decode financial statements like a professional analyst.",
-    category: "Business",
-    instructor: "Lena Müller",
-    rating: 4.7,
-    students: 750,
-    price: 99,
-    img: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&q=60",
-    level: "Beginner",
-  },
-  {
-    id: 5,
-    title: "Visual Storytelling Masterclass",
-    description:
-      "Master lighting and composition for cinematic content creation.",
-    category: "Creative",
-    instructor: "James Park",
-    rating: 4.5,
-    students: 620,
-    price: 75,
-    img: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=60",
-    level: "Intermediate",
-  },
-  {
-    id: 6,
-    title: "Python for Data Science & ML",
-    description:
-      "From pandas to neural networks — a complete data science journey.",
-    category: "Data",
-    instructor: "Nina Patel",
-    rating: 4.9,
-    students: 3400,
-    price: 149,
-    img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=60",
-    level: "Intermediate",
-  },
-  {
-    id: 7,
-    title: "Node.js Backend Engineering",
-    description:
-      "Build production-ready REST APIs and microservices with Node.js.",
-    category: "Development",
-    instructor: "Sarah Chen",
-    rating: 4.6,
-    students: 1800,
-    price: 119,
-    img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&q=60",
-    level: "Advanced",
-  },
-  {
-    id: 8,
-    title: "Product Management Essentials",
-    description: "From ideation to launch — the complete PM toolkit.",
-    category: "Business",
-    instructor: "Mark Thompson",
-    rating: 4.8,
-    students: 1100,
-    price: 109,
-    img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&q=60",
-    level: "Intermediate",
-  },
-  {
-    id: 9,
-    title: "UI/UX Research & Prototyping",
-    description:
-      "User research methods, wireframing, and interactive prototyping.",
-    category: "Design",
-    instructor: "Alex Rivera",
-    rating: 4.7,
-    students: 890,
-    price: 79,
-    img: "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=400&q=60",
-    level: "Beginner",
-  },
-  {
-    id: 10,
-    title: "SEO & Content Marketing",
-    description:
-      "Rank higher on Google and build a content engine that converts.",
-    category: "Marketing",
-    instructor: "Lena Müller",
-    rating: 4.6,
-    students: 1300,
-    price: 69,
-    img: "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=400&q=60",
-    level: "Beginner",
-  },
-  {
-    id: 11,
-    title: "AWS Cloud Architecture",
-    description: "Design scalable and fault-tolerant systems on AWS.",
-    category: "Development",
-    instructor: "James Park",
-    rating: 4.9,
-    students: 2800,
-    price: 159,
-    img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&q=60",
-    level: "Advanced",
-  },
-  {
-    id: 12,
-    title: "Brand Identity Design",
-    description:
-      "Create memorable brands from logo to full visual identity system.",
-    category: "Creative",
-    instructor: "Nina Patel",
-    rating: 4.5,
-    students: 540,
-    price: 85,
-    img: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&q=60",
-    level: "Intermediate",
-  },
-];
+interface CoursesLoaderData {
+  courses: ApiCourse[];
+  errorMessage?: string;
+}
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// Config
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const CATEGORIES = [
-  "All",
-  "Development",
-  "Design",
-  "Marketing",
-  "Business",
-  "Creative",
-  "Data",
-];
+const CATEGORY_COLORS = [
+  "blue",
+  "geekblue",
+  "green",
+  "gold",
+  "purple",
+  "cyan",
+  "orange",
+  "lime",
+  "volcano",
+] as const;
 
-const CATEGORY_COLOR: Record<string, string> = {
-  Development: "blue",
-  Design: "purple",
-  Marketing: "green",
-  Business: "orange",
-  Creative: "pink",
-  Data: "cyan",
-};
-
-const LEVEL_COLOR: Record<string, string> = {
-  Beginner: "success",
-  Intermediate: "warning",
-  Advanced: "error",
-};
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=60";
 
 const PAGE_SIZE = 8;
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// meta
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const getCategoryLabel = (
+  category: ApiCourse["category"],
+  categoryDetails?: ApiCourse["categoryDetails"],
+) => {
+  if (categoryDetails?.name?.trim()) {
+    return categoryDetails.name.trim();
+  }
+
+  if (typeof category === "string") {
+    if (/^[a-fA-F0-9]{24}$/.test(category)) {
+      return "General";
+    }
+
+    return category.trim() || "General";
+  }
+
+  return category.name?.trim() || "General";
+};
+
+const getInstructorLabel = (
+  instructor: ApiCourse["instructor"],
+  instructorDetails?: ApiCourse["instructorDetails"],
+) => {
+  if (instructorDetails?.name?.trim()) {
+    return instructorDetails.name.trim();
+  }
+
+  if (typeof instructor === "string") {
+    if (/^[a-fA-F0-9]{24}$/.test(instructor)) {
+      return "AcadTrak Instructor";
+    }
+
+    return instructor.trim() || "AcadTrak Instructor";
+  }
+
+  const fullName = `${instructor.firstName ?? ""} ${instructor.lastName ?? ""}`.trim();
+  if (fullName) {
+    return fullName;
+  }
+
+  return instructor.userName?.trim() || "AcadTrak Instructor";
+};
+
+const getCategoryColor = (category: string) => {
+  const hash = category
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+  return CATEGORY_COLORS[hash % CATEGORY_COLORS.length];
+};
+
+const mapApiCourse = (course: ApiCourse): CourseCardItem => ({
+  id: course.id,
+  title: course.title,
+  description: course.description,
+  category: getCategoryLabel(course.category, course.categoryDetails),
+  instructor: getInstructorLabel(course.instructor, course.instructorDetails),
+  rating: Number((course.averageRating ?? 0).toFixed(1)),
+  students: course.totalRatingsCount ?? 0,
+  price: course.type === "free" ? 0 : course.effectivePrice ?? course.price,
+  img: course.thumbnail || FALLBACK_IMAGE,
+  type: course.type,
+});
+
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "AcadTrak | All Courses" },
     {
       name: "description",
       content:
-        "Browse 200+ expert-led courses in development, design, marketing, and more.",
+        "Browse expert-led courses in development, design, marketing, and more.",
     },
   ];
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// clientLoader — يُستبدل بـ API لاحقاً
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-export async function clientLoader() {
-  // ستُستبدل بـ:
-  // const res = await fetch("/api/courses");
-  // return await res.json();
+export async function clientLoader(): Promise<CoursesLoaderData> {
+  try {
+    const response = await apiFetch("/api/courses");
+    const payload = (await response.json().catch(() => null)) as
+      | { courses?: ApiCourse[]; message?: string }
+      | null;
 
-  await new Promise((r) => setTimeout(r, 400)); // محاكاة تأخير
-  return { courses: MOCK_COURSES };
+    if (!response.ok) {
+      return {
+        courses: [],
+        errorMessage: payload?.message || "Failed to load courses.",
+      };
+    }
+
+    return { courses: payload?.courses ?? [] };
+  } catch {
+    return {
+      courses: [],
+      errorMessage: "Unable to connect to the server.",
+    };
+  }
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// Component
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export default function CoursesPage({ loaderData }: Route.ComponentProps) {
-  const allCourses: Course[] = loaderData?.courses ?? [];
+  const allCourses = useMemo(
+    () => (loaderData?.courses ?? []).map(mapApiCourse),
+    [loaderData?.courses],
+  );
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [sortBy, setSortBy] = useState("popular");
   const [page, setPage] = useState(1);
 
-  // ── فلترة + بحث + ترتيب ──────────
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set(allCourses.map((course) => course.category));
+    return ["All", ...Array.from(uniqueCategories).sort((a, b) => a.localeCompare(b))];
+  }, [allCourses]);
+
   const filtered = useMemo(() => {
     let result = [...allCourses];
 
-    // بحث بالعنوان أو المدرب
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
-        (c) =>
-          c.title.toLowerCase().includes(q) ||
-          c.instructor.toLowerCase().includes(q) ||
-          c.category.toLowerCase().includes(q),
+        (course) =>
+          course.title.toLowerCase().includes(q) ||
+          course.instructor.toLowerCase().includes(q) ||
+          course.category.toLowerCase().includes(q),
       );
     }
 
-    // فلتر الفئة
     if (category !== "All") {
-      result = result.filter((c) => c.category === category);
+      result = result.filter((course) => course.category === category);
     }
 
-    // ترتيب
     if (sortBy === "popular") result.sort((a, b) => b.students - a.students);
     if (sortBy === "rating") result.sort((a, b) => b.rating - a.rating);
     if (sortBy === "price_asc") result.sort((a, b) => a.price - b.price);
     if (sortBy === "price_desc") result.sort((a, b) => b.price - a.price);
-    if (sortBy === "newest") result.sort((a, b) => b.id - a.id);
+    if (sortBy === "newest") result.sort((a, b) => b.id.localeCompare(a.id));
 
     return result;
   }, [allCourses, search, category, sortBy]);
 
-  // ── Pagination ────────────────────
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // إعادة للصفحة 1 عند تغيير الفلتر
-  const handleSearch = (val: string) => {
-    setSearch(val);
+  const handleSearch = (value: string) => {
+    setSearch(value);
     setPage(1);
   };
-  const handleCategory = (cat: string) => {
-    setCategory(cat);
+
+  const handleCategory = (selectedCategory: string) => {
+    setCategory(selectedCategory);
     setPage(1);
   };
 
   return (
     <div style={{ background: "#f8f9fc", minHeight: "100vh" }}>
-      {/* ━━━━━━ Hero ━━━━━━ */}
       <section
         style={{
           background: "linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)",
@@ -331,37 +275,34 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
         </Title>
         <Text
           style={{
-            color: "rgba(255,255,255,0.75)",
+            color: "rgba(255,255,255,0.78)",
             fontSize: 16,
             display: "block",
             marginBottom: 32,
           }}
         >
-          Discover 200+ expert-led courses across design, development,
-          marketing, and more.
+          Discover expert-led courses and start learning with real content.
         </Text>
 
-        {/* Search */}
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
           <Input
             size="large"
             prefix={<SearchOutlined style={{ color: "#9ca3af" }} />}
             placeholder="Search courses, instructors, topics..."
             value={search}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(event) => handleSearch(event.target.value)}
             allowClear
             style={{ borderRadius: 10, height: 48, fontSize: 15 }}
           />
         </div>
       </section>
 
-      {/* ━━━━━━ Filters Bar ━━━━━━ */}
       <section
         style={{
           background: "#fff",
           borderBottom: "1px solid #f0f0f0",
           position: "sticky",
-          top: 64, // تحت الـ Header
+          top: 64,
           zIndex: 90,
         }}
       >
@@ -377,33 +318,31 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
             scrollbarWidth: "none",
           }}
         >
-          {/* Category Tabs */}
-          {CATEGORIES.map((cat) => (
+          {categories.map((item) => (
             <button
-              key={cat}
-              onClick={() => handleCategory(cat)}
+              key={item}
+              onClick={() => handleCategory(item)}
               style={{
                 flexShrink: 0,
                 padding: "14px 18px",
                 border: "none",
                 borderBottom:
-                  category === cat
+                  category === item
                     ? "2px solid #4f46e5"
                     : "2px solid transparent",
                 background: "transparent",
-                color: category === cat ? "#4f46e5" : "#6b7280",
-                fontWeight: category === cat ? 600 : 400,
+                color: category === item ? "#4f46e5" : "#6b7280",
+                fontWeight: category === item ? 600 : 400,
                 fontSize: 14,
                 cursor: "pointer",
                 transition: "all 0.2s",
                 whiteSpace: "nowrap",
               }}
             >
-              {cat}
+              {item}
             </button>
           ))}
 
-          {/* Sort */}
           <div
             style={{
               marginLeft: "auto",
@@ -418,7 +357,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
               value={sortBy}
               onChange={setSortBy}
               size="small"
-              style={{ width: 140 }}
+              style={{ width: 150 }}
               options={[
                 { label: "Most Popular", value: "popular" },
                 { label: "Top Rated", value: "rating" },
@@ -431,17 +370,26 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
         </div>
       </section>
 
-      {/* ━━━━━━ Results ━━━━━━ */}
       <section
         style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 48px 80px" }}
       >
-        {/* عدد النتائج */}
+        {loaderData?.errorMessage ? (
+          <Alert
+            type="warning"
+            showIcon
+            title={loaderData.errorMessage}
+            style={{ marginBottom: 20 }}
+          />
+        ) : null}
+
         <div
           style={{
             marginBottom: 24,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
           }}
         >
           <Text type="secondary">
@@ -455,12 +403,11 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
           </Text>
         </div>
 
-        {/* ── No Results ── */}
         {filtered.length === 0 && (
           <Empty
             description={
               <span>
-                No courses found for <strong>"{search}"</strong>.{" "}
+                No courses found.
                 <button
                   onClick={() => {
                     setSearch("");
@@ -472,6 +419,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                     background: "none",
                     cursor: "pointer",
                     fontWeight: 600,
+                    marginLeft: 6,
                   }}
                 >
                   Clear filters
@@ -482,7 +430,6 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
           />
         )}
 
-        {/* ── Grid ── */}
         {filtered.length > 0 && (
           <>
             <Row gutter={[20, 20]}>
@@ -508,9 +455,8 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                             objectFit: "cover",
                           }}
                         />
-                        {/* Level badge */}
                         <Tag
-                          color={LEVEL_COLOR[course.level]}
+                          color={course.type === "paid" ? "gold" : "green"}
                           style={{
                             position: "absolute",
                             top: 10,
@@ -519,20 +465,18 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                             margin: 0,
                           }}
                         >
-                          {course.level}
+                          {course.type === "paid" ? "Paid" : "Free"}
                         </Tag>
                       </div>
                     }
                   >
-                    {/* Category */}
                     <Tag
-                      color={CATEGORY_COLOR[course.category]}
+                      color={getCategoryColor(course.category)}
                       style={{ fontSize: 10, marginBottom: 8 }}
                     >
                       {course.category.toUpperCase()}
                     </Tag>
 
-                    {/* Title */}
                     <div
                       style={{
                         fontWeight: 600,
@@ -550,7 +494,6 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                       {course.title}
                     </div>
 
-                    {/* Instructor */}
                     <Text
                       type="secondary"
                       style={{
@@ -562,7 +505,6 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                       {course.instructor}
                     </Text>
 
-                    {/* Rating */}
                     <div
                       style={{
                         display: "flex",
@@ -576,11 +518,10 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                         {course.rating}
                       </Text>
                       <Text type="secondary" style={{ fontSize: 12 }}>
-                        ({course.students.toLocaleString()} students)
+                        ({course.students.toLocaleString()} ratings)
                       </Text>
                     </div>
 
-                    {/* Footer: Price + Button */}
                     <div
                       style={{
                         display: "flex",
@@ -597,9 +538,9 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                           color: "#4f46e5",
                         }}
                       >
-                        ${course.price}
+                        {course.price === 0 ? "Free" : `$${course.price}`}
                       </span>
-                      <Link to={`/courses/${course.id}`}>
+                      <Link to={`/dashboard/student/courses/${course.id}`}>
                         <Button
                           type="primary"
                           size="small"
@@ -620,7 +561,6 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
               ))}
             </Row>
 
-            {/* Pagination */}
             {filtered.length > PAGE_SIZE && (
               <div
                 style={{
@@ -633,8 +573,8 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                   current={page}
                   total={filtered.length}
                   pageSize={PAGE_SIZE}
-                  onChange={(p) => {
-                    setPage(p);
+                  onChange={(nextPage) => {
+                    setPage(nextPage);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   showTotal={(total) => `Total ${total} courses`}

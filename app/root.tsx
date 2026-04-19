@@ -51,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <ConfigProvider theme={acadTrakTheme} direction="ltr">
           <AntApp>
             <AuthProvider> {children} </AuthProvider>

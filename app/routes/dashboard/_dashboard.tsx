@@ -11,6 +11,7 @@ import {
   TeamOutlined, SettingOutlined, MenuFoldOutlined,
   MenuUnfoldOutlined, LogoutOutlined, BellOutlined,
   UploadOutlined,
+  FileTextOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "~/context/auth";
 import { apiFetch } from "~/utils/api";
@@ -99,6 +100,11 @@ const menuByRole: Record<string, MenuItem> = {
           key: "/dashboard/teacher/courses",
           icon: <UploadOutlined />,
           label: <Link to="/dashboard/teacher/courses">دوراتي</Link>,
+        },
+        {
+          key: "/dashboard/teacher/quizzes",
+          icon: <FileTextOutlined />,
+          label: <Link to="/dashboard/teacher/quizzes">اختباراتي</Link>,
         },
         {
           key: "/dashboard/teacher/students",

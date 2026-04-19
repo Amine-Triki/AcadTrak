@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { useLocation } from "react-router";
 import { apiFetch } from "~/utils/api";
 
 type Role = "student" | "teacher" | "admin" | null;
@@ -26,6 +27,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const location = useLocation();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
@@ -55,8 +57,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const isProtectedPath = location.pathname.startsWith("/dashboard");
+
+    if (!isProtectedPath) {
+      setIsAuthLoading(false);
+      return;
+    }
+
     void refreshUser();
-  }, [refreshUser]);
+  }, [location.pathname, refreshUser]);
 
   return (
     <AuthContext.Provider

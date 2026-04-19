@@ -40,6 +40,7 @@ export default [
     // الأستاذ
     route("dashboard/teacher",                "routes/dashboard/teacher/index.tsx"),
     route("dashboard/teacher/courses",        "routes/dashboard/teacher/courses.tsx"),
+    route("dashboard/teacher/quizzes",        "routes/dashboard/teacher/quizzes.tsx"),
     route("dashboard/teacher/students",       "routes/dashboard/teacher/students.tsx"),
 
     // المسؤول

@@ -143,7 +143,7 @@ export default function PublicLayout() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         placement="right"
-        width={260}
+        size="default"
         closeIcon={<CloseOutlined />}
         title={
           <Link
