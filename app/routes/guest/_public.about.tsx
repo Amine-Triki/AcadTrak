@@ -296,57 +296,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ━━━━━━ Team ━━━━━━ */}
-      <section
-        style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 48px" }}
-      >
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <Title level={2} style={{ marginBottom: 8 }}>
-            Meet the Team
-          </Title>
-          <Text type="secondary" style={{ fontSize: 15 }}>
-            The people behind AcadTrak's mission.
-          </Text>
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 20,
-          }}
-        >
-          {TEAM.map((member) => (
-            <Card
-              key={member.name}
-              style={{
-                borderRadius: 14,
-                border: "1px solid #e5e7eb",
-                textAlign: "center",
-              }}
-              styles={{ body: { padding: 28 } }}
-            >
-              <img
-                src={member.img}
-                alt={member.name}
-                style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  marginBottom: 16,
-                  border: "3px solid #eef2ff",
-                }}
-              />
-              <Title level={5} style={{ marginBottom: 4 }}>
-                {member.name}
-              </Title>
-              <Text type="secondary" style={{ fontSize: 13 }}>
-                {member.role}
-              </Text>
-            </Card>
-          ))}
-        </div>
-      </section>
+
 
       {/* ━━━━━━ CTA ━━━━━━ */}
       <section style={{ padding: "0 48px 80px" }}>
