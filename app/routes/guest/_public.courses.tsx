@@ -545,7 +545,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                           type="primary"
                           size="small"
                           icon={<ArrowRightOutlined />}
-                          iconPosition="end"
+                          iconPlacement="end"
                           style={{
                             background: "#4f46e5",
                             border: "none",

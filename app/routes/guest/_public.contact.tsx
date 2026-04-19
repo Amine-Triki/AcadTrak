@@ -29,7 +29,7 @@ const CONTACT_INFO = [
   },
   {
     icon: <PhoneOutlined />,
-    title: "Phone",
+    title: "Phone and WhatsApp",
     value: "+1 (555) 123-4567",
     sub: "Mon–Fri, 9am–6pm PST",
   },
@@ -262,7 +262,7 @@ export default function ContactPage() {
                 block
                 size="large"
                 icon={<SendOutlined />}
-                iconPosition="end"
+                iconPlacement="end"
                 style={{
                   background: "#4f46e5",
                   border: "none",
@@ -275,7 +275,6 @@ export default function ContactPage() {
               </Button>
             </Form>
           </Card>
-
           {/* ── FAQ ── */}
           <div>
             <Title level={3} style={{ marginBottom: 8 }}>Frequently Asked Questions</Title>
@@ -287,31 +286,10 @@ export default function ContactPage() {
               items={FAQ_ITEMS}
               accordion
               style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12 }}
-              expandIconPosition="end"
+              expandIconPlacement="end"
             />
 
-            {/* Still need help */}
-            <Card
-              style={{
-                marginTop: 24,
-                borderRadius: 14,
-                border: "none",
-                background: "#eef2ff",
-              }}
-              styles={{ body: { padding: 28, textAlign: "center" } }}
-            >
-              <div style={{ fontSize: 32, marginBottom: 12 }}>💬</div>
-              <Title level={4} style={{ marginBottom: 8 }}>Still need help?</Title>
-              <Text type="secondary" style={{ display: "block", marginBottom: 20 }}>
-                Our support team is just a message away.
-              </Text>
-              <Button
-                type="primary"
-                style={{ background: "#4f46e5", border: "none", borderRadius: 8 }}
-              >
-                Chat with Support
-              </Button>
-            </Card>
+   
           </div>
         </div>
       </section>

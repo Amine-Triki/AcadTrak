@@ -3,6 +3,7 @@ import type { Route } from "./+types/_public.home";
 
 import { Link } from "react-router";
 import {
+  Alert,
   Button, Rate, Tag, Avatar, Input,
   Typography, Card, Row, Col, Statistic,
 } from "antd";
@@ -12,6 +13,7 @@ import {
   ClockCircleOutlined, TrophyOutlined,
   StarFilled, RocketOutlined,
 } from "@ant-design/icons";
+import { apiFetch } from "~/utils/api";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -26,14 +28,102 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-// ── بيانات وهمية ──────────────────────────
+type CourseType = "free" | "paid";
 
-const COURSES = [
-  { id: 1, title: "Advanced Fullstack React Architect", category: "DEVELOPMENT", categoryColor: "blue",   rating: 4.8, price: 129.0, img: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=60" },
-  { id: 2, title: "Growth Marketing for Startups",      category: "MARKETING",   categoryColor: "green",  rating: 5.0, price: 54.5,  img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=60" },
-  { id: 3, title: "Visual Storytelling Masterclass",    category: "CREATIVE",    categoryColor: "purple", rating: 4.5, price: 75.0,  img: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=60" },
-  { id: 4, title: "Financial Analysis Fundamentals",    category: "BUSINESS",    categoryColor: "orange", rating: 4.7, price: 99.0,  img: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&q=60" },
-];
+interface ApiCourse {
+  id: string;
+  title: string;
+  category?: string;
+  categoryDetails?: {
+    id: string;
+    name: string;
+    slug?: string;
+  };
+  price: number;
+  effectivePrice?: number;
+  thumbnail?: string;
+  averageRating?: number;
+  type: CourseType;
+}
+
+interface FeaturedCourse {
+  id: string;
+  title: string;
+  category: string;
+  categoryColor: string;
+  rating: number;
+  price: number;
+  img: string;
+}
+
+interface HomeLoaderData {
+  featuredCourses: FeaturedCourse[];
+  coursesError?: string;
+}
+
+const CATEGORY_COLORS = [
+  "blue",
+  "geekblue",
+  "green",
+  "gold",
+  "purple",
+  "cyan",
+  "orange",
+  "lime",
+  "volcano",
+] as const;
+
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=60";
+
+const getCategoryColor = (category: string) => {
+  const hash = category
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+  return CATEGORY_COLORS[hash % CATEGORY_COLORS.length];
+};
+
+const mapFeaturedCourse = (course: ApiCourse): FeaturedCourse => {
+  const category = course.categoryDetails?.name?.trim() || course.category || "General";
+
+  return {
+    id: course.id,
+    title: course.title,
+    category: category.toUpperCase(),
+    categoryColor: getCategoryColor(category),
+    rating: Number((course.averageRating ?? 0).toFixed(1)),
+    price: course.type === "free" ? 0 : (course.effectivePrice ?? course.price),
+    img: course.thumbnail || FALLBACK_IMAGE,
+  };
+};
+
+export async function clientLoader(): Promise<HomeLoaderData> {
+  try {
+    const response = await apiFetch("/api/courses");
+    const payload = (await response.json().catch(() => null)) as
+      | { courses?: ApiCourse[]; message?: string }
+      | null;
+
+    if (!response.ok) {
+      return {
+        featuredCourses: [],
+        coursesError: payload?.message || "Failed to load featured courses.",
+      };
+    }
+
+    const featuredCourses = (payload?.courses ?? [])
+      .slice(0, 4)
+      .map(mapFeaturedCourse);
+
+    return { featuredCourses };
+  } catch {
+    return {
+      featuredCourses: [],
+      coursesError: "Unable to connect to the server.",
+    };
+  }
+}
 
 const FEATURES = [
   { icon: <UserOutlined />,              title: "Expert Instructors",  desc: "Learn from industry veterans." },
@@ -42,7 +132,9 @@ const FEATURES = [
   { icon: <TrophyOutlined />,            title: "98.2% Success",       desc: "High completion and success rate." },
 ];
 
-export default function HomePage() {
+export default function HomePage({ loaderData }: Route.ComponentProps) {
+  const featuredCourses = loaderData?.featuredCourses ?? [];
+
   return (
     <div style={{ background: "#f8f9fc" }}>
 
@@ -55,7 +147,7 @@ export default function HomePage() {
           minHeight: 540,
           backgroundImage: "url('/1.png')",
           backgroundSize: "cover",
-          backgroundPosition: "center top",
+          backgroundPosition: "center center",
           display: "flex",
           alignItems: "center",
         }}
@@ -133,7 +225,7 @@ export default function HomePage() {
               type="primary"
               size="large"
               icon={<ArrowRightOutlined />}
-              iconPosition="end"
+              iconPlacement="end"
               style={{
                 background: "#4f46e5",
                 border: "none",
@@ -221,65 +313,21 @@ export default function HomePage() {
             <Title level={2} style={{ margin: 0 }}>Featured Courses</Title>
             <Text type="secondary">The most sought-after industry skills, taught by professionals.</Text>
           </div>
-          <Button type="link" style={{ color: "#4f46e5", padding: 0 }}>
-            View All <ArrowRightOutlined />
-          </Button>
+          <Link to="/courses">
+            <Button type="link" style={{ color: "#4f46e5", padding: 0 }}>
+              View All <ArrowRightOutlined />
+            </Button>
+          </Link>
         </div>
 
-        {/* الكورس المميز الكبير */}
-        <Card
-          style={{ borderRadius: 16, border: "1px solid #e5e7eb", marginBottom: 24, overflow: "hidden" }}
-          styles={{ body: { padding: 0 } }}
-        >
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-            {/* صورة */}
-            <div
-              style={{
-                background: "linear-gradient(135deg, #e0e7ff, #f0f9ff)",
-                minHeight: 300,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 40,
-              }}
-            >
-              <img
-                src="https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=420&q=70"
-                alt="featured"
-                style={{ maxHeight: 220, borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.12)", maxWidth: "100%" }}
-              />
-            </div>
-
-            {/* تفاصيل */}
-            <div style={{ padding: 40, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-              <Tag color="blue" style={{ width: "fit-content", marginBottom: 16 }}>UI/UX DESIGN</Tag>
-              <Title level={3} style={{ marginBottom: 12 }}>Digital Product Design Mastery</Title>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                <Rate disabled defaultValue={4.9} allowHalf style={{ fontSize: 14 }} />
-                <Text type="secondary" style={{ fontSize: 13 }}>(4.9) · 1,240 students</Text>
-              </div>
-              <Paragraph type="secondary" style={{ marginBottom: 24, lineHeight: 1.7 }}>
-                Master Figma and learn the psychological principles behind world-class interfaces.
-                This comprehensive course covers everything from wireframing to high-fidelity prototyping.
-              </Paragraph>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <Avatar src="https://i.pravatar.cc/40?img=10" size={40} />
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>Alex Rivera</div>
-                    <div style={{ fontSize: 12, color: "#9ca3af" }}>Senior Product Designer</div>
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                  <span style={{ fontSize: 26, fontWeight: 700, color: "#4f46e5" }}>$89.99</span>
-                  <Button type="primary" size="large" style={{ background: "#4f46e5", border: "none", borderRadius: 8 }}>
-                    Enroll Now
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
+        {loaderData?.coursesError ? (
+          <Alert
+            type="warning"
+            showIcon
+            title={loaderData.coursesError}
+            style={{ marginBottom: 16 }}
+          />
+        ) : null}
 
         {/* 4 كورسات */}
         <div
@@ -289,7 +337,7 @@ export default function HomePage() {
             gap: 16,
           }}
         >
-          {COURSES.map((c) => (
+          {featuredCourses.map((c) => (
             <Card
               key={c.id}
               hoverable
@@ -320,17 +368,25 @@ export default function HomePage() {
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontWeight: 700, color: "#4f46e5" }}>${c.price}</span>
-                <Button
-                  type="primary"
-                  size="small"
-                  shape="circle"
-                  icon={<ArrowRightOutlined />}
-                  style={{ background: "#4f46e5", border: "none" }}
-                />
+                <Link to="/courses">
+                  <Button
+                    type="primary"
+                    size="small"
+                    shape="circle"
+                    icon={<ArrowRightOutlined />}
+                    style={{ background: "#4f46e5", border: "none" }}
+                  />
+                </Link>
               </div>
             </Card>
           ))}
         </div>
+
+        {featuredCourses.length === 0 ? (
+          <Text type="secondary" style={{ display: "block", marginTop: 16 }}>
+            No featured courses available right now.
+          </Text>
+        ) : null}
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━

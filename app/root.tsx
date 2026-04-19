@@ -14,6 +14,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 
 import { AuthProvider } from "./context/auth";
+import CrispChat from "./components/crisp-chat";
 
 // 🎨 Theme الخاص بـ AcadTrak
 const acadTrakTheme = {
@@ -54,7 +55,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body suppressHydrationWarning>
         <ConfigProvider theme={acadTrakTheme} direction="ltr">
           <AntApp>
-            <AuthProvider> {children} </AuthProvider>
+            <AuthProvider>
+              <CrispChat />
+              {children}
+            </AuthProvider>
           </AntApp>
         </ConfigProvider>
         <ScrollRestoration />
