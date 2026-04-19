@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router";
 import {
 	App,
 	Button,
@@ -21,7 +22,7 @@ import {
 	Upload,
 } from "antd";
 import type { UploadFile } from "antd";
-import { DeleteOutlined, EditOutlined, FilePdfOutlined, FolderOpenOutlined, PlusOutlined, ReloadOutlined, UploadOutlined, YoutubeOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, FilePdfOutlined, FolderOpenOutlined, MessageOutlined, PlusOutlined, ReloadOutlined, UploadOutlined, YoutubeOutlined } from "@ant-design/icons";
 import { useAuth } from "~/context/auth";
 import { apiFetch } from "~/utils/api";
 
@@ -524,6 +525,11 @@ export default function TeacherCoursesPage() {
 									>
 										الدروس
 									</Button>,
+									<Link key={`discussions-${course.id}`} to={`/dashboard/teacher/courses/${course.id}/discussions`}>
+										<Button type="text" icon={<MessageOutlined />}>
+											النقاشات
+										</Button>
+									</Link>,
 									<Button
 										key={`edit-${course.id}`}
 										type="text"

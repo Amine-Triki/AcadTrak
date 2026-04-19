@@ -127,7 +127,12 @@ export default function StudentCoursesPage() {
 										{item.couponCode ? <Text type="secondary">كوبون: {item.couponCode}</Text> : null}
 
 										{courseId ? (
-											<Link to={`/dashboard/student/courses/${courseId}`}>تفاصيل الكورس</Link>
+											<Space>
+												<Link to={`/dashboard/student/courses/${courseId}`}>تفاصيل الكورس</Link>
+												<Link to={`/dashboard/student/courses/${courseId}/discussions`}>
+													النقاشات
+												</Link>
+											</Space>
 										) : null}
 									</Space>
 								</Card>
