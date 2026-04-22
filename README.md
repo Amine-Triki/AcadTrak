@@ -27,36 +27,38 @@ Public browsing for all visitors before login:
 - Home page
 - About page
 - Contact page
+- Courses catalog page
 
 ### 2️⃣ Admin Dashboard
 Complete system management:
 - User management (teachers & students)
 - Course management and moderation
+- Internal messages overview
 - Global settings management
 - System monitoring and reports
 
 ### 3️⃣ Teacher Dashboard
 Course and student management:
 - Create and edit courses (free & paid)
-- Upload and manage lesson content
+- Manage course discussions
+- Manage quizzes
 - Monitor student data and performance
 - Track analytics and reports
 
 ### 4️⃣ Student Dashboard
 Learning path management:
-- Search and enroll in free courses
-- Purchase paid courses
-- Follow lessons and track progress
+- Browse enrolled/available courses
+- Access course details and discussions
 - View grades and certificates
-- Wishlist management
+- Track learning progress
 
 ---
 
 ## ✨ Key Features
 
 - **Dynamic Course Management:** Publish free or paid courses easily
-- **Secure Payment System:** **Konnect** integration for payment processing (currently in test mode)
-- **Wishlist System:** Students can save favorite courses
+- **Secure Payment System:** **Flouci** and **Konnect** integrations for payment processing (currently in test mode)
+- **Course Discussions:** Q&A workflow between students and instructors/admins
 - **Progress Tracking:** Real-time student progress and grade updates
 - **Coupon & Commission System:** Advanced discount and commission management (Backend)
 - **Internal Messaging:** Communication between teachers and students (Backend)
@@ -65,15 +67,16 @@ Learning path management:
 
 ---
 
-## 💳 Payment System (Konnect)
+## 💳 Payment System (Flouci + Konnect)
 
-The application is configured for **Konnect** (trusted payment gateway):
+The application is configured for **Flouci** and **Konnect** (trusted payment gateways):
 
 - ✅ **Current Mode:** Sandbox/Test only
-- ✅ **Supported Test Cards:**
-  - Virtual Card
-  - Konnect Test Card
+- ✅ **Enabled Providers:** Flouci, Konnect
 - ❌ **Live Payments:** Not enabled (will be activated in production)
+- 📘 **Provider Docs:**
+  - Flouci: https://docs.flouci.com/getting-started/create-an-account
+  - Konnect: https://docs.konnect.network/docs/en/dashboard/overview#api-key-management
 
 **Note:** Most backend payment logic (charge processing, reconciliation, webhook handling) is handled by the Backend API and is not in this repository.
 
@@ -154,22 +157,36 @@ Make sure to deploy the output of `npm run build`:
 ```
 /app
   /routes
-    /_public.tsx                  # Public interface layout
-    /_dashboard.tsx               # Dashboard layout
-    /admin
-      /index.tsx                  # Admin dashboard
-      /courses.tsx                # Course management
-      /users.tsx                  # User management
-      /settings.tsx               # System settings
-    /teacher
-      /index.tsx                  # Teacher dashboard
-      /courses.tsx                # Teacher's courses
-      /students.tsx               # Teacher's students
-    /student
-      /index.tsx                  # Student dashboard
-      /courses.tsx                # Courses list
-      /course-detail.tsx          # Course details
-      /grades.tsx                 # Grades
+    /guest
+      /_public.tsx                # Public interface layout
+      /_public.home.tsx           # Home
+      /_public.about.tsx          # About
+      /_public.contact.tsx        # Contact
+      /_public.courses.tsx        # Public courses
+    /dashboard
+      /_dashboard.tsx             # Dashboard layout
+      /admin
+        /index.tsx                # Admin dashboard
+        /users.tsx                # User management
+        /courses.tsx              # Course moderation
+        /messages.tsx             # Contact messages
+        /settings.tsx             # System settings
+      /teacher
+        /index.tsx                # Teacher dashboard
+        /courses.tsx              # Teacher courses
+        /course-discussions.tsx   # Course discussions
+        /quizzes.tsx              # Quiz management
+        /students.tsx             # Students overview
+      /student
+        /index.tsx                # Student dashboard
+        /courses.tsx              # Student courses
+        /course-detail.tsx        # Course details
+        /course-discussions.tsx   # Course discussions
+        /grades.tsx               # Grades
+    /login.tsx                    # Login page
+    /register.tsx                 # Register page
+    /payment.tsx                  # Payment page
+    /not-found.tsx                # Not found page
   /app.css                        # Global styles
   /root.tsx                       # App root
 /public                           # Static files
@@ -190,9 +207,9 @@ Make sure to deploy the output of `npm run build`:
 
 Ant Design is primarily used for the three dashboard interfaces:
 
-- **Admin Dashboard:** User management tables, course moderation forms, system settings
-- **Teacher Dashboard:** Course management tables, student data, analytics displays
-- **Student Dashboard:** Courses list, enrollment forms, progress indicators
+- **Admin Dashboard:** User management, course moderation, contact messages, and system settings
+- **Teacher Dashboard:** Course management, discussions, quizzes, and students data
+- **Student Dashboard:** Courses listing, course details, discussions, and grade views
 
 ```tsx
 // Example: Ant Design Table in Teacher Dashboard
@@ -230,7 +247,8 @@ export default function TeacherCourses() {
 
 - [React Router Documentation](https://reactrouter.com/)
 - [TailwindCSS Documentation](https://tailwindcss.com/)
-- [Konnect Documentation](https://www.konnect.tn/) (for production support)
+- [Flouci Docs - Create an Account](https://docs.flouci.com/getting-started/create-an-account)
+- [Konnect Docs - API Key Management](https://docs.konnect.network/docs/en/dashboard/overview#api-key-management)
 
 ---
 
@@ -238,8 +256,8 @@ export default function TeacherCourses() {
 
 - This is **Frontend only**.
 - Full integration requires a separate Backend API for authentication, data, and payments.
-- Payment is currently in **Sandbox mode** only.
-- For production, you'll need to configure environment variables (API URLs, Konnect keys, etc.).
+- Payments are currently in **Sandbox/Test mode** only (**Flouci** and **Konnect**).
+- For production, you'll need to configure environment variables (API URLs, Flouci keys, Konnect keys, etc.).
 
 ---
 
@@ -280,53 +298,56 @@ Developed by **Amine Triki** 👨‍💻
 - الصفحة الرئيسية
 - صفحة "حول المنصة"
 - صفحة التواصل
+- صفحة استعراض الدورات
 
 ### 2️⃣ لوحة تحكم المسؤول (Admin Dashboard)
 إدارة شاملة للنظام:
 - إدارة المستخدمين (أساتذة وطلاب)
 - إدارة الدورات وفحصها
+- متابعة الرسائل الداخلية
 - إدارة الإعدادات الكلية
 - تقارير ومراقبة النظام
 
 ### 3️⃣ لوحة تحكم الأستاذ (Teacher Dashboard)
 إدارة الدورات والطلاب:
 - إنشاء وتعديل الدورات (مجانية ومدفوعة)
-- تحميل محتوى الدروس وإداراته
+- إدارة مناقشات الدورات
+- إدارة الاختبارات (Quizzes)
 - مراقبة بيانات الطلاب والأداء
 - تتبع الإحصائيات والتقارير
 
 ### 4️⃣ لوحة تحكم الطالب (Student Dashboard)
 إدارة مسار التعلم:
-- البحث والالتحاق بالدورات المجانية
-- شراء الدورات المدفوعة
-- متابعة الدروس وتتبع التقدم
+- استعراض الدورات المتاحة/الملتحق بها
+- الدخول إلى تفاصيل الدورة والمناقشات
 - عرض الدرجات والشهادات
-- قائمة المفضلات (Wishlist)
+- تتبع التقدم الدراسي
 
 ---
 
 ## ✨ الخصائص الرئيسية
 
 - **إدارة دورات ديناميكية:** نشر دورات مجانية أو مدفوعة بسهولة
-- **نظام الدفع الآمن:** تكامل مع **Konnect** لمعالجة الدفع (حاليًا في وضع الاختبار)
-- **قوائم المفضلات:** الطلاب يمكنهم حفظ الدورات المفضلة
+- **نظام الدفع الآمن:** تكامل مع **Flouci** و **Konnect** لمعالجة الدفع (حاليًا في وضع الاختبار)
+- **مناقشات الدورات:** نظام أسئلة وأجوبة بين الطلاب والأساتذة/المشرفين
 - **تتبع التقدم:** تحديث فوري لتقدم الطالب والدرجات
 - **نظام الكوبونات والعمولات:** نظام متقدم للخصومات والعمولات (Backend)
 - **المراسلة الداخلية:** التواصل بين الأساتذة والطلاب (Backend)
 - **تتبع الوقت:** مراقبة المدة الزمنية للدروس
-- **واجهة سريعة وحديثة:** بناة على React Router v7 و TailwindCSS
+- **واجهة سريعة وحديثة:** مبنية على React Router v7 و TailwindCSS
 
 ---
 
-## 💳 نظام الدفع (Konnect)
+## 💳 نظام الدفع (Flouci + Konnect)
 
-التطبيق الحالي مهيأ لـ **Konnect** (بوابة دفع موثوقة):
+التطبيق الحالي مهيأ لـ **Flouci** و **Konnect** (بوابات دفع موثوقة):
 
 - ✅ **الوضع الحالي:** Sandbox/Test فقط
-- ✅ **بطاقات الاختبار المدعومة:**
-  - بطاقة افتراضية (Virtual Card)
-  - بطاقة اختبار Konnect
+- ✅ **مزودات الدفع المفعلة:** Flouci، Konnect
 - ❌ **الدفع الحقيقي:** غير مفعّل حاليًا (سيتم تفعيله في الإنتاج)
+- 📘 **توثيق المزودات:**
+  - Flouci: https://docs.flouci.com/getting-started/create-an-account
+  - Konnect: https://docs.konnect.network/docs/en/dashboard/overview#api-key-management
 
 **ملاحظة:** معظم منطق الدفع الخلفي (charge processing, reconciliation, webhook handling) يتم على مستوى Backend API ولم يكن موجود في هذا المستودع.
 
@@ -407,22 +428,36 @@ docker run -p 3000:3000 acadtrak-front
 ```
 /app
   /routes
-    /_public.tsx                  # تخطيط الواجهة العامة
-    /_dashboard.tsx               # تخطيط لوحات التحكم
-    /admin
-      /index.tsx                  # لوحة المسؤول
-      /courses.tsx                # إدارة الدورات
-      /users.tsx                  # إدارة المستخدمين
-      /settings.tsx               # إعدادات النظام
-    /teacher
-      /index.tsx                  # لوحة الأستاذ
-      /courses.tsx                # دورات الأستاذ
-      /students.tsx               # طلاب الأستاذ
-    /student
-      /index.tsx                  # لوحة الطالب
-      /courses.tsx                # الدورات
-      /course-detail.tsx          # تفاصيل الدورة
-      /grades.tsx                 # الدرجات
+    /guest
+      /_public.tsx                # تخطيط الواجهة العامة
+      /_public.home.tsx           # الصفحة الرئيسية
+      /_public.about.tsx          # صفحة حول المنصة
+      /_public.contact.tsx        # صفحة التواصل
+      /_public.courses.tsx        # استعراض الدورات
+    /dashboard
+      /_dashboard.tsx             # تخطيط لوحات التحكم
+      /admin
+        /index.tsx                # لوحة المسؤول
+        /users.tsx                # إدارة المستخدمين
+        /courses.tsx              # إدارة/فحص الدورات
+        /messages.tsx             # رسائل التواصل
+        /settings.tsx             # إعدادات النظام
+      /teacher
+        /index.tsx                # لوحة الأستاذ
+        /courses.tsx              # دورات الأستاذ
+        /course-discussions.tsx   # مناقشات الدورات
+        /quizzes.tsx              # إدارة الاختبارات
+        /students.tsx             # بيانات الطلاب
+      /student
+        /index.tsx                # لوحة الطالب
+        /courses.tsx              # الدورات
+        /course-detail.tsx        # تفاصيل الدورة
+        /course-discussions.tsx   # مناقشات الدورة
+        /grades.tsx               # الدرجات
+    /login.tsx                    # تسجيل الدخول
+    /register.tsx                 # إنشاء حساب
+    /payment.tsx                  # صفحة الدفع
+    /not-found.tsx                # صفحة غير موجود
   /app.css                        # الأنماط العامة
   /root.tsx                       # جذر التطبيق
 /public                           # ملفات ثابتة
@@ -443,9 +478,9 @@ docker run -p 3000:3000 acadtrak-front
 
 يتم استخدام Ant Design بشكل أساسي في الواجهات الثلاث:
 
-- **لوحة المسؤول:** جداول إدارة المستخدمين، نماذج فحص الدورات، إعدادات النظام
-- **لوحة الأستاذ:** جداول إدارة الدورات، بيانات الطلاب، عرض الإحصائيات
-- **لوحة الطالب:** قوائم الدورات، نماذج الالتحاق، مؤشرات التقدم
+- **لوحة المسؤول:** إدارة المستخدمين، فحص الدورات، رسائل التواصل، وإعدادات النظام
+- **لوحة الأستاذ:** إدارة الدورات، المناقشات، الاختبارات، وبيانات الطلاب
+- **لوحة الطالب:** قوائم الدورات، تفاصيل الدورة، المناقشات، وعرض الدرجات
 
 ```tsx
 // مثال: جدول Ant Design في لوحة الأستاذ
@@ -483,7 +518,8 @@ export default function TeacherCourses() {
 
 - [React Router Documentation](https://reactrouter.com/)
 - [TailwindCSS Documentation](https://tailwindcss.com/)
-- [Konnect Documentation](https://www.konnect.tn/) (عند دعم الإنتاج)
+- [Flouci Docs - Create an Account](https://docs.flouci.com/getting-started/create-an-account)
+- [Konnect Docs - API Key Management](https://docs.konnect.network/docs/en/dashboard/overview#api-key-management)
 
 ---
 
@@ -491,8 +527,8 @@ export default function TeacherCourses() {
 
 - هذا الجزء هو **Frontend فقط**.
 - التكامل الكامل يتطلب Backend API منفصل للمصادقة والبيانات والدفع.
-- الدفع حاليًا في **وضع الاختبار (Sandbox)** فقط.
-- للإنتاج، ستحتاج إلى تكوين متغيرات البيئة (API URLs، Konnect keys، إلخ).
+- الدفع حاليًا في **وضع الاختبار (Sandbox/Test)** فقط (**Flouci** و **Konnect**).
+- للإنتاج، ستحتاج إلى تكوين متغيرات البيئة (API URLs، Flouci keys، Konnect keys، إلخ).
 
 ---
 
