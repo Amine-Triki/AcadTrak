@@ -25,6 +25,7 @@ export default [
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   route("login",    "routes/login.tsx"),
   route("register", "routes/register.tsx"),
+  route("payment/:courseId", "routes/payment.tsx"),
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   // 📊 لوحة التحكم — Sidebar جانبي
