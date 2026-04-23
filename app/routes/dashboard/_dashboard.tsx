@@ -84,6 +84,11 @@ const menuByRole: Record<string, MenuItem> = {
       icon: <UserOutlined />,
       label: <Link to="/dashboard/student/grades">درجاتي</Link>,
     },
+    {
+      key: "/dashboard/student/upgrade-to-teacher",
+      icon: <UploadOutlined />,
+      label: <Link to="/dashboard/student/upgrade-to-teacher">التحول إلى أستاذ</Link>,
+    },
   ],
 
   teacher: [

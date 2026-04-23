@@ -38,6 +38,7 @@ export default [
     route("dashboard/student/courses/:id",    "routes/dashboard/student/course-detail.tsx"),
     route("dashboard/student/courses/:id/discussions", "routes/dashboard/student/course-discussions.tsx"),
     route("dashboard/student/grades",         "routes/dashboard/student/grades.tsx"),
+    route("dashboard/student/upgrade-to-teacher", "routes/dashboard/student/upgrade-to-teacher.tsx"),
 
     // الأستاذ
     route("dashboard/teacher",                "routes/dashboard/teacher/index.tsx"),

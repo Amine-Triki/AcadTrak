@@ -361,9 +361,9 @@ export default function TeacherQuizzesPage() {
   const currentCourse = myCourses.find((course) => course.id === selectedCourseId);
 
   return (
-    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={16} style={{ width: "100%" }}>
       <Card>
-        <Space direction="vertical" size={6} style={{ width: "100%" }}>
+        <Space orientation="vertical" size={6} style={{ width: "100%" }}>
           <Title level={4} style={{ margin: 0 }}>إدارة الاختبارات</Title>
           <Text type="secondary">
             من هنا يمكنك تنظيم اختبارات الدورات ومتابعة حالة خدمة Quiz.
@@ -384,7 +384,7 @@ export default function TeacherQuizzesPage() {
           <Alert
             type="warning"
             showIcon
-            message="لا توجد دورات تملكها حاليًا"
+            title="لا توجد دورات تملكها حاليًا"
             description="أنشئ دورة أولاً من صفحة الدورات ثم أضف لها اختبارات."
           />
         ) : (
@@ -422,7 +422,7 @@ export default function TeacherQuizzesPage() {
         ) : quizzes.length === 0 ? (
           <Empty description="لا يوجد اختبارات في هذه الدورة" />
         ) : (
-          <Space direction="vertical" size={12} style={{ width: "100%" }}>
+          <Space orientation="vertical" size={12} style={{ width: "100%" }}>
             {quizzes.map((quiz) => (
               <Card
                 key={quiz.id}

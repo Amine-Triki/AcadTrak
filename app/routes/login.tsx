@@ -4,7 +4,7 @@ import {
   Typography, App, Space,
 } from "antd";
 import {
-  MailOutlined, LockOutlined, BookOutlined,
+  UserOutlined, LockOutlined, BookOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "~/context/auth";
 import { apiFetch } from "~/utils/api";
@@ -24,10 +24,10 @@ export default function LoginPage() {
   const location = useLocation();
   const { message } = App.useApp();
 
-  // إذا جاء من صفحة محمية — يرجع إليها بعد الدخول
+  // If the user comes from a protected page, redirect back after login.
   const from = (location.state as { from?: string })?.from;
 
-  const handleLogin = async (values: { email: string; password: string }) => {
+  const handleLogin = async (values: { identifier: string; password: string }) => {
     try {
       const response = await apiFetch("/api/users/login", {
         method: "POST",
@@ -50,18 +50,18 @@ export default function LoginPage() {
         | null;
 
       if (!response.ok || !payload?.user) {
-        throw new Error(payload?.message || "البريد الإلكتروني أو كلمة المرور خاطئة");
+        throw new Error(payload?.message || "Invalid email or password");
       }
 
       const userName = `${payload.user.firstName} ${payload.user.lastName}`.trim();
       setUser(payload.user);
-      message.success(`أهلاً ${userName} 👋`);
+      message.success(`Welcome back, ${userName} 👋`);
       navigate(from ?? REDIRECT_MAP[payload.user.role] ?? "/");
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "البريد الإلكتروني أو كلمة المرور خاطئة";
+          : "Invalid email or password";
       message.error(errorMessage);
     }
   };
@@ -90,9 +90,9 @@ export default function LoginPage() {
             </Title>
           </Space>
           <Title level={4} style={{ marginTop: 16, marginBottom: 4 }}>
-            أهلاً بعودتك
+            Welcome Back
           </Title>
-          <Text type="secondary">سجّل دخولك للمتابعة</Text>
+          <Text type="secondary">Sign in to continue</Text>
         </div>
 
         {/* ── Form ── */}
@@ -103,24 +103,23 @@ export default function LoginPage() {
           requiredMark={false}
         >
           <Form.Item
-            name="email"
-            label="البريد الإلكتروني"
+            name="identifier"
+            label="Email or Username"
             rules={[
-              { required: true, message: "أدخل بريدك الإلكتروني" },
-              { type: "email", message: "صيغة البريد غير صحيحة" },
+              { required: true, message: "Please enter your email or username" },
             ]}
           >
             <Input
-              prefix={<MailOutlined />}
-              placeholder="example@email.com"
+              prefix={<UserOutlined />}
+              placeholder="example@email.com or username"
               size="large"
             />
           </Form.Item>
 
           <Form.Item
             name="password"
-            label="كلمة المرور"
-            rules={[{ required: true, message: "أدخل كلمة المرور" }]}
+            label="Password"
+            rules={[{ required: true, message: "Please enter your password" }]}
           >
             <Input.Password
               prefix={<LockOutlined />}
@@ -136,21 +135,21 @@ export default function LoginPage() {
               block
               size="large"
             >
-              تسجيل الدخول
+              Sign In
             </Button>
           </Form.Item>
         </Form>
 
-        {/* ── روابط ── */}
+        {/* ── Links ── */}
         <div style={{ textAlign: "center", marginBottom: 8 }}>
-          <Text type="secondary">ليس لديك حساب؟ </Text>
+          <Text type="secondary">Don\'t have an account? </Text>
           <Link to="/register" style={{ color: "#4f46e5", fontWeight: 500 }}>
-            أنشئ حساباً الآن
+            Create one now
           </Link>
         </div>
         <div style={{ textAlign: "center" }}>
           <Link to="/" style={{ color: "#4f46e5" }}>
-            العودة للرئيسية
+            Back to Home
           </Link>
         </div>
 
