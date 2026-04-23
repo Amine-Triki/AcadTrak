@@ -22,7 +22,7 @@ interface PaymentResult {
   paymentUrl?: string;
   paymentId?:  string;
   paymentRef?: string;
-  provider?:   "flouci" | "konnect";
+  provider?:   "konnect";
   amountTND?:  number;
   // تسجيل مجاني بكوبون 100%
   enrollmentId?: string;
@@ -36,16 +36,13 @@ export default function PaymentPage() {
   const navigate          = useNavigate();
 
   const [loading, setLoading]           = useState(true);
-  const [paying,  setPaying]            = useState<"flouci" | "konnect" | null>(null);
-  const [verifying, setVerifying]       = useState(false);
+  const [paying,  setPaying]            = useState<"konnect" | null>(null);
   const [course, setCourse]             = useState<CourseItem | null>(null);
   const [coupon, setCoupon]             = useState("");
   const [effectivePrice, setEffective]  = useState<number | null>(null);
 
   // ── نتيجة Redirect من بوابة الدفع ──────────────────────────────────
   const paymentStatus  = searchParams.get("payment");
-  const provider       = searchParams.get("provider");
-  const flouciPayId    = searchParams.get("payment_id"); // Flouci يُرجعه في URL
 
   // ── تحميل بيانات الكورس ────────────────────────────────────────────
   useEffect(() => {
@@ -66,30 +63,23 @@ export default function PaymentPage() {
     })();
   }, [courseId]);
 
-  // ── التحقق بعد redirect من Flouci ──────────────────────────────────
-  useEffect(() => {
-    if (paymentStatus === "success" && provider === "flouci" && flouciPayId) {
-      void verifyFlouci(flouciPayId);
-    }
-  }, [paymentStatus, flouciPayId]);
-
-  const verifyFlouci = async (payId: string) => {
-    setVerifying(true);
+  const enrollFreeCourse = async () => {
+    if (!courseId) return;
+    setPaying("konnect");
     try {
-      const res  = await apiFetch(`/api/payments/flouci/verify/${payId}`);
-      const data = (await res.json().catch(() => null)) as
-        | { status?: string; enrolled?: boolean } | null;
-
-      if (data?.enrolled) {
-        message.success("تم التسجيل بنجاح! 🎉");
-        navigate("/dashboard/student/courses");
-      } else {
-        message.warning("جاري معالجة الدفع، ستُسجَّل قريباً.");
+      const res = await apiFetch(`/api/enrollments/course/${courseId}/enroll`, {
+        method: "POST",
+      });
+      const data = (await res.json().catch(() => null)) as { message?: string } | null;
+      if (!res.ok) {
+        throw new Error(data?.message || "فشل التسجيل");
       }
-    } catch {
-      message.error("فشل التحقق من الدفع");
+      message.success("تم التسجيل بنجاح! 🎉");
+      navigate("/dashboard/student/courses");
+    } catch (e) {
+      message.error(e instanceof Error ? e.message : "فشل التسجيل");
     } finally {
-      setVerifying(false);
+      setPaying(null);
     }
   };
 
@@ -106,7 +96,7 @@ export default function PaymentPage() {
     }
   };
 
-  const pay = async (provider: "flouci" | "konnect") => {
+  const pay = async (provider:  "konnect") => {
     if (!courseId) return;
     setPaying(provider);
     try {
@@ -143,11 +133,21 @@ export default function PaymentPage() {
   };
 
   // ── عرض نتيجة الـ redirect ──────────────────────────────────────────
-  if (paymentStatus === "success" && verifying) {
+  if (paymentStatus === "success") {
     return (
-      <div style={{ textAlign: "center", padding: 48 }}>
-        <Spin size="large" />
-        <p style={{ marginTop: 16 }}>جاري التحقق من الدفع...</p>
+      <div style={{ maxWidth: 560, margin: "40px auto", padding: "0 16px" }}>
+        <Alert
+          type="success"
+          showIcon
+          icon={<CheckCircleOutlined />}
+          message="تم إرسال عملية الدفع بنجاح"
+          description="يجري الآن تأكيد العملية وتفعيل التسجيل. إذا لم يظهر الكورس مباشرة، حدّث الصفحة بعد لحظات."
+          action={
+            <Button type="primary" onClick={() => navigate("/dashboard/student/courses")}>
+              الذهاب إلى دوراتي
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -263,7 +263,7 @@ export default function PaymentPage() {
               size="large"
               block
               icon={<CheckCircleOutlined />}
-              onClick={() => pay("flouci")}
+              onClick={() => void enrollFreeCourse()}
               loading={paying !== null}
             >
               تسجيل مجاني
@@ -274,32 +274,13 @@ export default function PaymentPage() {
               size="large"
               block
               icon={<SafetyCertificateOutlined />}
-              onClick={() => pay("flouci")}
+              onClick={() => void pay("konnect")}
               loading={paying !== null}
             >
               تسجيل مجاني بالكوبون
             </Button>
           ) : (
             <Space direction="vertical" size={12} style={{ width: "100%" }}>
-              {/* Flouci */}
-              <Button
-                type="primary"
-                size="large"
-                block
-                icon={<CreditCardOutlined />}
-                loading={paying === "flouci"}
-                disabled={paying !== null}
-                onClick={() => void pay("flouci")}
-                style={{ background: "#6d28d9", borderColor: "#6d28d9" }}
-              >
-                {paying === "flouci" ? "جاري التحويل..." : "ادفع عبر Flouci 🇹🇳"}
-              </Button>
-              <Text type="secondary" style={{ textAlign: "center", display: "block", fontSize: 12 }}>
-                Flouci — يقبل بطاقات تونسية ودولية + محفظة رقمية
-              </Text>
-
-              <Divider plain style={{ margin: "4px 0" }}>أو</Divider>
-
               {/* Konnect */}
               <Button
                 size="large"
@@ -322,14 +303,8 @@ export default function PaymentPage() {
             <Alert
               type="info"
               showIcon
-              message="بطاقات الاختبار (Development فقط)"
-              description={
-                <Space direction="vertical" size={4} style={{ fontSize: 12 }}>
-                  <Text code>Flouci Visa:  4509 2111 1111 1119 — 12/26 — CVV 748</Text>
-                  <Text code>Flouci MC:    5440 2127 1111 1110 — 12/26 — CVV 665</Text>
-                  <Text code>Flouci فشل:  5471 2511 1111 1116 — 11/23 — CVV 858</Text>
-                </Space>
-              }
+              message="وضع الاختبار (Development فقط)"
+              description="استخدم حساب/بيانات Sandbox الخاصة بـ Konnect من لوحة المزود."
             />
           )}
         </Space>

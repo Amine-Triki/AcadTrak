@@ -57,7 +57,7 @@ Learning path management:
 ## ✨ Key Features
 
 - **Dynamic Course Management:** Publish free or paid courses easily
-- **Secure Payment System:** **Flouci** and **Konnect** integrations for payment processing (currently in test mode)
+- **Secure Payment System:** **Konnect** integration for payment processing (currently in test mode)
 - **Course Discussions:** Q&A workflow between students and instructors/admins
 - **Progress Tracking:** Real-time student progress and grade updates
 - **Coupon & Commission System:** Advanced discount and commission management (Backend)
@@ -67,15 +67,14 @@ Learning path management:
 
 ---
 
-## 💳 Payment System (Flouci + Konnect)
+## 💳 Payment System (Konnect)
 
-The application is configured for **Flouci** and **Konnect** (trusted payment gateways):
+The application is configured for **Konnect** (trusted payment gateway):
 
 - ✅ **Current Mode:** Sandbox/Test only
-- ✅ **Enabled Providers:** Flouci, Konnect
+- ✅ **Enabled Providers:** Konnect
 - ❌ **Live Payments:** Not enabled (will be activated in production)
 - 📘 **Provider Docs:**
-  - Flouci: https://docs.flouci.com/getting-started/create-an-account
   - Konnect: https://docs.konnect.network/docs/en/dashboard/overview#api-key-management
 
 **Note:** Most backend payment logic (charge processing, reconciliation, webhook handling) is handled by the Backend API and is not in this repository.
@@ -247,7 +246,6 @@ export default function TeacherCourses() {
 
 - [React Router Documentation](https://reactrouter.com/)
 - [TailwindCSS Documentation](https://tailwindcss.com/)
-- [Flouci Docs - Create an Account](https://docs.flouci.com/getting-started/create-an-account)
 - [Konnect Docs - API Key Management](https://docs.konnect.network/docs/en/dashboard/overview#api-key-management)
 
 ---
@@ -256,8 +254,8 @@ export default function TeacherCourses() {
 
 - This is **Frontend only**.
 - Full integration requires a separate Backend API for authentication, data, and payments.
-- Payments are currently in **Sandbox/Test mode** only (**Flouci** and **Konnect**).
-- For production, you'll need to configure environment variables (API URLs, Flouci keys, Konnect keys, etc.).
+- Payments are currently in **Sandbox/Test mode** only (**Konnect**).
+- For production, you'll need to configure environment variables (API URLs, Konnect keys, etc.).
 
 ---
 
@@ -328,7 +326,7 @@ Developed by **Amine Triki** 👨‍💻
 ## ✨ الخصائص الرئيسية
 
 - **إدارة دورات ديناميكية:** نشر دورات مجانية أو مدفوعة بسهولة
-- **نظام الدفع الآمن:** تكامل مع **Flouci** و **Konnect** لمعالجة الدفع (حاليًا في وضع الاختبار)
+- **نظام الدفع الآمن:** تكامل مع **Konnect** لمعالجة الدفع (حاليًا في وضع الاختبار)
 - **مناقشات الدورات:** نظام أسئلة وأجوبة بين الطلاب والأساتذة/المشرفين
 - **تتبع التقدم:** تحديث فوري لتقدم الطالب والدرجات
 - **نظام الكوبونات والعمولات:** نظام متقدم للخصومات والعمولات (Backend)
@@ -338,15 +336,14 @@ Developed by **Amine Triki** 👨‍💻
 
 ---
 
-## 💳 نظام الدفع (Flouci + Konnect)
+## 💳 نظام الدفع (Konnect)
 
-التطبيق الحالي مهيأ لـ **Flouci** و **Konnect** (بوابات دفع موثوقة):
+التطبيق الحالي مهيأ لـ **Konnect** (بوابة دفع موثوقة):
 
 - ✅ **الوضع الحالي:** Sandbox/Test فقط
-- ✅ **مزودات الدفع المفعلة:** Flouci، Konnect
+- ✅ **مزودات الدفع المفعلة:** Konnect
 - ❌ **الدفع الحقيقي:** غير مفعّل حاليًا (سيتم تفعيله في الإنتاج)
 - 📘 **توثيق المزودات:**
-  - Flouci: https://docs.flouci.com/getting-started/create-an-account
   - Konnect: https://docs.konnect.network/docs/en/dashboard/overview#api-key-management
 
 **ملاحظة:** معظم منطق الدفع الخلفي (charge processing, reconciliation, webhook handling) يتم على مستوى Backend API ولم يكن موجود في هذا المستودع.
@@ -518,7 +515,6 @@ export default function TeacherCourses() {
 
 - [React Router Documentation](https://reactrouter.com/)
 - [TailwindCSS Documentation](https://tailwindcss.com/)
-- [Flouci Docs - Create an Account](https://docs.flouci.com/getting-started/create-an-account)
 - [Konnect Docs - API Key Management](https://docs.konnect.network/docs/en/dashboard/overview#api-key-management)
 
 ---
@@ -527,8 +523,8 @@ export default function TeacherCourses() {
 
 - هذا الجزء هو **Frontend فقط**.
 - التكامل الكامل يتطلب Backend API منفصل للمصادقة والبيانات والدفع.
-- الدفع حاليًا في **وضع الاختبار (Sandbox/Test)** فقط (**Flouci** و **Konnect**).
-- للإنتاج، ستحتاج إلى تكوين متغيرات البيئة (API URLs، Flouci keys، Konnect keys، إلخ).
+- الدفع حاليًا في **وضع الاختبار (Sandbox/Test)** فقط (**Konnect**).
+- للإنتاج، ستحتاج إلى تكوين متغيرات البيئة (API URLs، Konnect keys، إلخ).
 
 ---
 
