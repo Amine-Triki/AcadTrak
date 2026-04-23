@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router";
 import {
+  App,
   Alert,
   Input,
   Select,
@@ -18,9 +19,11 @@ import {
   StarFilled,
   FilterOutlined,
   ArrowRightOutlined,
+  LoginOutlined,
 } from "@ant-design/icons";
 import type { Route } from "./+types/_public.courses";
 import { apiFetch } from "~/utils/api";
+import { useAuth } from "~/context/auth";
 
 const { Title, Text } = Typography;
 
@@ -201,6 +204,9 @@ export async function clientLoader(): Promise<CoursesLoaderData> {
 }
 
 export default function CoursesPage({ loaderData }: Route.ComponentProps) {
+  const { message } = App.useApp();
+  const navigate = useNavigate();
+  const { user, refreshUser } = useAuth();
   const allCourses = useMemo(
     () => (loaderData?.courses ?? []).map(mapApiCourse),
     [loaderData?.courses],
@@ -210,6 +216,11 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
   const [category, setCategory] = useState("All");
   const [sortBy, setSortBy] = useState("popular");
   const [page, setPage] = useState(1);
+  const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(null);
+
+  useEffect(() => {
+    void refreshUser();
+  }, [refreshUser]);
 
   const categories = useMemo(() => {
     const uniqueCategories = new Set(allCourses.map((course) => course.category));
@@ -252,6 +263,62 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
   const handleCategory = (selectedCategory: string) => {
     setCategory(selectedCategory);
     setPage(1);
+  };
+
+  const handleCourseAction = async (course: CourseCardItem) => {
+    if (!user) {
+      navigate("/login", { state: { from: `/payment/${course.id}` } });
+      return;
+    }
+
+    if (course.type === "paid") {
+      navigate(`/payment/${course.id}`);
+      return;
+    }
+
+    if (user.role !== "student" && user.role !== "admin") {
+      message.info("Only students can enroll in courses.");
+      return;
+    }
+
+    setEnrollingCourseId(course.id);
+    try {
+      const response = await apiFetch(`/api/enrollments/course/${course.id}/enroll`, {
+        method: "POST",
+      });
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: string }
+        | null;
+
+      if (response.status === 409) {
+        message.success(payload?.message || "You are already enrolled.");
+        navigate(`/dashboard/student/courses/${course.id}`);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(payload?.message || "Failed to enroll in course.");
+      }
+
+      message.success(payload?.message || "You are now enrolled.");
+      navigate(`/dashboard/student/courses/${course.id}`);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : "Failed to enroll in course.");
+    } finally {
+      setEnrollingCourseId(null);
+    }
+  };
+
+  const getPrimaryActionLabel = (course: CourseCardItem) => {
+    if (course.type === "paid") {
+      return user ? "الانتقال إلى الدفع" : "سجّل الدخول للدفع";
+    }
+
+    if (!user) {
+      return "سجّل الدخول للانضمام";
+    }
+
+    return "الانضمام الآن";
   };
 
   return (
@@ -527,6 +594,8 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
+                        gap: 8,
+                        flexWrap: "wrap",
                         borderTop: "1px solid #f3f4f6",
                         paddingTop: 12,
                       }}
@@ -540,21 +609,35 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                       >
                         {course.price === 0 ? "Free" : `$${course.price}`}
                       </span>
-                      <Link to={`/dashboard/student/courses/${course.id}`}>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                         <Button
                           type="primary"
                           size="small"
-                          icon={<ArrowRightOutlined />}
-                          iconPlacement="end"
+                          loading={enrollingCourseId === course.id}
+                          icon={user ? undefined : <LoginOutlined />}
+                          onClick={() => void handleCourseAction(course)}
                           style={{
-                            background: "#4f46e5",
+                            background: course.type === "paid" ? "#0f766e" : "#4f46e5",
                             border: "none",
                             borderRadius: 6,
                           }}
                         >
-                          Details
+                          {getPrimaryActionLabel(course)}
                         </Button>
-                      </Link>
+                        <Link to={`/payment/${course.id}`}>
+                          <Button
+                            type="default"
+                            size="small"
+                            icon={<ArrowRightOutlined />}
+                            iconPlacement="end"
+                            style={{
+                              borderRadius: 6,
+                            }}
+                          >
+                            Details
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </Card>
                 </Col>

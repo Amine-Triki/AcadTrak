@@ -119,6 +119,22 @@ const getInstructorId = (instructor: unknown) => {
 	return "";
 };
 
+const YOUTUBE_ID_REGEX = /^[a-zA-Z0-9_-]{11}$/;
+
+const extractYouTubeId = (value: string | undefined) => {
+	if (!value) {
+		return "";
+	}
+
+	const trimmed = value.trim();
+	if (YOUTUBE_ID_REGEX.test(trimmed)) {
+		return trimmed;
+	}
+
+	const match = trimmed.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
+	return match?.[1] || "";
+};
+
 const getLessonId = (lesson: LessonItem) => lesson.id || lesson._id || "";
 
 export default function TeacherCoursesPage() {
@@ -390,7 +406,9 @@ export default function TeacherCoursesPage() {
 			return;
 		}
 
-		if (!editingLesson && !values.youtubeId?.trim() && !pdfFileList[0]?.originFileObj) {
+		const youtubeId = extractYouTubeId(values.youtubeId);
+
+		if (!editingLesson && !youtubeId && !pdfFileList[0]?.originFileObj) {
 			message.error("يجب إضافة فيديو YouTube أو ملف PDF على الأقل");
 			return;
 		}
@@ -398,7 +416,6 @@ export default function TeacherCoursesPage() {
 		setLessonsSubmitting(true);
 		try {
 			const formData = new FormData();
-			const youtubeId = values.youtubeId?.trim();
 			const pdfFile = pdfFileList[0]?.originFileObj;
 			const thumbnailFile = thumbnailFileList[0]?.originFileObj;
 
@@ -824,19 +841,19 @@ export default function TeacherCoursesPage() {
 
 					<Form.Item
 						name="youtubeId"
-						label="YouTube ID"
+						label="YouTube ID أو الرابط"
 						rules={[
 							{
 								validator: async (_, value: string | undefined) => {
-									if (!value || /^[a-zA-Z0-9_-]{11}$/.test(value.trim())) {
+									if (!value || extractYouTubeId(value)) {
 										return Promise.resolve();
 									}
-									return Promise.reject(new Error("YouTube ID غير صالح"));
+									return Promise.reject(new Error("أدخل YouTube ID صحيحًا أو رابط فيديو صالحًا"));
 								},
 							},
 						]}
 					>
-						<Input placeholder="مثال: dQw4w9WgXcQ" />
+						<Input placeholder="مثال: dQw4w9WgXcQ أو https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
 					</Form.Item>
 
 					{editingLesson?.video?.youtubeId ? (

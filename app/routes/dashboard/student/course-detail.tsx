@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router";
 import {
   App,
   Button,
+  Alert,
   Card,
   Col,
   Row,
@@ -69,6 +70,7 @@ export default function StudentCourseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [course, setCourse] = useState<CourseItem | null>(null);
   const [lessons, setLessons] = useState<LessonItem[]>([]);
+  const [isEnrolled, setIsEnrolled] = useState(false);
 
   const fetchCourseDetails = async () => {
     if (!courseId) {
@@ -99,8 +101,25 @@ export default function StudentCourseDetailPage() {
         throw new Error(lessonsPayload?.message || "فشل تحميل الدروس");
       }
 
+      const enrollmentsResponse = await apiFetch("/api/enrollments/my");
+      const enrollmentsData = (await enrollmentsResponse.json().catch(() => null)) as
+        | { enrollments?: Array<{ course?: string | { id?: string; _id?: string } }> }
+        | null;
+
       setCourse(coursePayload?.course ?? null);
       setLessons(lessonsPayload?.lessons ?? []);
+      setIsEnrolled(
+        Boolean(
+          enrollmentsData?.enrollments?.some((item) => {
+            const enrolledCourse = item.course;
+            if (typeof enrolledCourse === "string") {
+              return enrolledCourse === courseId;
+            }
+
+            return enrolledCourse?.id === courseId || enrolledCourse?._id === courseId;
+          }),
+        ),
+      );
     } catch (error) {
       message.error(error instanceof Error ? error.message : "فشل تحميل تفاصيل الكورس");
     } finally {
@@ -168,6 +187,22 @@ export default function StudentCourseDetailPage() {
           <Text strong>
             السعر: {course.type === "free" ? "مجاني" : `${course.effectivePrice ?? course.price} USD`}
           </Text>
+
+          {!isEnrolled ? (
+            <Alert
+              type="info"
+              showIcon
+              message="الدروس الكاملة متاحة بعد أخذ الدورة"
+              description="يمكنك مشاهدة المعاينة فقط الآن. لإتاحة كل الدروس اضغط على زر أخذ الدورة."
+              action={
+                courseId ? (
+                  <Button type="primary" href={`/payment/${courseId}`}>
+                    أخذ الدورة
+                  </Button>
+                ) : null
+              }
+            />
+          ) : null}
         </Space>
       </Card>
 
@@ -187,6 +222,9 @@ export default function StudentCourseDetailPage() {
             >
               <Space direction="vertical" size={10} style={{ width: "100%" }}>
                 <Text>{lesson.description || "لا يوجد وصف"}</Text>
+                {!isEnrolled && !lesson.isPreview ? (
+                  <Text type="secondary">هذا الدرس متاح بعد التسجيل في الدورة.</Text>
+                ) : null}
 
                 {lesson.video?.youtubeId ? (
                   <Button
