@@ -313,15 +313,7 @@ export default function DashboardLayout() {
           />
 
           <Space size={token.marginSM}>
-            {/* 🔔 الإشعارات */}
-            <Badge count={3} size="small">
-              <Button
-                type="text"
-                icon={<BellOutlined />}
-                shape="circle"
-                style={{ fontSize: token.fontSizeLG }}
-              />
-            </Badge>
+
 
             {/* 👤 قائمة المستخدم */}
             <Dropdown
