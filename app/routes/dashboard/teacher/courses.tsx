@@ -36,6 +36,11 @@ interface CourseItem {
 	title: string;
 	description: string;
 	category: string;
+	categoryDetails?: {
+		id: string;
+		name: string;
+		slug?: string;
+	};
 	instructor: string;
 	type: CourseType;
 	status: CourseStatus;
@@ -51,6 +56,12 @@ interface CoursePayload {
 	type: CourseType;
 	status: CourseStatus;
 	price?: number;
+}
+
+interface CategoryOption {
+	id: string;
+	name: string;
+	slug?: string;
 }
 
 interface LessonAsset {
@@ -121,6 +132,8 @@ export default function TeacherCoursesPage() {
 	const [open, setOpen] = useState(false);
 	const [editingCourse, setEditingCourse] = useState<CourseItem | null>(null);
 	const [courses, setCourses] = useState<CourseItem[]>([]);
+	const [categories, setCategories] = useState<CategoryOption[]>([]);
+	const [categoriesLoading, setCategoriesLoading] = useState(false);
 
 	const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null);
 	const [lessonsOpen, setLessonsOpen] = useState(false);
@@ -169,8 +182,29 @@ export default function TeacherCoursesPage() {
 		}
 	};
 
+	const fetchCategories = async () => {
+		setCategoriesLoading(true);
+		try {
+			const response = await apiFetch("/api/categories");
+			const payload = (await response.json().catch(() => null)) as
+				| { categories?: CategoryOption[]; message?: string }
+				| null;
+
+			if (!response.ok) {
+				throw new Error(payload?.message || "فشل تحميل التصنيفات");
+			}
+
+			setCategories(payload?.categories ?? []);
+		} catch (error) {
+			message.error(error instanceof Error ? error.message : "فشل تحميل التصنيفات");
+		} finally {
+			setCategoriesLoading(false);
+		}
+	};
+
 	useEffect(() => {
 		void fetchCourses();
+		void fetchCategories();
 	}, []);
 
 	const openCreateModal = () => {
@@ -178,7 +212,7 @@ export default function TeacherCoursesPage() {
 		form.setFieldsValue({
 			title: "",
 			description: "",
-			category: "",
+			category: undefined,
 			type: "free",
 			status: "draft",
 			price: 0,
@@ -554,7 +588,9 @@ export default function TeacherCoursesPage() {
 							>
 								<Space orientation="vertical" size={8} style={{ width: "100%" }}>
 									<Text>{course.description}</Text>
-									<Text type="secondary">Category ID: {course.category}</Text>
+									<Text type="secondary">
+										Category: {course.categoryDetails?.name || course.category}
+									</Text>
 									<Text strong>
 										السعر: {course.type === "free" ? "مجاني" : `${course.price} USD`}
 									</Text>
@@ -586,7 +622,7 @@ export default function TeacherCoursesPage() {
 					layout="vertical"
 					form={form}
 					onFinish={onSubmit}
-					initialValues={{ type: "free", status: "draft", price: 0 }}
+						initialValues={{ type: "free", status: "draft", price: 0, category: undefined }}
 				>
 					<Form.Item name="title" label="العنوان" rules={[{ required: true, message: "العنوان مطلوب" }]}>
 						<Input />
@@ -602,13 +638,22 @@ export default function TeacherCoursesPage() {
 
 					<Form.Item
 						name="category"
-						label="Category ID"
-						rules={[
-							{ required: true, message: "Category id مطلوب" },
-							{ pattern: /^[a-fA-F0-9]{24}$/, message: "ObjectId غير صالح" },
-						]}
+						label="Category"
+						rules={[{ required: true, message: "التصنيف مطلوب" }]}
 					>
-						<Input placeholder="مثال: 68000f51ce6df2d4f9c0f123" />
+						<Select
+							showSearch
+							loading={categoriesLoading}
+							placeholder="اختر تصنيف الكورس"
+							optionFilterProp="label"
+							filterOption={(input, option) =>
+								String(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+							}
+							options={categories.map((category) => ({
+								value: category.id,
+								label: category.name,
+							}))}
+						/>
 					</Form.Item>
 
 					<Row gutter={12}>
