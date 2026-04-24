@@ -13,6 +13,8 @@ export interface AuthUser {
   country?: string;
   email?: string;
   name?: string;
+  bio?: string;
+  avatar?: string;
   role: Role;
 }
 

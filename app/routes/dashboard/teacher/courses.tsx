@@ -48,6 +48,14 @@ interface CourseItem {
 	price: number;
 	isHidden: boolean;
 	hiddenAt?: string | null;
+	coupon?: {
+		code: string;
+		discountType: "percentage" | "fixed";
+		amount: number;
+		startsAt?: string;
+		expiresAt: string;
+		isActive: boolean;
+	};
 }
 
 interface CoursePayload {
@@ -252,12 +260,12 @@ export default function TeacherCoursesPage() {
 			type: course.type,
 			status: course.status,
 			price: course.price,
-			couponCode: undefined,
-			couponDiscountType: "percentage",
-			couponAmount: undefined,
-			couponStartsAt: undefined,
-			couponExpiresAt: undefined,
-			couponIsActive: true,
+			couponCode: course.coupon?.code,
+			couponDiscountType: course.coupon?.discountType ?? "percentage",
+			couponAmount: course.coupon?.amount,
+			couponStartsAt: course.coupon?.startsAt,
+			couponExpiresAt: course.coupon?.expiresAt,
+			couponIsActive: course.coupon?.isActive ?? true,
 		});
 		setOpen(true);
 	};
@@ -292,6 +300,8 @@ export default function TeacherCoursesPage() {
 					expiresAt: values.couponExpiresAt,
 					isActive: values.couponIsActive ?? true,
 				};
+			} else if (editingCourse && !values.couponCode?.trim()) {
+				body.coupon = null;
 			}
 
 			const isEdit = Boolean(editingCourse);
@@ -643,6 +653,13 @@ export default function TeacherCoursesPage() {
 									<Text strong>
 										السعر: {course.type === "free" ? "مجاني" : `${course.price} USD`}
 									</Text>
+									{course.coupon?.code ? (
+										<Text type="secondary">
+											كوبون مفعّل: <strong>{course.coupon.code}</strong>
+										</Text>
+									) : (
+										<Text type="secondary">لا يوجد كوبون (من زر تعديل الدورة)</Text>
+									)}
 									{course.isHidden && course.hiddenAt ? (
 										<Text type="secondary">تم الإخفاء في: {new Date(course.hiddenAt).toLocaleString()}</Text>
 									) : null}
@@ -731,60 +748,66 @@ export default function TeacherCoursesPage() {
 					<Form.Item shouldUpdate={(prev, curr) => prev.type !== curr.type} noStyle>
 						{({ getFieldValue }) =>
 							getFieldValue("type") === "paid" ? (
-								<Form.Item
-									name="price"
-									label="السعر"
-									rules={[{ required: true, message: "السعر مطلوب للكورس المدفوع" }]}
-								>
-									<InputNumber min={1} style={{ width: "100%" }} />
-								</Form.Item>
+								<>
+									<Form.Item
+										name="price"
+										label="السعر"
+										rules={[{ required: true, message: "السعر مطلوب للكورس المدفوع" }]}
+									>
+										<InputNumber min={1} style={{ width: "100%" }} />
+									</Form.Item>
+
+									{/* خطأ 3 & 4: الكوبون يظهر للدورات المدفوعة فقط، وتاريخ بـ input type="date" */}
+									<Title level={5} style={{ marginTop: 12 }}>الكوبون الخاص بالدورة (اختياري)</Title>
+									<Alert 
+										message="يمكنك إضافة كوبون خصم على الدورة المدفوعة"
+										type="info"
+										showIcon
+										style={{ marginBottom: 16 }}
+									/>
+									<Form.Item name="couponCode" label="رمز الكوبون">
+										<Input placeholder="مثال: SAVE20" />
+									</Form.Item>
+
+									<Row gutter={12}>
+										<Col span={12}>
+											<Form.Item name="couponDiscountType" label="نوع الخصم">
+												<Select
+													placeholder="اختر نوع الخصم"
+													options={[
+														{ value: "percentage", label: "نسبة مئوية (%)" },
+														{ value: "fixed", label: "مبلغ ثابت (د.ت)" },
+													]}
+												/>
+											</Form.Item>
+										</Col>
+										<Col span={12}>
+											<Form.Item name="couponAmount" label="قيمة الخصم">
+												<InputNumber min={1} style={{ width: "100%" }} />
+											</Form.Item>
+										</Col>
+									</Row>
+
+									<Row gutter={12}>
+										<Col span={12}>
+											<Form.Item name="couponStartsAt" label="تاريخ البداية (اختياري)">
+												<Input type="date" />
+											</Form.Item>
+										</Col>
+										<Col span={12}>
+											<Form.Item name="couponExpiresAt" label="تاريخ الانتهاء">
+												<Input type="date" />
+											</Form.Item>
+										</Col>
+									</Row>
+
+									<Form.Item name="couponIsActive" label="الكوبون فعال" valuePropName="checked">
+										<Switch />
+									</Form.Item>
+								</>
 							) : null
 						}
 					</Form.Item>
-
-					{editingCourse ? (
-						<>
-							<Title level={5} style={{ marginTop: 12 }}>الكوبون الخاص بالدورة</Title>
-							<Form.Item name="couponCode" label="رمز الكوبون">
-								<Input placeholder="مثال: SAVE20" />
-							</Form.Item>
-
-							<Row gutter={12}>
-								<Col span={12}>
-									<Form.Item name="couponDiscountType" label="نوع الخصم">
-										<Select
-											options={[
-												{ value: "percentage", label: "نسبة مئوية" },
-												{ value: "fixed", label: "مبلغ ثابت" },
-											]}
-										/>
-									</Form.Item>
-								</Col>
-								<Col span={12}>
-									<Form.Item name="couponAmount" label="قيمة الخصم">
-										<InputNumber min={1} style={{ width: "100%" }} />
-									</Form.Item>
-								</Col>
-							</Row>
-
-							<Row gutter={12}>
-								<Col span={12}>
-									<Form.Item name="couponStartsAt" label="تاريخ البداية (اختياري)">
-										<Input placeholder="2026-04-24" />
-									</Form.Item>
-								</Col>
-								<Col span={12}>
-									<Form.Item name="couponExpiresAt" label="تاريخ الانتهاء">
-										<Input placeholder="2026-05-24" />
-									</Form.Item>
-								</Col>
-							</Row>
-
-							<Form.Item name="couponIsActive" label="الكوبون فعال" valuePropName="checked">
-								<Switch />
-							</Form.Item>
-						</>
-					) : null}
 				</Form>
 			</Modal>
 

@@ -12,14 +12,17 @@ import {
   Tag,
   Typography,
   Divider,
+  Form,
+  Input,
+  Modal,
 } from "antd";
 import {
-  MailOutlined,
   GlobalOutlined,
   ReloadOutlined,
   BookOutlined,
 } from "@ant-design/icons";
 import { apiFetch } from "~/utils/api";
+import { useAuth } from "~/context/auth";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -46,18 +49,25 @@ interface InstructorCourse {
   price?: number;
   thumbnail?: string;
   status: "draft" | "published";
+  instructor?: string | { id?: string; _id?: string };
   studentsCount?: number;
   averageRating?: number;
 }
 
 export default function InstructorProfilePage() {
   const { message } = App.useApp();
+  const { user, setUser } = useAuth();
+  const [form] = Form.useForm();
   const params = useParams();
   const instructorId = params.id;
 
   const [loading, setLoading] = useState(true);
   const [instructor, setInstructor] = useState<InstructorProfile | null>(null);
   const [courses, setCourses] = useState<InstructorCourse[]>([]);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+
+  const isOwnProfile = Boolean(user?.id && instructorId && user.id === instructorId);
 
   const fetchInstructorData = async () => {
     if (!instructorId) {
@@ -69,8 +79,8 @@ export default function InstructorProfilePage() {
     setLoading(true);
     try {
       const [instructorResponse, coursesResponse] = await Promise.all([
-        apiFetch(`/api/users/${instructorId}`),
-        apiFetch(`/api/courses?instructor=${instructorId}`),
+        apiFetch(`/api/users/public/${instructorId}`),
+        apiFetch(`/api/courses`),
       ]);
 
       const instructorPayload = (await instructorResponse.json().catch(() => null)) as
@@ -91,10 +101,14 @@ export default function InstructorProfilePage() {
 
       setInstructor(user);
       // فقط الدورات المنشورة والغير مخفية
-      const publishedCourses = (coursesPayload?.courses ?? []).filter(
-        (c) => c.status === "published"
-      );
+      const publishedCourses = (coursesPayload?.courses ?? []).filter((c) => {
+        const rawInstructor = c.instructor;
+        const ownerId = typeof rawInstructor === "string" ? rawInstructor : rawInstructor?.id || rawInstructor?._id;
+        return c.status === "published" && ownerId === instructorId;
+      });
+
       setCourses(publishedCourses);
+
     } catch (error) {
       message.error(error instanceof Error ? error.message : "فشل تحميل البيانات");
     } finally {
@@ -102,9 +116,71 @@ export default function InstructorProfilePage() {
     }
   };
 
+  const handleSaveProfile = async (values: {
+    firstName?: string;
+    lastName?: string;
+    userName?: string;
+    country?: string;
+    bio?: string;
+    avatar?: string;
+  }) => {
+    setSavingProfile(true);
+    try {
+      const response = await apiFetch("/api/users/me/profile", {
+        method: "PATCH",
+        body: JSON.stringify(values),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: string; user?: InstructorProfile }
+        | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.message || "فشل تحديث الملف الشخصي");
+      }
+
+      message.success(payload?.message || "تم تحديث الملف الشخصي");
+      if (payload?.user) {
+        setInstructor((prev) => (prev ? { ...prev, ...payload.user } : prev));
+        setUser((user && user.id === payload.user.id)
+          ? {
+              ...user,
+              firstName: payload.user.firstName,
+              lastName: payload.user.lastName,
+              userName: payload.user.userName,
+              country: payload.user.country,
+              bio: payload.user.bio,
+              avatar: payload.user.avatar,
+            }
+          : user);
+      }
+      setEditOpen(false);
+      await fetchInstructorData();
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : "فشل تحديث الملف الشخصي");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   useEffect(() => {
     void fetchInstructorData();
   }, [instructorId]);
+
+  useEffect(() => {
+    if (!editOpen || !instructor) {
+      return;
+    }
+
+    form.setFieldsValue({
+      firstName: instructor.firstName || "",
+      lastName: instructor.lastName || "",
+      userName: instructor.userName || "",
+      country: instructor.country || "",
+      bio: instructor.bio || "",
+      avatar: instructor.avatar || undefined,
+    });
+  }, [editOpen, instructor, form]);
 
   if (loading) {
     return (
@@ -129,21 +205,21 @@ export default function InstructorProfilePage() {
       : instructor.userName || "أستاذ";
 
   return (
-    <Space direction="vertical" size={24} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={24} style={{ width: "100%" }}>
       {/* ─── معلومات الأستاذ الأساسية ─── */}
       <Card>
         <Row gutter={[24, 24]} align="middle">
           <Col xs={24} sm={6} style={{ textAlign: "center" }}>
             <Avatar
               size={120}
-              src={instructor.avatar}
+              src={instructor.avatar || undefined}
               style={{ backgroundColor: "#1890ff", fontSize: 48 }}
             >
               {fullName.charAt(0)}
             </Avatar>
           </Col>
           <Col xs={24} sm={18}>
-            <Space direction="vertical" size={12} style={{ width: "100%" }}>
+            <Space orientation="vertical" size={12} style={{ width: "100%" }}>
               <div>
                 <Title level={3} style={{ margin: 0 }}>
                   {fullName}
@@ -161,9 +237,11 @@ export default function InstructorProfilePage() {
               )}
 
               <Space>
-                <Button icon={<MailOutlined />} href={`mailto:${instructor.email}`}>
-                  تواصل
-                </Button>
+                {isOwnProfile ? (
+                  <Button type="primary" onClick={() => setEditOpen(true)}>
+                    تعديل صفحتي
+                  </Button>
+                ) : null}
                 <Button icon={<ReloadOutlined />} onClick={() => void fetchInstructorData()}>
                   تحديث
                 </Button>
@@ -221,6 +299,9 @@ export default function InstructorProfilePage() {
           <BookOutlined style={{ marginRight: 8 }} />
           الدورات المتاحة
         </Title>
+        <Text type="secondary" style={{ display: "block", marginBottom: 12 }}>
+          إضافة أو تعديل coupon تتم من لوحة الأستاذ: دوراتي ثم تعديل الدورة.
+        </Text>
         {courses.length > 0 ? (
           <Row gutter={[16, 16]}>
             {courses.map((course) => (
@@ -234,8 +315,8 @@ export default function InstructorProfilePage() {
                     </Tag>
                   }
                 >
-                  <Space direction="vertical" size={8} style={{ width: "100%" }}>
-                    <Text type="secondary" ellipsis={{ rows: 2 }}>
+                  <Space orientation="vertical" size={8} style={{ width: "100%" }}>
+                    <Text type="secondary">
                       {course.description || "بدون وصف"}
                     </Text>
 
@@ -247,7 +328,7 @@ export default function InstructorProfilePage() {
                       <Text type="secondary">⭐ {course.averageRating.toFixed(1)}</Text>
                     )}
 
-                    <Link to={`/courses/${course.id || course._id}`}>
+                    <Link to={`/dashboard/student/courses/${course.id || course._id}`}>
                       <Button type="primary" block style={{ marginTop: 8 }}>
                         عرض الدورة
                       </Button>
@@ -263,6 +344,37 @@ export default function InstructorProfilePage() {
           </Card>
         )}
       </div>
+
+      <Modal
+        open={editOpen}
+        onCancel={() => setEditOpen(false)}
+        title="تعديل الصفحة الشخصية"
+        okText="حفظ"
+        cancelText="إلغاء"
+        onOk={() => form.submit()}
+        confirmLoading={savingProfile}
+      >
+        <Form form={form} layout="vertical" onFinish={handleSaveProfile}>
+          <Form.Item name="firstName" label="الاسم" rules={[{ required: true, message: "الاسم مطلوب" }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="lastName" label="اللقب" rules={[{ required: true, message: "اللقب مطلوب" }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="userName" label="اسم المستخدم" rules={[{ required: true, message: "اسم المستخدم مطلوب" }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="country" label="الدولة" rules={[{ required: true, message: "الدولة مطلوبة" }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="bio" label="نبذة عني">
+            <Input.TextArea rows={3} />
+          </Form.Item>
+          <Form.Item name="avatar" label="رابط الصورة الشخصية">
+            <Input placeholder="https://..." />
+          </Form.Item>
+        </Form>
+      </Modal>
     </Space>
   );
 }
