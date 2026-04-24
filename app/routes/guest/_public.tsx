@@ -1,9 +1,11 @@
 // app/routes/guest/_public.tsx
-import { useState } from "react";
-import { Outlet, Link, useLocation } from "react-router";
+import { useEffect, useMemo, useState } from "react";
+import { Outlet, Link, useLocation, useNavigate } from "react-router";
 import { Layout, Menu, Button, Drawer, Grid, theme } from "antd";
 import { BookOutlined, MenuOutlined, CloseOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
+import { useAuth } from "~/context/auth";
+import { apiFetch } from "~/utils/api";
 
 const { Header, Content, Footer } = Layout;
 const { useBreakpoint } = Grid;
@@ -20,11 +22,30 @@ const navItems: MenuItem = [
 export default function PublicLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const screens = useBreakpoint();
+  const { user, isAuthenticated, setUser, refreshUser } = useAuth();
   const { token } = theme.useToken(); // ✅ قيم الـ Theme
+
+  useEffect(() => {
+    void refreshUser();
+  }, [refreshUser]);
 
   // screens.md = true إذا العرض >= 768px
   const isMobile = !screens.md;
+
+  const displayName = useMemo(() => {
+    if (!user) return "";
+    const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+    return fullName || user.userName || user.name || user.email || "User";
+  }, [user]);
+
+  const handleLogout = async () => {
+    await apiFetch("/api/users/logout", { method: "POST" });
+    setUser(null);
+    setDrawerOpen(false);
+    navigate("/");
+  };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -114,12 +135,31 @@ export default function PublicLayout() {
                 gap: 8,
               }}
             >
-              <Button size="middle">
-                <Link to="/login">login</Link>
-              </Button>
-              <Button type="primary" size="middle">
-                <Link to="/register">register</Link>
-              </Button>
+              {isAuthenticated ? (
+                <>
+                  <span
+                    style={{
+                      color: token.colorText,
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {displayName}
+                  </span>
+                  <Button danger size="middle" onClick={handleLogout}>
+                    log out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button size="middle">
+                    <Link to="/login">login</Link>
+                  </Button>
+                  <Button type="primary" size="middle">
+                    <Link to="/register">register</Link>
+                  </Button>
+                </>
+              )}
             </div>
           ) : (
             /* ── Mobile: زر الهامبرغر ── */
@@ -186,17 +226,36 @@ export default function PublicLayout() {
             gap: 8,
           }}
         >
-          <Button block size="large" onClick={() => setDrawerOpen(false)}>
-            <Link to="/login">login</Link>
-          </Button>
-          <Button
-            type="primary"
-            block
-            size="large"
-            onClick={() => setDrawerOpen(false)}
-          >
-            <Link to="/register">register</Link>
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <div
+                style={{
+                  fontWeight: 600,
+                  color: token.colorText,
+                  padding: "0 4px",
+                }}
+              >
+                {displayName}
+              </div>
+              <Button danger block size="large" onClick={handleLogout}>
+                log out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button block size="large" onClick={() => setDrawerOpen(false)}>
+                <Link to="/login">login</Link>
+              </Button>
+              <Button
+                type="primary"
+                block
+                size="large"
+                onClick={() => setDrawerOpen(false)}
+              >
+                <Link to="/register">register</Link>
+              </Button>
+            </>
+          )}
         </div>
       </Drawer>
 

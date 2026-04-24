@@ -20,6 +20,7 @@ import {
 	Tag,
 	Typography,
 	Upload,
+	Alert,
 } from "antd";
 import type { UploadFile } from "antd";
 import { DeleteOutlined, EditOutlined, FilePdfOutlined, FolderOpenOutlined, MessageOutlined, PlusOutlined, ReloadOutlined, UploadOutlined, YoutubeOutlined } from "@ant-design/icons";
@@ -56,6 +57,12 @@ interface CoursePayload {
 	type: CourseType;
 	status: CourseStatus;
 	price?: number;
+	couponCode?: string;
+	couponDiscountType?: "percentage" | "fixed";
+	couponAmount?: number;
+	couponStartsAt?: string;
+	couponExpiresAt?: string;
+	couponIsActive?: boolean;
 }
 
 interface CategoryOption {
@@ -245,6 +252,12 @@ export default function TeacherCoursesPage() {
 			type: course.type,
 			status: course.status,
 			price: course.price,
+			couponCode: undefined,
+			couponDiscountType: "percentage",
+			couponAmount: undefined,
+			couponStartsAt: undefined,
+			couponExpiresAt: undefined,
+			couponIsActive: true,
 		});
 		setOpen(true);
 	};
@@ -268,6 +281,17 @@ export default function TeacherCoursesPage() {
 
 			if (values.type === "paid") {
 				body.price = values.price;
+			}
+
+			if (editingCourse && values.couponCode?.trim() && values.couponDiscountType && values.couponAmount && values.couponExpiresAt) {
+				body.coupon = {
+					code: values.couponCode.trim(),
+					discountType: values.couponDiscountType,
+					amount: values.couponAmount,
+					...(values.couponStartsAt ? { startsAt: values.couponStartsAt } : {}),
+					expiresAt: values.couponExpiresAt,
+					isActive: values.couponIsActive ?? true,
+				};
 			}
 
 			const isEdit = Boolean(editingCourse);
@@ -527,6 +551,14 @@ export default function TeacherCoursesPage() {
 
 	return (
 		<Space orientation="vertical" size={16} style={{ width: "100%" }}>
+			{/* 🔒 رسالة توضيحية عن صلاحيات الأستاذ */}
+			<Alert
+				type="info"
+				showIcon
+				message="صلاحيات الأستاذ"
+				description="أنت كأستاذ يمكنك فقط إنشاء وتعديل وحذف الدورات والدروس والكوبونات الخاصة بك. الطلاب يستطيعون مشاهدة دوراتك المنشورة وشراء الدروس فيها."
+			/>
+
 			<Row justify="space-between" align="middle" gutter={[12, 12]}>
 				<Col>
 					<Title level={3} style={{ margin: 0 }}>دوراتي</Title>
@@ -709,6 +741,50 @@ export default function TeacherCoursesPage() {
 							) : null
 						}
 					</Form.Item>
+
+					{editingCourse ? (
+						<>
+							<Title level={5} style={{ marginTop: 12 }}>الكوبون الخاص بالدورة</Title>
+							<Form.Item name="couponCode" label="رمز الكوبون">
+								<Input placeholder="مثال: SAVE20" />
+							</Form.Item>
+
+							<Row gutter={12}>
+								<Col span={12}>
+									<Form.Item name="couponDiscountType" label="نوع الخصم">
+										<Select
+											options={[
+												{ value: "percentage", label: "نسبة مئوية" },
+												{ value: "fixed", label: "مبلغ ثابت" },
+											]}
+										/>
+									</Form.Item>
+								</Col>
+								<Col span={12}>
+									<Form.Item name="couponAmount" label="قيمة الخصم">
+										<InputNumber min={1} style={{ width: "100%" }} />
+									</Form.Item>
+								</Col>
+							</Row>
+
+							<Row gutter={12}>
+								<Col span={12}>
+									<Form.Item name="couponStartsAt" label="تاريخ البداية (اختياري)">
+										<Input placeholder="2026-04-24" />
+									</Form.Item>
+								</Col>
+								<Col span={12}>
+									<Form.Item name="couponExpiresAt" label="تاريخ الانتهاء">
+										<Input placeholder="2026-05-24" />
+									</Form.Item>
+								</Col>
+							</Row>
+
+							<Form.Item name="couponIsActive" label="الكوبون فعال" valuePropName="checked">
+								<Switch />
+							</Form.Item>
+						</>
+					) : null}
 				</Form>
 			</Modal>
 
@@ -736,7 +812,14 @@ export default function TeacherCoursesPage() {
 						<Spin />
 					</div>
 				) : (
-					<Space orientation="vertical" size={12} style={{ width: "100%" }}>
+					<Space orientation="vertical" size={12} style={{ width: "100%" }}>					{/* 🔒 رسالة توضيحية */}
+					<Alert
+						type="info"
+						showIcon
+						message="إدارة الدروس"
+						description="يمكنك إضافة دروس بفيديوهات YouTube أو ملفات PDF. يمكن أيضاً إضافة صور مصغرة ووضع درس كـ preview مجاني."
+						style={{ marginBottom: 8 }}
+					/>
 						{lessons.map((lesson) => {
 							const lessonId = getLessonId(lesson);
 							return (

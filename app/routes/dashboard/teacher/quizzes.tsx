@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   App,
+  Checkbox,
   Button,
   Card,
   Empty,
@@ -17,7 +18,7 @@ import {
   Tag,
   Typography,
 } from "antd";
-import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
+import { MinusCircleOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { apiFetch } from "~/utils/api";
 import { useAuth } from "~/context/auth";
 
@@ -37,7 +38,7 @@ interface CourseItem {
 interface QuizQuestion {
   text: string;
   options: string[];
-  correctIndex: number;
+  correctIndices: number[];
   explanation?: string;
 }
 
@@ -57,17 +58,24 @@ interface QuizFormValues {
   order: number;
   passingScore: number;
   isPublished: boolean;
-  questionsJson: string;
+  questions: QuizQuestion[];
 }
 
-const DEFAULT_QUESTIONS_JSON = JSON.stringify([
+const DEFAULT_QUESTIONS: QuizQuestion[] = [
   {
     text: "ما هو العنصر الأساسي في إنشاء React Component؟",
     options: ["className", "props", "querySelector", "middleware"],
-    correctIndex: 1,
+    correctIndices: [1],
     explanation: "props هي الطريقة الأساسية لتمرير البيانات إلى المكون.",
   },
-], null, 2);
+];
+
+const normalizeQuestionForForm = (question: QuizQuestion) => ({
+  text: question.text,
+  options: question.options.length >= 2 ? question.options : ["", ""],
+  correctIndices: question.correctIndices,
+  explanation: question.explanation || "",
+});
 
 const getInstructorId = (instructor: unknown) => {
   if (!instructor) {
@@ -87,66 +95,6 @@ const getInstructorId = (instructor: unknown) => {
   }
 
   return "";
-};
-
-const parseQuestionsJson = (value: string): QuizQuestion[] => {
-  let parsed: unknown;
-
-  try {
-    parsed = JSON.parse(value);
-  } catch {
-    throw new Error("صيغة الأسئلة ليست JSON صالح");
-  }
-
-  if (!Array.isArray(parsed) || parsed.length === 0) {
-    throw new Error("يجب إدخال مصفوفة تحتوي سؤالًا واحدًا على الأقل");
-  }
-
-  return parsed.map((item, index) => {
-    if (typeof item !== "object" || item === null) {
-      throw new Error(`السؤال رقم ${index + 1} غير صالح`);
-    }
-
-    const question = item as Record<string, unknown>;
-    const text = typeof question.text === "string" ? question.text.trim() : "";
-
-    if (text.length < 5) {
-      throw new Error(`نص السؤال رقم ${index + 1} يجب أن يكون 5 أحرف على الأقل`);
-    }
-
-    if (!Array.isArray(question.options) || question.options.length !== 4) {
-      throw new Error(`السؤال رقم ${index + 1} يجب أن يحتوي 4 خيارات`);
-    }
-
-    const options = question.options.map((option, optionIndex) => {
-      if (typeof option !== "string" || !option.trim()) {
-        throw new Error(`الخيار ${optionIndex + 1} في السؤال رقم ${index + 1} فارغ`);
-      }
-
-      return option.trim();
-    });
-
-    if (!Number.isInteger(question.correctIndex)) {
-      throw new Error(`correctIndex في السؤال رقم ${index + 1} يجب أن يكون رقمًا صحيحًا`);
-    }
-
-    const correctIndex = question.correctIndex as number;
-    if (correctIndex < 0 || correctIndex > 3) {
-      throw new Error(`correctIndex في السؤال رقم ${index + 1} يجب أن يكون بين 0 و 3`);
-    }
-
-    const explanation =
-      typeof question.explanation === "string" && question.explanation.trim()
-        ? question.explanation.trim()
-        : undefined;
-
-    return {
-      text,
-      options,
-      correctIndex,
-      ...(explanation ? { explanation } : {}),
-    };
-  });
 };
 
 export default function TeacherQuizzesPage() {
@@ -260,7 +208,7 @@ export default function TeacherQuizzesPage() {
       order: quizzes.length,
       passingScore: 70,
       isPublished: false,
-      questionsJson: DEFAULT_QUESTIONS_JSON,
+      questions: DEFAULT_QUESTIONS.map(normalizeQuestionForForm) as QuizQuestion[],
     });
     setModalOpen(true);
   };
@@ -273,7 +221,16 @@ export default function TeacherQuizzesPage() {
       order: quiz.order,
       passingScore: quiz.passingScore,
       isPublished: quiz.isPublished,
-      questionsJson: JSON.stringify(quiz.questions, null, 2),
+      questions: quiz.questions.map((question) => ({
+        text: question.text,
+        options: question.options.length >= 2 ? question.options : ["", ""],
+        correctIndices: question.correctIndices?.length
+          ? question.correctIndices
+          : typeof (question as { correctIndex?: number }).correctIndex === "number"
+            ? [(question as { correctIndex: number }).correctIndex]
+            : [],
+        explanation: question.explanation || "",
+      })) as QuizQuestion[],
     });
     setModalOpen(true);
   };
@@ -290,13 +247,36 @@ export default function TeacherQuizzesPage() {
       return;
     }
 
-    let questions: QuizQuestion[];
-    try {
-      questions = parseQuestionsJson(values.questionsJson);
-    } catch (error) {
-      message.error(error instanceof Error ? error.message : "صيغة الأسئلة غير صحيحة");
+    if (!values.questions || values.questions.length === 0) {
+      message.error("أضف سؤالًا واحدًا على الأقل");
       return;
     }
+
+    const questions = values.questions.map((question, index) => {
+      const text = question.text?.trim();
+      if (!text) {
+        throw new Error(`نص السؤال رقم ${index + 1} مطلوب`);
+      }
+
+      if (!Array.isArray(question.options) || question.options.length < 2) {
+        throw new Error(`السؤال رقم ${index + 1} يجب أن يحتوي خيارين على الأقل`);
+      }
+
+      const correctIndices = [...new Set(question.correctIndices || [])].filter(
+        (value) => Number.isInteger(value) && value >= 0 && value < question.options.length,
+      );
+
+      if (correctIndices.length === 0) {
+        throw new Error(`السؤال رقم ${index + 1} يجب أن يحتوي إجابة صحيحة واحدة على الأقل`);
+      }
+
+      return {
+        text,
+        options: question.options.map((option) => option.trim()),
+        correctIndices,
+        ...(question.explanation?.trim() ? { explanation: question.explanation.trim() } : {}),
+      };
+    });
 
     const payload: Record<string, unknown> = {
       title: values.title,
@@ -483,7 +463,7 @@ export default function TeacherQuizzesPage() {
             order: 0,
             passingScore: 70,
             isPublished: false,
-            questionsJson: DEFAULT_QUESTIONS_JSON,
+            questions: DEFAULT_QUESTIONS.map(normalizeQuestionForForm) as QuizQuestion[],
           }}
         >
           <Form.Item
@@ -525,14 +505,126 @@ export default function TeacherQuizzesPage() {
             </Form.Item>
           </Space>
 
-          <Form.Item
-            name="questionsJson"
-            label="الأسئلة (JSON)"
-            rules={[{ required: true, message: "أدخل الأسئلة بصيغة JSON" }]}
-            extra="كل سؤال يجب أن يحتوي: text, options[4], correctIndex (0-3), explanation اختياري"
-          >
-            <TextArea rows={14} spellCheck={false} />
-          </Form.Item>
+          <Form.List name="questions">
+            {(fields, { add, remove, move }) => (
+              <Space direction="vertical" size={12} style={{ width: "100%" }}>
+                {fields.map((field, index) => (
+                  <Card
+                    key={field.key}
+                    size="small"
+                    title={`السؤال ${index + 1}`}
+                    extra={
+                      <Space>
+                        <Button
+                          type="text"
+                          disabled={index === 0}
+                          onClick={() => move(index, index - 1)}
+                        >
+                          ↑
+                        </Button>
+                        <Button
+                          type="text"
+                          disabled={index === fields.length - 1}
+                          onClick={() => move(index, index + 1)}
+                        >
+                          ↓
+                        </Button>
+                        <Button
+                          type="text"
+                          danger
+                          icon={<MinusCircleOutlined />}
+                          onClick={() => remove(field.name)}
+                        >
+                          حذف
+                        </Button>
+                      </Space>
+                    }
+                  >
+                    <Form.Item
+                      name={[field.name, "text"]}
+                      label="نص السؤال"
+                      rules={[{ required: true, message: "نص السؤال مطلوب" }]}
+                    >
+                      <Input.TextArea rows={2} />
+                    </Form.Item>
+
+                    <Form.List name={[field.name, "options"]}>
+                      {(optionFields, { add: addOption, remove: removeOption }) => (
+                        <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                          {optionFields.map((optionField, optionIndex) => (
+                            <Space key={optionField.key} style={{ width: "100%" }} align="baseline">
+                              <Form.Item
+                                name={optionField.name}
+                                rules={[{ required: true, message: "الخيار مطلوب" }]}
+                                style={{ flex: 1, marginBottom: 0 }}
+                              >
+                                <Input placeholder={`الخيار ${optionIndex + 1}`} />
+                              </Form.Item>
+                              {optionFields.length > 2 ? (
+                                <Button
+                                  type="text"
+                                  danger
+                                  icon={<MinusCircleOutlined />}
+                                  onClick={() => removeOption(optionField.name)}
+                                />
+                              ) : null}
+                            </Space>
+                          ))}
+                          <Button
+                            type="dashed"
+                            icon={<PlusOutlined />}
+                            onClick={() => addOption("")}
+                          >
+                            إضافة خيار
+                          </Button>
+                        </Space>
+                      )}
+                    </Form.List>
+
+                    <Form.Item
+                      noStyle
+                      shouldUpdate={(prevValues, currentValues) =>
+                        prevValues.questions?.[field.name]?.options !== currentValues.questions?.[field.name]?.options
+                      }
+                    >
+                      {() => {
+                        const optionValues = form.getFieldValue(["questions", field.name, "options"]) as string[] | undefined;
+                        const checkboxOptions = (optionValues ?? []).map((option, optionIndex) => ({
+                          label: option?.trim() || `الخيار ${optionIndex + 1}`,
+                          value: optionIndex,
+                        }));
+
+                        return (
+                          <Form.Item
+                            name={[field.name, "correctIndices"]}
+                            label="الإجابات الصحيحة"
+                            rules={[{ required: true, message: "اختر إجابة صحيحة واحدة على الأقل" }]}
+                          >
+                            <Checkbox.Group options={checkboxOptions} />
+                          </Form.Item>
+                        );
+                      }}
+                    </Form.Item>
+
+                    <Form.Item
+                      name={[field.name, "explanation"]}
+                      label="الشرح (اختياري)"
+                    >
+                      <Input.TextArea rows={2} />
+                    </Form.Item>
+                  </Card>
+                ))}
+
+                <Button
+                  type="dashed"
+                  icon={<PlusOutlined />}
+                  onClick={() => add({ text: "", options: ["", ""], correctIndices: [0] })}
+                >
+                  إضافة سؤال
+                </Button>
+              </Space>
+            )}
+          </Form.List>
         </Form>
       </Modal>
     </Space>

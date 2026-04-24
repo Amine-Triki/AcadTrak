@@ -26,6 +26,7 @@ export default [
   route("login",    "routes/login.tsx"),
   route("register", "routes/register.tsx"),
   route("payment/:courseId", "routes/payment.tsx"),
+  route("instructor/:id", "routes/instructor/[id].tsx"),
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   // 📊 لوحة التحكم — Sidebar جانبي
@@ -36,6 +37,7 @@ export default [
     route("dashboard/student",                "routes/dashboard/student/index.tsx"),
     route("dashboard/student/courses",        "routes/dashboard/student/courses.tsx"),
     route("dashboard/student/courses/:id",    "routes/dashboard/student/course-detail.tsx"),
+    route("dashboard/student/courses/:courseId/quizzes/:quizId", "routes/dashboard/student/course-quiz.tsx"),
     route("dashboard/student/courses/:id/discussions", "routes/dashboard/student/course-discussions.tsx"),
     route("dashboard/student/grades",         "routes/dashboard/student/grades.tsx"),
     route("dashboard/student/upgrade-to-teacher", "routes/dashboard/student/upgrade-to-teacher.tsx"),

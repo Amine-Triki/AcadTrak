@@ -76,6 +76,7 @@ interface CourseCardItem {
   description: string;
   category: string;
   instructor: string;
+  instructorId?: string; // معرف الأستاذ
   rating: number;
   students: number;
   price: number;
@@ -148,6 +149,13 @@ const getInstructorLabel = (
   return instructor.userName?.trim() || "AcadTrak Instructor";
 };
 
+const getInstructorId = (instructor: ApiCourse["instructor"]) => {
+  if (typeof instructor === "string") {
+    return instructor;
+  }
+  return instructor.id || instructor._id || "";
+};
+
 const getCategoryColor = (category: string) => {
   const hash = category
     .split("")
@@ -162,6 +170,7 @@ const mapApiCourse = (course: ApiCourse): CourseCardItem => ({
   description: course.description,
   category: getCategoryLabel(course.category, course.categoryDetails),
   instructor: getInstructorLabel(course.instructor, course.instructorDetails),
+  instructorId: getInstructorId(course.instructor),
   rating: Number((course.averageRating ?? 0).toFixed(1)),
   students: course.totalRatingsCount ?? 0,
   price: course.type === "free" ? 0 : course.effectivePrice ?? course.price,
@@ -569,7 +578,13 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                         marginBottom: 8,
                       }}
                     >
-                      {course.instructor}
+                      {course.instructorId ? (
+                        <Link to={`/instructor/${course.instructorId}`} style={{ color: "inherit" }}>
+                          {course.instructor}
+                        </Link>
+                      ) : (
+                        course.instructor
+                      )}
                     </Text>
 
                     <div

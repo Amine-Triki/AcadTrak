@@ -13,6 +13,7 @@ import {
   UploadOutlined,
   FileTextOutlined,
   MailOutlined,
+  HomeOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "~/context/auth";
 import { apiFetch } from "~/utils/api";
@@ -310,6 +311,15 @@ export default function DashboardLayout() {
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
             style={{ fontSize: token.fontSizeLG }}
+          />
+
+          {/* زر العودة للصفحة الرئيسية */}
+          <Button
+            type="text"
+            icon={<HomeOutlined />}
+            onClick={() => window.open("/", "_blank")}
+            style={{ fontSize: token.fontSizeLG }}
+            title="الذهاب إلى الصفحة الرئيسية"
           />
 
           <Space size={token.marginSM}>

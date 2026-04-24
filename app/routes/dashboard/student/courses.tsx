@@ -17,6 +17,13 @@ interface EnrollmentCourse {
 	status?: "draft" | "published";
 	price?: number;
 	isHidden?: boolean;
+	instructor?: {
+		id?: string;
+		_id?: string;
+		firstName?: string;
+		lastName?: string;
+		userName?: string;
+	};
 }
 
 interface EnrollmentItem {
@@ -126,8 +133,25 @@ export default function StudentCoursesPage() {
 										<Text strong>السعر المدفوع: {item.paidPrice} USD</Text>
 										{item.couponCode ? <Text type="secondary">كوبون: {item.couponCode}</Text> : null}
 
+										{/* معلومات الأستاذ */}
+										{normalized?.instructor && (
+											<div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid #f0f0f0" }}>
+												<Text type="secondary">الأستاذ: </Text>
+												<Link 
+													to={`/instructor/${normalized.instructor.id || normalized.instructor._id}`}
+													style={{ marginLeft: 8 }}
+												>
+													<Text>
+														{normalized.instructor.firstName && normalized.instructor.lastName
+															? `${normalized.instructor.firstName} ${normalized.instructor.lastName}`
+															: normalized.instructor.userName || "أستاذ"}
+													</Text>
+												</Link>
+											</div>
+										)}
+
 										{courseId ? (
-											<Space>
+											<Space style={{ marginTop: 8 }}>
 												<Link to={`/dashboard/student/courses/${courseId}`}>تفاصيل الكورس</Link>
 												<Link to={`/dashboard/student/courses/${courseId}/discussions`}>
 													النقاشات
