@@ -560,7 +560,7 @@ export default function TeacherCoursesPage() {
 	};
 
 	return (
-		<Space orientation="vertical" size={16} style={{ width: "100%" }}>
+		<Space direction="vertical" size={16} style={{ width: "100%" }}>
 			{/* 🔒 رسالة توضيحية عن صلاحيات الأستاذ */}
 			<Alert
 				type="info"
@@ -645,7 +645,7 @@ export default function TeacherCoursesPage() {
 									</Popconfirm>,
 								]}
 							>
-								<Space orientation="vertical" size={8} style={{ width: "100%" }}>
+								<Space direction="vertical" size={8} style={{ width: "100%" }}>
 									<Text>{course.description}</Text>
 									<Text type="secondary">
 										Category: {course.categoryDetails?.name || course.category}
@@ -835,7 +835,7 @@ export default function TeacherCoursesPage() {
 						<Spin />
 					</div>
 				) : (
-					<Space orientation="vertical" size={12} style={{ width: "100%" }}>					{/* 🔒 رسالة توضيحية */}
+					<Space direction="vertical" size={12} style={{ width: "100%" }}>					{/* 🔒 رسالة توضيحية */}
 					<Alert
 						type="info"
 						showIcon
@@ -875,7 +875,7 @@ export default function TeacherCoursesPage() {
 										</Space>
 									}
 								>
-									<Space orientation="vertical" size={10} style={{ width: "100%" }}>
+									<Space direction="vertical" size={10} style={{ width: "100%" }}>
 										{lesson.description ? <Text>{lesson.description}</Text> : <Text type="secondary">بدون وصف</Text>}
 
 										{lesson.thumbnail?.url ? (
@@ -964,7 +964,7 @@ export default function TeacherCoursesPage() {
 
 					{editingLesson?.video?.youtubeId ? (
 						<Form.Item label="إدارة الفيديو الحالي">
-							<Space orientation="vertical" size={6} style={{ width: "100%" }}>
+							<Space direction="vertical" size={6} style={{ width: "100%" }}>
 								<Text type="secondary">
 									الفيديو الحالي: {editingLesson.video.youtubeId}
 								</Text>
@@ -1008,7 +1008,7 @@ export default function TeacherCoursesPage() {
 							<Button icon={<UploadOutlined />}>اختر ملف PDF</Button>
 						</Upload>
 						{editingLesson?.pdf?.url ? (
-							<Space orientation="vertical" size={6} style={{ width: "100%", marginTop: 8 }}>
+							<Space direction="vertical" size={6} style={{ width: "100%", marginTop: 8 }}>
 								<Button type="link" icon={<FilePdfOutlined />} href={editingLesson.pdf.url} target="_blank">
 									عرض ملف PDF الحالي
 								</Button>
@@ -1039,7 +1039,7 @@ export default function TeacherCoursesPage() {
 							<Button icon={<UploadOutlined />}>اختر صورة</Button>
 						</Upload>
 						{editingLesson?.thumbnail?.url ? (
-							<Space orientation="vertical" size={6} style={{ width: "100%", marginTop: 8 }}>
+							<Space direction="vertical" size={6} style={{ width: "100%", marginTop: 8 }}>
 								<Image
 									src={editingLesson.thumbnail.url}
 									alt="thumbnail"

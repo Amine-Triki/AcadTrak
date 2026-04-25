@@ -14,8 +14,14 @@ const { Title, Paragraph, Text } = Typography;
 export default function UpgradeToTeacherPage() {
   const navigate = useNavigate();
   const { message } = App.useApp();
-  const { setUser } = useAuth();
+  const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(false);
+
+  // ✅ إذا كان الأستاذ بالفعل، نُعيد توجيهه للـ dashboard مباشرة
+  if (user?.role === "teacher") {
+    navigate("/dashboard/teacher", { replace: true });
+    return null;
+  }
 
   const benefits = [
     "Create and manage your own courses",

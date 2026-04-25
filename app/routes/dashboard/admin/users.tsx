@@ -8,11 +8,13 @@ import {
 	Switch,
 	Table,
 	Tag,
+	Tooltip,
 	Typography,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { DeleteOutlined, ReloadOutlined, RollbackOutlined } from "@ant-design/icons";
 import { apiFetch } from "~/utils/api";
+import { useAuth } from "~/context/auth";
 
 const { Title, Text } = Typography;
 
@@ -29,6 +31,7 @@ type UserRow = {
 
 export default function AdminUsersPage() {
 	const { message } = App.useApp();
+	const { user: currentUser } = useAuth();
 	const [loading, setLoading] = useState(false);
 	const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 	const [includeDeleted, setIncludeDeleted] = useState(true);
@@ -108,16 +111,33 @@ export default function AdminUsersPage() {
 		{
 			title: "Actions",
 			key: "actions",
-			render: (_, row) => (
-				row.deletedAt ? (
-					<Button
-						icon={<RollbackOutlined />}
-						loading={actionLoadingId === row.id}
-						onClick={() => void runAction(row, "restore")}
-					>
-						Restore
-					</Button>
-				) : (
+			render: (_, row) => {
+				// ✅ لا يمكن حذف حسابات Admin أو حذف النفس
+				const isProtected = row.role === "admin" || row.id === currentUser?.id;
+
+				if (row.deletedAt) {
+					return (
+						<Button
+							icon={<RollbackOutlined />}
+							loading={actionLoadingId === row.id}
+							onClick={() => void runAction(row, "restore")}
+						>
+							Restore
+						</Button>
+					);
+				}
+
+				if (isProtected) {
+					return (
+						<Tooltip title={row.role === "admin" ? "Admin accounts cannot be deleted" : "You cannot delete your own account"}>
+							<Button danger icon={<DeleteOutlined />} disabled>
+								Delete
+							</Button>
+						</Tooltip>
+					);
+				}
+
+				return (
 					<Popconfirm
 						title="Soft delete this user?"
 						onConfirm={() => void runAction(row, "delete")}
@@ -128,8 +148,8 @@ export default function AdminUsersPage() {
 							Delete
 						</Button>
 					</Popconfirm>
-				)
-			),
+				);
+			},
 		},
 	];
 

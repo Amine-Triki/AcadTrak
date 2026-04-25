@@ -9,6 +9,7 @@ import {
   CreditCardOutlined, SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { apiFetch } from "~/utils/api";
+import { useAuth } from "~/context/auth";
 
 const { Title, Text } = Typography;
 
@@ -34,6 +35,10 @@ export default function PaymentPage() {
   const { courseId }      = useParams<{ courseId: string }>();
   const [searchParams]    = useSearchParams();
   const navigate          = useNavigate();
+  const { user }          = useAuth();
+
+  // ✅ بعد التسجيل، وجّه حسب role — الأستاذ المسجل كطالب يذهب لـ student/courses أيضاً
+  const enrolledRedirect = () => navigate("/dashboard/student/courses");
 
   const [loading, setLoading]           = useState(true);
   const [paying,  setPaying]            = useState<"konnect" | null>(null);
@@ -75,7 +80,7 @@ export default function PaymentPage() {
         throw new Error(data?.message || "فشل التسجيل");
       }
       message.success("تم التسجيل بنجاح! 🎉");
-      navigate("/dashboard/student/courses");
+      enrolledRedirect();
     } catch (e) {
       message.error(e instanceof Error ? e.message : "فشل التسجيل");
     } finally {
@@ -114,7 +119,7 @@ export default function PaymentPage() {
       // كوبون 100% → مسجّل مباشرة
       if (data?.enrollmentId) {
         message.success(data.message || "تم التسجيل مجاناً! 🎉");
-        navigate("/dashboard/student/courses");
+        enrolledRedirect();
         return;
       }
 
@@ -143,7 +148,7 @@ export default function PaymentPage() {
           message="تم إرسال عملية الدفع بنجاح"
           description="يجري الآن تأكيد العملية وتفعيل التسجيل. إذا لم يظهر الكورس مباشرة، حدّث الصفحة بعد لحظات."
           action={
-            <Button type="primary" onClick={() => navigate("/dashboard/student/courses")}>
+            <Button type="primary" onClick={() => enrolledRedirect()}>
               الذهاب إلى دوراتي
             </Button>
           }

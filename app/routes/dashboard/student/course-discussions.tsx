@@ -112,11 +112,15 @@ export default function CourseDiscussionsPage() {
   const [answerModalOpen, setAnswerModalOpen] = useState(false);
   const [answerTarget, setAnswerTarget] = useState<DiscussionItem | null>(null);
 
-  const canAskQuestion = user?.role === "student";
-  const canAnswer = user?.role === "teacher" || user?.role === "admin";
+  // ✅ الأستاذ المسجل في دورة أستاذ آخر يمكنه طرح سؤال أيضاً
+  // الـ backend يتحقق من الـ enrollment، هنا نعرض الزر لأي مستخدم مسجل
+  const canAskQuestion = user?.role === "student" || user?.role === "teacher";
+  // ✅ فقط الأستاذ يُجيب — Admin لا يجيب
+  const canAnswer = user?.role === "teacher";
 
   const isQuestionOwner = (discussion: DiscussionItem) => {
-    return user?.role === "student" && user.id === discussion.student.id;
+    // ✅ صاحب السؤال يمكنه تعديله وحذفه بصرف النظر عن الـ role
+    return user?.id === discussion.student.id;
   };
 
   const fetchDiscussions = async (targetCourseId: string) => {

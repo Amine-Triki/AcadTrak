@@ -29,7 +29,8 @@ type MenuItem = MenuProps["items"];
 const ROLE_PATHS: Record<string, string[]> = {
   student: ["/dashboard/student"],
   teacher: ["/dashboard/teacher", "/dashboard/student"],
-  admin:   ["/dashboard/admin", "/dashboard/teacher", "/dashboard/student"],
+  // ✅ Admin لا يدخل /dashboard/teacher لأنه لا ينشئ دورات
+  admin:   ["/dashboard/admin", "/dashboard/student"],
 };
 
 function hasAccess(role: string, pathname: string): boolean {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import {
   App,
@@ -215,7 +215,7 @@ export async function clientLoader(): Promise<CoursesLoaderData> {
 export default function CoursesPage({ loaderData }: Route.ComponentProps) {
   const { message } = App.useApp();
   const navigate = useNavigate();
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
   const allCourses = useMemo(
     () => (loaderData?.courses ?? []).map(mapApiCourse),
     [loaderData?.courses],
@@ -226,10 +226,6 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
   const [sortBy, setSortBy] = useState("popular");
   const [page, setPage] = useState(1);
   const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(null);
-
-  useEffect(() => {
-    void refreshUser();
-  }, [refreshUser]);
 
   const categories = useMemo(() => {
     const uniqueCategories = new Set(allCourses.map((course) => course.category));

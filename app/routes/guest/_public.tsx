@@ -1,5 +1,5 @@
 // app/routes/guest/_public.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
 import { Layout, Menu, Button, Drawer, Grid, theme } from "antd";
 import { BookOutlined, MenuOutlined, CloseOutlined } from "@ant-design/icons";
@@ -24,12 +24,8 @@ export default function PublicLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const screens = useBreakpoint();
-  const { user, isAuthenticated, setUser, refreshUser } = useAuth();
-  const { token } = theme.useToken(); // ✅ قيم الـ Theme
-
-  useEffect(() => {
-    void refreshUser();
-  }, [refreshUser]);
+  const { user, isAuthenticated, setUser } = useAuth();
+  const { token } = theme.useToken();
 
   // screens.md = true إذا العرض >= 768px
   const isMobile = !screens.md;

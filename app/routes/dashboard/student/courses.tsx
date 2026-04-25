@@ -77,7 +77,7 @@ export default function StudentCoursesPage() {
 	);
 
 	return (
-		<Space orientation="vertical" size={16} style={{ width: "100%" }}>
+		<Space direction="vertical" size={16} style={{ width: "100%" }}>
 			<Row justify="space-between" align="middle">
 				<Col>
 					<Title level={3} style={{ margin: 0 }}>الدورات المشتراة</Title>
@@ -127,7 +127,7 @@ export default function StudentCoursesPage() {
 										</Space>
 									}
 								>
-									<Space orientation="vertical" size={8} style={{ width: "100%" }}>
+									<Space direction="vertical" size={8} style={{ width: "100%" }}>
 										<Text>{normalized?.description || "لا يوجد وصف"}</Text>
 										<Text type="secondary">تاريخ التسجيل: {new Date(item.enrolledAt).toLocaleDateString()}</Text>
 										<Text strong>السعر المدفوع: {item.paidPrice} USD</Text>
