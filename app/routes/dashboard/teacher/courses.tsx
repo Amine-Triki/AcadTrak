@@ -291,16 +291,18 @@ export default function TeacherCoursesPage() {
 				body.price = values.price;
 			}
 
-			if (editingCourse && values.couponCode?.trim() && values.couponDiscountType && values.couponAmount && values.couponExpiresAt) {
+			// ✅ Bug 1 Fix: إرسال الكوبون عند الإنشاء والتعديل — بدون شرط editingCourse
+			if (values.type === "paid" && values.couponCode?.trim() && values.couponDiscountType && values.couponAmount && values.couponExpiresAt) {
 				body.coupon = {
-					code: values.couponCode.trim(),
+					code: values.couponCode.trim().toUpperCase(),
 					discountType: values.couponDiscountType,
-					amount: values.couponAmount,
+					amount: Number(values.couponAmount),
 					...(values.couponStartsAt ? { startsAt: values.couponStartsAt } : {}),
 					expiresAt: values.couponExpiresAt,
 					isActive: values.couponIsActive ?? true,
 				};
 			} else if (editingCourse && !values.couponCode?.trim()) {
+				// عند التعديل فقط: حذف الكوبون إذا تم مسح الكود
 				body.coupon = null;
 			}
 

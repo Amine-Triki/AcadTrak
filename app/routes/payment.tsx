@@ -91,11 +91,24 @@ export default function PaymentPage() {
   const applyCoupon = async () => {
     if (!courseId || !coupon.trim()) return;
     try {
-      const res  = await apiFetch(`/api/courses/${courseId}?couponCode=${coupon.trim()}`);
-      const data = (await res.json().catch(() => null)) as { course?: CourseItem } | null;
-      if (!res.ok || !data?.course) throw new Error("كوبون غير صالح");
-      setEffective(data.course.effectivePrice ?? data.course.price);
-      message.success("تم تطبيق الكوبون ✅");
+      const res  = await apiFetch(`/api/courses/${courseId}?couponCode=${encodeURIComponent(coupon.trim())}`);
+      const data = (await res.json().catch(() => null)) as { course?: CourseItem; message?: string } | null;
+
+      // ✅ Bug 3 Fix: الـ backend يُرجع 400 عند كوبون خاطئ
+      if (!res.ok) {
+        throw new Error(data?.message || "كوبون غير صالح أو منتهي الصلاحية");
+      }
+
+      if (!data?.course) throw new Error("فشل التحقق من الكوبون");
+
+      const newPrice = data.course.effectivePrice ?? data.course.price;
+      setEffective(newPrice);
+
+      if (newPrice < (course?.price ?? Infinity)) {
+        message.success(newPrice === 0 ? "كوبون 100%! التسجيل مجاني 🎉" : `تم تطبيق الخصم ✅ السعر الجديد: ${newPrice} USD`);
+      } else {
+        message.warning("الكوبون صالح لكن لم يُطبَّق خصم");
+      }
     } catch (e) {
       message.error(e instanceof Error ? e.message : "كوبون غير صالح");
     }

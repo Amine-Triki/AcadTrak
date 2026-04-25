@@ -314,26 +314,35 @@ export default function StudentCourseDetailPage() {
                   >
                     <Space direction="vertical" size={10} style={{ width: "100%" }}>
                       <Text>{lesson.description || "لا يوجد وصف"}</Text>
+
                       {!isEnrolled && !lesson.isPreview ? (
-                        <Text type="secondary">هذا الدرس متاح بعد التسجيل في الدورة.</Text>
-                      ) : null}
+                        // ✅ المحتوى مخفي كليًا — لا أزرار للزائر غير المسجل
+                        <Alert
+                          type="warning"
+                          showIcon
+                          message="هذا الدرس متاح بعد التسجيل في الدورة"
+                        />
+                      ) : (
+                        // ✅ يظهر المحتوى فقط للمسجلين أو دروس المعاينة
+                        <>
+                          {lesson.video?.youtubeId ? (
+                            <Button
+                              type="link"
+                              icon={<YoutubeOutlined />}
+                              href={`https://www.youtube.com/watch?v=${lesson.video.youtubeId}`}
+                              target="_blank"
+                            >
+                              مشاهدة الفيديو
+                            </Button>
+                          ) : null}
 
-                      {lesson.video?.youtubeId ? (
-                        <Button
-                          type="link"
-                          icon={<YoutubeOutlined />}
-                          href={`https://www.youtube.com/watch?v=${lesson.video.youtubeId}`}
-                          target="_blank"
-                        >
-                          مشاهدة الفيديو
-                        </Button>
-                      ) : null}
-
-                      {lesson.pdf?.url ? (
-                        <Button type="link" icon={<FilePdfOutlined />} href={lesson.pdf.url} target="_blank">
-                          فتح PDF
-                        </Button>
-                      ) : null}
+                          {lesson.pdf?.url ? (
+                            <Button type="link" icon={<FilePdfOutlined />} href={lesson.pdf.url} target="_blank">
+                              فتح PDF
+                            </Button>
+                          ) : null}
+                        </>
+                      )}
                     </Space>
                   </Card>
                 </Col>
