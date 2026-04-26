@@ -1,220 +1,193 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import {
-  App,
-  Button,
-  Alert,
-  Card,
-  Col,
-  Row,
-  Space,
-  Spin,
-  Tag,
-  Typography,
+  App, Alert, Button, Card, Col, Progress,
+  Row, Space, Spin, Tag, Tooltip, Typography,
 } from "antd";
 import {
-  FilePdfOutlined,
-  MessageOutlined,
-  ReloadOutlined,
-  YoutubeOutlined,
-  FileTextOutlined,
-  ClockCircleOutlined,
+  CheckCircleOutlined, ClockCircleOutlined,
+  FilePdfOutlined, FileTextOutlined,
+  LockOutlined, MessageOutlined,
+  ReloadOutlined, TrophyOutlined, YoutubeOutlined,
 } from "@ant-design/icons";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
 
-type CourseType = "free" | "paid";
-type CourseStatus = "draft" | "published";
-
 interface CourseItem {
-  id: string;
-  title: string;
-  description: string;
-  type: CourseType;
-  status: CourseStatus;
-  price: number;
-  effectivePrice?: number;
-  isHidden: boolean;
-  duration?: number; // مدة الكورس بالساعات
-  instructor?: {
-    id?: string;
-    _id?: string;
-    firstName?: string;
-    lastName?: string;
-    userName?: string;
-  };
-}
-
-interface LessonAsset {
-  url: string;
-  publicId: string;
-  bytes?: number;
-}
-
-interface LessonVideo {
-  youtubeId: string;
-  duration?: number;
+  id: string; title: string; description: string;
+  type: "free" | "paid"; status: "draft" | "published";
+  price: number; effectivePrice?: number; isHidden: boolean; duration?: number;
+  instructor?: { id?: string; _id?: string; firstName?: string; lastName?: string; userName?: string };
 }
 
 interface LessonItem {
-  _id?: string;
-  id?: string;
-  title: string;
-  description?: string;
-  order: number;
-  video?: LessonVideo;
-  pdf?: LessonAsset;
-  thumbnail?: LessonAsset;
-  isPreview: boolean;
-  isPublished: boolean;
-  type?: "lesson"; // لتمييز الدروس
+  _id?: string; id?: string; title: string; description?: string; order: number;
+  video?: { youtubeId: string; duration?: number };
+  pdf?: { url: string; publicId: string };
+  isPreview: boolean; isPublished: boolean;
 }
 
 interface QuizItem {
-  _id?: string;
-  id?: string;
-  title: string;
-  type: "quiz" | "final_exam";
-  order: number;
-  questions?: Array<{
-    text: string;
-    options: string[];
-    correctIndex: number;
-    explanation?: string;
-  }>;
-  passingScore?: number;
-  isPublished: boolean;
+  _id?: string; id?: string; title: string;
+  type: "quiz" | "final_exam"; order: number;
+  passingScore?: number; isPublished: boolean;
+  questions?: Array<{ text: string }>;
 }
 
-interface ContentItem {
-  type: "lesson" | "quiz" | "final_exam";
-  order: number;
-  data: LessonItem | QuizItem;
+interface ProgressItem {
+  id: string; type: "lesson" | "quiz"; order: number;
+  title: string; isPreview?: boolean; completed: boolean; isUnlocked: boolean;
 }
 
-const getLessonId = (lesson: LessonItem) => lesson.id || lesson._id || `${lesson.title}-${lesson.order}`;
+interface CourseProgressData {
+  progressPct: number; completedItems: number; totalItems: number;
+  canAccessFinalExam: boolean;
+  completedLessonIds: string[]; passedQuizIds: string[];
+  items: ProgressItem[];
+}
+
+const getLessonId = (l: LessonItem) => l.id || l._id || "";
+const getQuizId   = (q: QuizItem)   => q.id  || q._id  || "";
 
 export default function StudentCourseDetailPage() {
   const { message } = App.useApp();
-  const params = useParams();
-  const courseId = params.id;
+  const { id: courseId } = useParams<{ id: string }>();
 
-  const [loading, setLoading] = useState(true);
-  const [course, setCourse] = useState<CourseItem | null>(null);
-  const [lessons, setLessons] = useState<LessonItem[]>([]);
-  const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
+  const [loading,    setLoading]    = useState(true);
+  const [markingId,  setMarkingId]  = useState<string | null>(null);
+  const [course,     setCourse]     = useState<CourseItem | null>(null);
+  const [lessons,    setLessons]    = useState<LessonItem[]>([]);
+  const [quizzes,    setQuizzes]    = useState<QuizItem[]>([]);
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [progress,   setProgress]   = useState<CourseProgressData | null>(null);
 
-  const fetchCourseDetails = async () => {
-    if (!courseId) {
-      setLoading(false);
-      message.error("معرف الكورس غير موجود");
-      return;
-    }
-
+  const fetchAll = useCallback(async () => {
+    if (!courseId) { setLoading(false); return; }
     setLoading(true);
     try {
-      const [courseResponse, lessonsResponse, quizzesResponse] = await Promise.all([
+      const [cRes, lRes, qRes, eRes] = await Promise.all([
         apiFetch(`/api/courses/${courseId}`),
         apiFetch(`/api/lessons/course/${courseId}`),
         apiFetch(`/api/quiz/course/${courseId}`),
+        apiFetch("/api/enrollments/my"),
       ]);
+      const [cData, lData, qData, eData] = await Promise.all([
+        cRes.json().catch(() => null), lRes.json().catch(() => null),
+        qRes.json().catch(() => null), eRes.json().catch(() => null),
+      ]);
+      if (!cRes.ok) throw new Error(cData?.message || "فشل تحميل الكورس");
 
-      const coursePayload = (await courseResponse.json().catch(() => null)) as
-        | { course?: CourseItem; message?: string }
-        | null;
-      const lessonsPayload = (await lessonsResponse.json().catch(() => null)) as
-        | { lessons?: LessonItem[]; message?: string }
-        | null;
-      const quizzesPayload = (await quizzesResponse.json().catch(() => null)) as
-        | { quizzes?: QuizItem[]; message?: string }
-        | null;
-
-      if (!courseResponse.ok) {
-        throw new Error(coursePayload?.message || "فشل تحميل بيانات الكورس");
-      }
-
-      if (!lessonsResponse.ok) {
-        throw new Error(lessonsPayload?.message || "فشل تحميل الدروس");
-      }
-
-      const enrollmentsResponse = await apiFetch("/api/enrollments/my");
-      const enrollmentsData = (await enrollmentsResponse.json().catch(() => null)) as
-        | { enrollments?: Array<{ course?: string | { id?: string; _id?: string } }> }
-        | null;
-
-      setCourse(coursePayload?.course ?? null);
-      setLessons(lessonsPayload?.lessons ?? []);
-      setQuizzes(quizzesPayload?.quizzes ?? []);
-      setIsEnrolled(
-        Boolean(
-          enrollmentsData?.enrollments?.some((item) => {
-            const enrolledCourse = item.course;
-            if (typeof enrolledCourse === "string") {
-              return enrolledCourse === courseId;
-            }
-
-            return enrolledCourse?.id === courseId || enrolledCourse?._id === courseId;
-          }),
-        ),
+      const enrolled = Boolean(
+        eData?.enrollments?.some((e: { course?: string | { id?: string; _id?: string } }) => {
+          const c = e.course;
+          return typeof c === "string" ? c === courseId : c?.id === courseId || c?._id === courseId;
+        }),
       );
-    } catch (error) {
-      message.error(error instanceof Error ? error.message : "فشل تحميل تفاصيل الكورس");
-    } finally {
-      setLoading(false);
-    }
+
+      setCourse(cData?.course ?? null);
+      setLessons(lData?.lessons ?? []);
+      setQuizzes(qData?.quizzes ?? []);
+      setIsEnrolled(enrolled);
+
+      if (enrolled) {
+        const pRes  = await apiFetch(`/api/progress/course/${courseId}`);
+        const pData = await pRes.json().catch(() => null);
+        if (pRes.ok) setProgress(pData);
+      }
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "فشل تحميل الدورة");
+    } finally { setLoading(false); }
+  }, [courseId, message]);
+
+  useEffect(() => { void fetchAll(); }, [fetchAll]);
+
+  const handleMarkComplete = async (lessonId: string) => {
+    if (!courseId) return;
+    setMarkingId(lessonId);
+    try {
+      const res  = await apiFetch(`/api/progress/course/${courseId}/lesson/${lessonId}/complete`, { method: "POST" });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.message || "فشل التأشير");
+      message.success("✅ تم إكمال الدرس");
+      const pRes  = await apiFetch(`/api/progress/course/${courseId}`);
+      const pData = await pRes.json().catch(() => null);
+      if (pRes.ok) setProgress(pData);
+    } catch (err) { message.error(err instanceof Error ? err.message : "خطأ");
+    } finally { setMarkingId(null); }
   };
 
-  useEffect(() => {
-    void fetchCourseDetails();
-  }, [courseId]);
+  const isLessonCompleted = (id: string) => progress?.completedLessonIds.includes(id) ?? false;
+  const isQuizPassed      = (id: string) => progress?.passedQuizIds.includes(id) ?? false;
+  const getProgItem       = (id: string) => progress?.items.find((it) => it.id === id);
 
-  if (loading) {
-    return (
-      <div style={{ textAlign: "center", padding: 24 }}>
-        <Spin />
-      </div>
-    );
-  }
+  if (loading) return <div style={{ textAlign: "center", padding: 48 }}><Spin size="large" /></div>;
+  if (!course) return <Card><Text type="secondary">تعذر تحميل الكورس.</Text></Card>;
 
-  if (!course) {
-    return (
-      <Card>
-        <Title level={4}>تفاصيل الكورس</Title>
-        <Text type="secondary">تعذر تحميل بيانات الكورس.</Text>
-      </Card>
-    );
-  }
+  type MixedItem = { kind: "lesson"; item: LessonItem } | { kind: "quiz"; item: QuizItem };
+
+  const sorted: MixedItem[] = [
+    ...lessons.map((l) => ({ kind: "lesson" as const, item: l })),
+    ...quizzes.filter((q) => q.type !== "final_exam").map((q) => ({ kind: "quiz" as const, item: q })),
+  ].sort((a, b) => a.item.order - b.item.order);
+
+  const finalExam     = quizzes.find((q) => q.type === "final_exam");
+  const instructorId  = course.instructor?.id || course.instructor?._id;
+  const instructorName = course.instructor
+    ? (course.instructor.firstName && course.instructor.lastName
+        ? `${course.instructor.firstName} ${course.instructor.lastName}`
+        : course.instructor.userName ?? "الأستاذ")
+    : null;
 
   return (
-    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={16} style={{ width: "100%" }}>
+
+      {/* Header */}
       <Row justify="space-between" align="middle" gutter={[12, 12]}>
         <Col>
           <Title level={3} style={{ margin: 0 }}>{course.title}</Title>
-          <Text type="secondary">تفاصيل الكورس والدروس المتاحة لك</Text>
+          {instructorName && instructorId && (
+            <Link to={`/instructor/${instructorId}`}>
+              <Text type="secondary">الأستاذ: {instructorName}</Text>
+            </Link>
+          )}
         </Col>
         <Col>
           <Space>
-            <Button href="/dashboard/student/courses">
-              اذهب إلى حسابك
-            </Button>
-            {courseId ? (
+            {courseId && (
               <Link to={`/dashboard/student/courses/${courseId}/discussions`}>
-                <Button type="primary" icon={<MessageOutlined />}>
-                  صفحة النقاشات
-                </Button>
+                <Button icon={<MessageOutlined />}>النقاشات</Button>
               </Link>
-            ) : null}
-            <Button icon={<ReloadOutlined />} onClick={() => void fetchCourseDetails()}>
-              تحديث
-            </Button>
+            )}
+            <Button icon={<ReloadOutlined />} onClick={() => void fetchAll()}>تحديث</Button>
           </Space>
         </Col>
       </Row>
 
+      {/* شريط التقدم */}
+      {isEnrolled && progress && (
+        <Card style={{ background: "linear-gradient(135deg,#f0f9ff,#e6f4ff)", border: "1px solid #91caff" }}>
+          <Space orientation="vertical" size={8} style={{ width: "100%" }}>
+            <Space>
+              <TrophyOutlined style={{ color: "#1677ff" }} />
+              <Text strong>تقدمك في الدورة</Text>
+              <Text type="secondary">({progress.completedItems} / {progress.totalItems} مكتمل)</Text>
+            </Space>
+            <Progress
+              percent={progress.progressPct}
+              strokeColor={progress.progressPct === 100 ? "#52c41a" : "#1677ff"}
+            />
+            {progress.canAccessFinalExam && finalExam && !isQuizPassed(getQuizId(finalExam)) && (
+              <Alert type="success" showIcon
+                title="🎉 أكملت كل المحتوى! يمكنك الآن تقديم الاختبار النهائي للحصول على شهادتك." />
+            )}
+          </Space>
+        </Card>
+      )}
+
+      {/* معلومات الكورس */}
       <Card>
-        <Space direction="vertical" size={10} style={{ width: "100%" }}>
+        <Space orientation="vertical" size={8} style={{ width: "100%" }}>
           <Space>
             <Tag color={course.type === "paid" ? "gold" : "green"}>
               {course.type === "paid" ? "مدفوع" : "مجاني"}
@@ -222,176 +195,186 @@ export default function StudentCourseDetailPage() {
             <Tag color={course.status === "published" ? "blue" : "default"}>
               {course.status === "published" ? "منشور" : "مسودة"}
             </Tag>
-            {course.isHidden ? <Tag color="red">مخفي عن الكتالوج</Tag> : null}
           </Space>
-
           <Text>{course.description}</Text>
-          
-          {/* عدد الساعات والسعر */}
-          <Space split="|">
-            {course.duration && (
-              <Space size={4}>
-                <ClockCircleOutlined />
-                <Text strong>{course.duration} ساعات</Text>
-              </Space>
-            )}
-            <Text strong>
-              السعر: {course.type === "free" ? "مجاني" : `${course.effectivePrice ?? course.price} USD`}
-            </Text>
-          </Space>
-
-          {/* معلومات الأستاذ */}
-          {course.instructor && (
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid #f0f0f0" }}>
-              <Text type="secondary">الأستاذ: </Text>
-              <Link 
-                to={`/instructor/${course.instructor.id || course.instructor._id}`}
-                style={{ marginLeft: 8 }}
-              >
-                <Text strong>
-                  {course.instructor.firstName && course.instructor.lastName
-                    ? `${course.instructor.firstName} ${course.instructor.lastName}`
-                    : course.instructor.userName || "أستاذ"}
-                </Text>
-              </Link>
-            </div>
+          {course.duration && (
+            <Space size={4}><ClockCircleOutlined /><Text>{course.duration} ساعة</Text></Space>
           )}
-
-          {!isEnrolled ? (
-            <Alert
-              type="info"
-              showIcon
-              message="الدروس الكاملة متاحة بعد أخذ الدورة"
-              description="يمكنك مشاهدة المعاينة فقط الآن. لإتاحة كل الدروس اضغط على زر أخذ الدورة."
-              action={
-                courseId ? (
-                  <Space>
-                    <Button type="primary" href={`/payment/${courseId}`}>
-                      أخذ الدورة
-                    </Button>
-                    <Button href="/dashboard/student/courses">
-                      اذهب إلى حسابك
-                    </Button>
-                  </Space>
-                ) : null
-              }
+          {!isEnrolled && (
+            <Alert type="info" showIcon title="الدروس الكاملة متاحة بعد التسجيل"
+              action={<Button type="primary" size="small" href={`/payment/${courseId}`}>التسجيل الآن</Button>}
             />
-          ) : null}
+          )}
         </Space>
       </Card>
 
-      <Title level={4} style={{ marginBottom: 0 }}>المحتوى</Title>
+      {/* محتوى الدورة */}
+      <Title level={4} style={{ marginBottom: 0 }}>
+        محتوى الدورة ({sorted.length + (finalExam ? 1 : 0)} عنصر)
+      </Title>
 
-      <Row gutter={[16, 16]}>
-        {(() => {
-          // دمج الدروس والاختبارات وترتيبها
-          const contentItems: ContentItem[] = [
-            ...lessons.map(lesson => ({
-              type: "lesson" as const,
-              order: lesson.order,
-              data: lesson
-            })),
-            ...quizzes.map(quiz => ({
-              type: quiz.type as "quiz" | "final_exam",
-              order: quiz.order,
-              data: quiz
-            }))
-          ].sort((a, b) => a.order - b.order);
+      <Row gutter={[0, 8]}>
+        {sorted.map((entry) => {
+          if (entry.kind === "lesson") {
+            const lesson     = entry.item;
+            const lid        = getLessonId(lesson);
+            const completed  = isLessonCompleted(lid);
+            const isUnlocked = !isEnrolled ? lesson.isPreview : (getProgItem(lid)?.isUnlocked ?? false);
 
-          return contentItems.map((item) => {
-            if (item.type === "lesson") {
-              const lesson = item.data as LessonItem;
-              return (
-                <Col xs={24} key={`lesson-${getLessonId(lesson)}`}>
-                  <Card
-                    title={
-                      <Space>
-                        <Text strong>{lesson.title}</Text>
-                        <Tag color="default">ترتيب: {lesson.order}</Tag>
-                        {lesson.isPreview ? <Tag color="green">Preview</Tag> : null}
-                      </Space>
-                    }
-                  >
-                    <Space direction="vertical" size={10} style={{ width: "100%" }}>
-                      <Text>{lesson.description || "لا يوجد وصف"}</Text>
-
-                      {!isEnrolled && !lesson.isPreview ? (
-                        // ✅ المحتوى مخفي كليًا — لا أزرار للزائر غير المسجل
-                        <Alert
-                          type="warning"
-                          showIcon
-                          message="هذا الدرس متاح بعد التسجيل في الدورة"
-                        />
-                      ) : (
-                        // ✅ يظهر المحتوى فقط للمسجلين أو دروس المعاينة
-                        <>
-                          {lesson.video?.youtubeId ? (
-                            <Button
-                              type="link"
-                              icon={<YoutubeOutlined />}
-                              href={`https://www.youtube.com/watch?v=${lesson.video.youtubeId}`}
-                              target="_blank"
-                            >
-                              مشاهدة الفيديو
-                            </Button>
-                          ) : null}
-
-                          {lesson.pdf?.url ? (
-                            <Button type="link" icon={<FilePdfOutlined />} href={lesson.pdf.url} target="_blank">
-                              فتح PDF
-                            </Button>
-                          ) : null}
-                        </>
-                      )}
+            return (
+              <Col xs={24} key={`lesson-${lid}`}>
+                <Card size="small"
+                  style={{
+                    borderLeft: `4px solid ${completed ? "#52c41a" : isUnlocked ? "#1677ff" : "#d9d9d9"}`,
+                    opacity: isUnlocked ? 1 : 0.65,
+                  }}
+                  title={
+                    <Space>
+                      {completed ? <CheckCircleOutlined style={{ color: "#52c41a" }} />
+                        : isUnlocked ? <YoutubeOutlined style={{ color: "#1677ff" }} />
+                        : <LockOutlined style={{ color: "#bfbfbf" }} />}
+                      <Text strong>{lesson.title}</Text>
+                      {lesson.isPreview && <Tag color="green">معاينة مجانية</Tag>}
+                      {completed && <Tag color="success">مكتمل ✓</Tag>}
                     </Space>
-                  </Card>
-                </Col>
-              );
-            } else {
-              // اختبار (quiz أو final_exam)
-              const quiz = item.data as QuizItem;
-              return (
-                <Col xs={24} key={`quiz-${quiz.id || quiz._id}`}>
-                  <Card
-                    title={
-                      <Space>
-                        <FileTextOutlined style={{ color: "#faad14" }} />
-                        <Text strong>{quiz.title}</Text>
-                        <Tag color={quiz.type === "final_exam" ? "red" : "orange"}>
-                          {quiz.type === "final_exam" ? "اختبار نهائي" : "اختبار"}
-                        </Tag>
-                        <Tag color="default">ترتيب: {quiz.order}</Tag>
+                  }
+                >
+                  {!isUnlocked ? (
+                    <Alert type="warning" showIcon icon={<LockOutlined />}
+                      title="أكمل الدرس السابق أولاً لفتح هذا الدرس" />
+                  ) : (
+                    <Space orientation="vertical" size={8} style={{ width: "100%" }}>
+                      {lesson.description && <Text type="secondary">{lesson.description}</Text>}
+                      <Space wrap>
+                        {lesson.video?.youtubeId && (
+                          <Button type="primary" ghost icon={<YoutubeOutlined />}
+                            href={`https://www.youtube.com/watch?v=${lesson.video.youtubeId}`} target="_blank">
+                            مشاهدة الفيديو
+                          </Button>
+                        )}
+                        {lesson.pdf?.url && (
+                          <Button icon={<FilePdfOutlined />} href={lesson.pdf.url} target="_blank">
+                            فتح PDF
+                          </Button>
+                        )}
+                        {isEnrolled && !completed && (
+                          <Tooltip title="اضغط بعد الانتهاء من الدرس">
+                            <Button type="primary" icon={<CheckCircleOutlined />}
+                              loading={markingId === lid}
+                              onClick={() => void handleMarkComplete(lid)}>
+                              أكملت هذا الدرس
+                            </Button>
+                          </Tooltip>
+                        )}
                       </Space>
-                    }
-                  >
-                    <Space direction="vertical" size={10} style={{ width: "100%" }}>
-                      <Text>{quiz.questions ? `${quiz.questions.length} أسئلة` : "بدون أسئلة"}</Text>
-                      {quiz.passingScore && (
-                        <Text type="secondary">
-                          نسبة النجاح: {quiz.passingScore}%
-                        </Text>
-                      )}
-                      {!isEnrolled ? (
-                        <Text type="secondary">الاختبار متاح بعد التسجيل في الدورة.</Text>
-                      ) : (
-                        <Link to={`/dashboard/student/courses/${courseId}/quizzes/${quiz.id || quiz._id}`}>
-                          <Button type="primary">الذهاب للاختبار</Button>
-                        </Link>
-                      )}
                     </Space>
-                  </Card>
-                </Col>
-              );
-            }
-          });
+                  )}
+                </Card>
+              </Col>
+            );
+          }
+
+          const quiz       = entry.item;
+          const qid        = getQuizId(quiz);
+          const passed     = isQuizPassed(qid);
+          const isUnlocked = !isEnrolled ? false : (getProgItem(qid)?.isUnlocked ?? false);
+
+          return (
+            <Col xs={24} key={`quiz-${qid}`}>
+              <Card size="small"
+                style={{
+                  borderLeft: `4px solid ${passed ? "#52c41a" : isUnlocked ? "#fa8c16" : "#d9d9d9"}`,
+                  opacity: isUnlocked ? 1 : 0.65,
+                }}
+                title={
+                  <Space>
+                    {passed ? <CheckCircleOutlined style={{ color: "#52c41a" }} />
+                      : isUnlocked ? <FileTextOutlined style={{ color: "#fa8c16" }} />
+                      : <LockOutlined style={{ color: "#bfbfbf" }} />}
+                    <Text strong>{quiz.title}</Text>
+                    <Tag color="orange">اختبار</Tag>
+                    {passed && <Tag color="success">ناجح ✓</Tag>}
+                  </Space>
+                }
+              >
+                {!isEnrolled ? <Text type="secondary">متاح بعد التسجيل</Text>
+                  : !isUnlocked ? (
+                    <Alert type="warning" showIcon icon={<LockOutlined />}
+                      title="أكمل الدروس السابقة لفتح هذا الاختبار" />
+                  ) : (
+                    <Space>
+                      {quiz.passingScore && <Text type="secondary">نسبة النجاح: {quiz.passingScore}%</Text>}
+                      <Link to={`/dashboard/student/courses/${courseId}/quizzes/${qid}`}>
+                        <Button type="primary" disabled={passed}>
+                          {passed ? "تم الاجتياز ✓" : "ابدأ الاختبار"}
+                        </Button>
+                      </Link>
+                    </Space>
+                  )}
+              </Card>
+            </Col>
+          );
+        })}
+
+        {/* الاختبار النهائي */}
+        {finalExam && (() => {
+          const fid       = getQuizId(finalExam);
+          const passed    = isQuizPassed(fid);
+          const canAccess = isEnrolled && (progress?.canAccessFinalExam ?? false);
+          return (
+            <Col xs={24} key={`final-${fid}`}>
+              <Card size="small"
+                style={{
+                  borderLeft: `4px solid ${passed ? "#52c41a" : canAccess ? "#f5222d" : "#d9d9d9"}`,
+                  background: canAccess && !passed ? "#fff1f0" : undefined,
+                  opacity: canAccess || passed ? 1 : 0.65,
+                }}
+                title={
+                  <Space>
+                    {passed ? <TrophyOutlined style={{ color: "#faad14", fontSize: 18 }} />
+                      : canAccess ? <FileTextOutlined style={{ color: "#f5222d" }} />
+                      : <LockOutlined style={{ color: "#bfbfbf" }} />}
+                    <Text strong>{finalExam.title}</Text>
+                    <Tag color="red">اختبار نهائي 🏆</Tag>
+                    {passed && <Tag color="gold">مكتمل ✓</Tag>}
+                  </Space>
+                }
+              >
+                {passed ? (
+                  <Space>
+                    <Alert type="success" showIcon title="حصلت على شهادتك!" />
+                    <Link to="/dashboard/student/grades">
+                      <Button type="primary" icon={<TrophyOutlined />}>عرض شهادتي</Button>
+                    </Link>
+                  </Space>
+                ) : !isEnrolled ? (
+                  <Text type="secondary">متاح بعد التسجيل</Text>
+                ) : !canAccess ? (
+                  <Alert type="info" showIcon icon={<LockOutlined />}
+                    title={`أكمل جميع الدروس والاختبارات أولاً (${progress?.progressPct ?? 0}% مكتمل)`} />
+                ) : (
+                  <Space orientation="vertical" size={8}>
+                    <Alert type="success" showIcon
+                      title="أنت جاهز! قدّم الاختبار الآن للحصول على شهادتك." />
+                    <Space>
+                      {finalExam.passingScore && <Text type="secondary">نسبة النجاح: {finalExam.passingScore}%</Text>}
+                      <Link to={`/dashboard/student/courses/${courseId}/quizzes/${fid}`}>
+                        <Button type="primary" danger icon={<TrophyOutlined />} size="large">
+                          ابدأ الاختبار النهائي 🏆
+                        </Button>
+                      </Link>
+                    </Space>
+                  </Space>
+                )}
+              </Card>
+            </Col>
+          );
         })()}
       </Row>
 
-      {lessons.length === 0 && quizzes.length === 0 ? (
-        <Card>
-          <Text type="secondary">لا توجد دروس أو اختبارات متاحة حالياً لهذا الكورس.</Text>
-        </Card>
-      ) : null}
+      {sorted.length === 0 && !finalExam && (
+        <Card><Text type="secondary">لا توجد دروس منشورة في هذه الدورة بعد.</Text></Card>
+      )}
     </Space>
   );
 }

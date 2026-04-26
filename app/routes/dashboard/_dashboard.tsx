@@ -14,6 +14,7 @@ import {
   FileTextOutlined,
   MailOutlined,
   HomeOutlined,
+  TrophyOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "~/context/auth";
 import { apiFetch } from "~/utils/api";
@@ -83,8 +84,8 @@ const menuByRole: Record<string, MenuItem> = {
     },
     {
       key: "/dashboard/student/grades",
-      icon: <UserOutlined />,
-      label: <Link to="/dashboard/student/grades">درجاتي</Link>,
+      icon: <TrophyOutlined />,
+      label: <Link to="/dashboard/student/grades">درجاتي وشهاداتي</Link>,
     },
     {
       key: "/dashboard/student/upgrade-to-teacher",
@@ -132,8 +133,8 @@ const menuByRole: Record<string, MenuItem> = {
         },
         {
           key: "/dashboard/student/grades",
-          icon: <UserOutlined />,
-          label: <Link to="/dashboard/student/grades">درجاتي</Link>,
+          icon: <TrophyOutlined />,
+          label: <Link to="/dashboard/student/grades">درجاتي وشهاداتي</Link>,
         },
       ],
     },

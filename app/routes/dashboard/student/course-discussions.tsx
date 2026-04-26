@@ -349,7 +349,7 @@ export default function CourseDiscussionsPage() {
   }
 
   return (
-    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={16} style={{ width: "100%" }}>
       <Row justify="space-between" align="middle" gutter={[12, 12]}>
         <Col>
           <Title level={3} style={{ margin: 0 }}>
@@ -417,7 +417,7 @@ export default function CourseDiscussionsPage() {
         </div>
       ) : null}
 
-      <Space direction="vertical" size={12} style={{ width: "100%" }}>
+      <Space orientation="vertical" size={12} style={{ width: "100%" }}>
         {discussions.map((discussion) => (
           <Card
             key={discussion.id}
@@ -431,7 +431,7 @@ export default function CourseDiscussionsPage() {
             }
             extra={<Text type="secondary">{formatDate(discussion.createdAt)}</Text>}
           >
-            <Space direction="vertical" size={10} style={{ width: "100%" }}>
+            <Space orientation="vertical" size={10} style={{ width: "100%" }}>
               {discussion.lesson ? (
                 <Tag color="default">
                   {discussion.lesson.order !== undefined ? `${discussion.lesson.order}. ` : ""}
@@ -447,7 +447,7 @@ export default function CourseDiscussionsPage() {
 
               {discussion.answer ? (
                 <Card size="small" style={{ background: "#fafafa" }}>
-                  <Space direction="vertical" size={6} style={{ width: "100%" }}>
+                  <Space orientation="vertical" size={6} style={{ width: "100%" }}>
                     <Space wrap>
                       <Text strong>
                         إجابة الأستاذ: {discussion.answerBy?.userName || "Instructor"}

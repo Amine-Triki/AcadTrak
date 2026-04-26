@@ -475,7 +475,7 @@ export default function AdminContactMessagesPage() {
             type="info"
             showIcon
             style={{ marginBottom: 16 }}
-            message={`نتائج البحث عن: ${appliedSearch}`}
+            title={`نتائج البحث عن: ${appliedSearch}`}
           />
         ) : null}
 
@@ -511,7 +511,7 @@ export default function AdminContactMessagesPage() {
         onClose={() => setDetailsOpen(false)}
       >
         {selectedMessage ? (
-          <Space direction="vertical" style={{ width: "100%" }} size={16}>
+          <Space orientation="vertical" style={{ width: "100%" }} size={16}>
             <Descriptions bordered size="small" column={1}>
               <Descriptions.Item label="المرسل">
                 {selectedMessage.firstName} {selectedMessage.lastName}

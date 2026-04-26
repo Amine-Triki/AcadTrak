@@ -55,7 +55,7 @@ export default function TeacherStudentsPage() {
 			dataIndex: "fullName",
 			key: "fullName",
 			render: (_: unknown, record: TeacherStudentItem) => (
-				<Space direction="vertical" size={0}>
+				<Space orientation="vertical" size={0}>
 					<Text strong>{`${record.firstName} ${record.lastName}`.trim() || record.userName}</Text>
 					<Text type="secondary">@{record.userName}</Text>
 				</Space>
@@ -94,7 +94,7 @@ export default function TeacherStudentsPage() {
 	];
 
 	return (
-		<Space direction="vertical" size={16} style={{ width: "100%" }}>
+		<Space orientation="vertical" size={16} style={{ width: "100%" }}>
 			<Card>
 				<Space style={{ width: "100%", justifyContent: "space-between" }} wrap>
 					<div>

@@ -179,19 +179,13 @@ export default function TeacherCoursesPage() {
 	const [removePdf, setRemovePdf] = useState(false);
 	const [removeThumbnail, setRemoveThumbnail] = useState(false);
 
-	const isAdmin = user?.role === "admin";
-
+	// ✅ فقط الأستاذ يرى دوراته — Admin ليس له دورات
 	const myCourses = useMemo(() => {
-		if (!user?.id) {
+		if (!user?.id || user.role !== "teacher") {
 			return [];
 		}
-
-		if (isAdmin) {
-			return courses;
-		}
-
 		return courses.filter((course) => getInstructorId(course.instructor) === user.id);
-	}, [courses, isAdmin, user?.id]);
+	}, [courses, user?.id, user?.role]);
 
 	const fetchCourses = async () => {
 		setLoading(true);
@@ -562,12 +556,12 @@ export default function TeacherCoursesPage() {
 	};
 
 	return (
-		<Space direction="vertical" size={16} style={{ width: "100%" }}>
+		<Space orientation="vertical" size={16} style={{ width: "100%" }}>
 			{/* 🔒 رسالة توضيحية عن صلاحيات الأستاذ */}
 			<Alert
 				type="info"
 				showIcon
-				message="صلاحيات الأستاذ"
+				title="صلاحيات الأستاذ"
 				description="أنت كأستاذ يمكنك فقط إنشاء وتعديل وحذف الدورات والدروس والكوبونات الخاصة بك. الطلاب يستطيعون مشاهدة دوراتك المنشورة وشراء الدروس فيها."
 			/>
 
@@ -647,7 +641,7 @@ export default function TeacherCoursesPage() {
 									</Popconfirm>,
 								]}
 							>
-								<Space direction="vertical" size={8} style={{ width: "100%" }}>
+								<Space orientation="vertical" size={8} style={{ width: "100%" }}>
 									<Text>{course.description}</Text>
 									<Text type="secondary">
 										Category: {course.categoryDetails?.name || course.category}
@@ -762,7 +756,7 @@ export default function TeacherCoursesPage() {
 									{/* خطأ 3 & 4: الكوبون يظهر للدورات المدفوعة فقط، وتاريخ بـ input type="date" */}
 									<Title level={5} style={{ marginTop: 12 }}>الكوبون الخاص بالدورة (اختياري)</Title>
 									<Alert 
-										message="يمكنك إضافة كوبون خصم على الدورة المدفوعة"
+										title="يمكنك إضافة كوبون خصم على الدورة المدفوعة"
 										type="info"
 										showIcon
 										style={{ marginBottom: 16 }}
@@ -837,11 +831,11 @@ export default function TeacherCoursesPage() {
 						<Spin />
 					</div>
 				) : (
-					<Space direction="vertical" size={12} style={{ width: "100%" }}>					{/* 🔒 رسالة توضيحية */}
+					<Space orientation="vertical" size={12} style={{ width: "100%" }}>					{/* 🔒 رسالة توضيحية */}
 					<Alert
 						type="info"
 						showIcon
-						message="إدارة الدروس"
+						title="إدارة الدروس"
 						description="يمكنك إضافة دروس بفيديوهات YouTube أو ملفات PDF. يمكن أيضاً إضافة صور مصغرة ووضع درس كـ preview مجاني."
 						style={{ marginBottom: 8 }}
 					/>
@@ -877,7 +871,7 @@ export default function TeacherCoursesPage() {
 										</Space>
 									}
 								>
-									<Space direction="vertical" size={10} style={{ width: "100%" }}>
+									<Space orientation="vertical" size={10} style={{ width: "100%" }}>
 										{lesson.description ? <Text>{lesson.description}</Text> : <Text type="secondary">بدون وصف</Text>}
 
 										{lesson.thumbnail?.url ? (
@@ -966,7 +960,7 @@ export default function TeacherCoursesPage() {
 
 					{editingLesson?.video?.youtubeId ? (
 						<Form.Item label="إدارة الفيديو الحالي">
-							<Space direction="vertical" size={6} style={{ width: "100%" }}>
+							<Space orientation="vertical" size={6} style={{ width: "100%" }}>
 								<Text type="secondary">
 									الفيديو الحالي: {editingLesson.video.youtubeId}
 								</Text>
@@ -1010,7 +1004,7 @@ export default function TeacherCoursesPage() {
 							<Button icon={<UploadOutlined />}>اختر ملف PDF</Button>
 						</Upload>
 						{editingLesson?.pdf?.url ? (
-							<Space direction="vertical" size={6} style={{ width: "100%", marginTop: 8 }}>
+							<Space orientation="vertical" size={6} style={{ width: "100%", marginTop: 8 }}>
 								<Button type="link" icon={<FilePdfOutlined />} href={editingLesson.pdf.url} target="_blank">
 									عرض ملف PDF الحالي
 								</Button>
@@ -1041,7 +1035,7 @@ export default function TeacherCoursesPage() {
 							<Button icon={<UploadOutlined />}>اختر صورة</Button>
 						</Upload>
 						{editingLesson?.thumbnail?.url ? (
-							<Space direction="vertical" size={6} style={{ width: "100%", marginTop: 8 }}>
+							<Space orientation="vertical" size={6} style={{ width: "100%", marginTop: 8 }}>
 								<Image
 									src={editingLesson.thumbnail.url}
 									alt="thumbnail"

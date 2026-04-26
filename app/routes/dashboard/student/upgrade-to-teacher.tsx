@@ -70,7 +70,7 @@ export default function UpgradeToTeacherPage() {
   return (
     <div style={{ maxWidth: 760, margin: "0 auto" }}>
       <Card>
-        <Space direction="vertical" size={20} style={{ width: "100%" }}>
+        <Space orientation="vertical" size={20} style={{ width: "100%" }}>
           <Space align="center">
             <UserSwitchOutlined style={{ fontSize: 22, color: "#1677ff" }} />
             <Title level={3} style={{ margin: 0 }}>
@@ -84,12 +84,12 @@ export default function UpgradeToTeacherPage() {
           </Paragraph>
 
           <Card size="small" styles={{ body: { padding: 16 } }}>
-            <Space direction="vertical" size={10} style={{ width: "100%" }}>
+            <Space orientation="vertical" size={10} style={{ width: "100%" }}>
               <Text strong>
                 <TeamOutlined style={{ marginRight: 8 }} />
                 What you get as a teacher
               </Text>
-              <Space direction="vertical" size={8} style={{ width: "100%" }}>
+              <Space orientation="vertical" size={8} style={{ width: "100%" }}>
                 {benefits.map((item) => (
                   <div key={item} style={{ paddingInline: 0 }}>
                     <Space>

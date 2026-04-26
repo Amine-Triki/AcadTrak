@@ -281,8 +281,9 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
       return;
     }
 
-    if (user.role !== "student" && user.role !== "admin") {
-      message.info("Only students can enroll in courses.");
+    // ✅ Student وTeacher يمكنهما التسجيل — Admin مراقب فقط
+    if (user.role !== "student" && user.role !== "teacher") {
+      message.info("فقط الطلاب والأساتذة يمكنهم التسجيل في الدورات.");
       return;
     }
 
@@ -635,17 +636,15 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                         >
                           {getPrimaryActionLabel(course)}
                         </Button>
-                        <Link to={`/payment/${course.id}`}>
+                        <Link to={`/courses/${course.id}`}>
                           <Button
                             type="default"
                             size="small"
                             icon={<ArrowRightOutlined />}
                             iconPlacement="end"
-                            style={{
-                              borderRadius: 6,
-                            }}
+                            style={{ borderRadius: 6 }}
                           >
-                            Details
+                            تفاصيل
                           </Button>
                         </Link>
                       </div>

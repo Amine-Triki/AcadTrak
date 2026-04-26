@@ -7,10 +7,11 @@ import {
 	Space,
 	Table,
 	Tag,
+	Tooltip,
 	Typography,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { DeleteOutlined, ReloadOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EyeOutlined, EyeInvisibleOutlined, ReloadOutlined } from "@ant-design/icons";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
@@ -77,7 +78,12 @@ export default function AdminCoursesPage() {
 	};
 
 	const columns: ColumnsType<CourseRow> = [
-		{ title: "Title", dataIndex: "title", key: "title" },
+		{
+			title: "Title",
+			dataIndex: "title",
+			key: "title",
+			ellipsis: true,
+		},
 		{
 			title: "Instructor",
 			key: "instructor",
@@ -107,7 +113,12 @@ export default function AdminCoursesPage() {
 		{
 			title: "Visibility",
 			key: "visibility",
-			render: (_, row) => (row.isHidden ? <Tag color="volcano">Hidden</Tag> : <Tag color="success">Visible</Tag>),
+			render: (_, row) =>
+				row.isHidden ? (
+					<Tag icon={<EyeInvisibleOutlined />} color="volcano">Hidden</Tag>
+				) : (
+					<Tag icon={<EyeOutlined />} color="success">Visible</Tag>
+				),
 		},
 		{
 			title: "Price",
@@ -117,18 +128,49 @@ export default function AdminCoursesPage() {
 		{
 			title: "Actions",
 			key: "actions",
-			render: (_, row) => (
-				<Popconfirm
-					title={row.type === "free" ? "Delete this free course permanently?" : "Hide this paid course?"}
-					onConfirm={() => void removeCourse(row.id)}
-					okText="Yes"
-					cancelText="No"
-				>
-					<Button icon={<DeleteOutlined />} danger loading={actionLoadingId === row.id}>
-						{row.type === "free" ? "Delete" : "Hide"}
-					</Button>
-				</Popconfirm>
-			),
+			render: (_, row) => {
+				// ✅ إذا كان مخفياً → زر Restore (DELETE مرة ثانية يُعيده)
+				if (row.isHidden) {
+					return (
+						<Tooltip title="Restore this hidden course">
+							<Popconfirm
+								title="Restore this course visibility?"
+								onConfirm={() => void removeCourse(row.id)}
+								okText="Yes"
+								cancelText="No"
+							>
+								<Button
+									icon={<EyeOutlined />}
+									loading={actionLoadingId === row.id}
+								>
+									Restore
+								</Button>
+							</Popconfirm>
+						</Tooltip>
+					);
+				}
+
+				return (
+					<Popconfirm
+						title={
+							row.type === "paid"
+								? "Hide this paid course? (students keep access)"
+								: "Permanently delete this free course?"
+						}
+						onConfirm={() => void removeCourse(row.id)}
+						okText="Yes"
+						cancelText="No"
+					>
+						<Button
+							icon={<DeleteOutlined />}
+							danger
+							loading={actionLoadingId === row.id}
+						>
+							{row.type === "paid" ? "Hide" : "Delete"}
+						</Button>
+					</Popconfirm>
+				);
+			},
 		},
 	];
 
@@ -137,7 +179,9 @@ export default function AdminCoursesPage() {
 			<Space style={{ width: "100%", justifyContent: "space-between", marginBottom: 16 }} wrap>
 				<div>
 					<Title level={4} style={{ margin: 0 }}>Courses</Title>
-					<Text type="secondary">Manage all courses as admin.</Text>
+					<Text type="secondary">
+						Manage all courses. Paid courses are hidden (students keep access), free courses are deleted.
+					</Text>
 				</div>
 				<Button icon={<ReloadOutlined />} onClick={() => void fetchCourses()}>
 					Refresh
@@ -150,6 +194,7 @@ export default function AdminCoursesPage() {
 				dataSource={rows}
 				loading={loading}
 				pagination={{ pageSize: 10 }}
+				scroll={{ x: true }}
 			/>
 		</Card>
 	);

@@ -206,7 +206,7 @@ export default function InstructorProfilePage() {
       : instructor.userName || "أستاذ";
 
   return (
-    <Space direction="vertical" size={24} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={24} style={{ width: "100%" }}>
       {/* ─── معلومات الأستاذ الأساسية ─── */}
       <Card>
         <Row gutter={[24, 24]} align="middle">
@@ -220,7 +220,7 @@ export default function InstructorProfilePage() {
             </Avatar>
           </Col>
           <Col xs={24} sm={18}>
-            <Space direction="vertical" size={12} style={{ width: "100%" }}>
+            <Space orientation="vertical" size={12} style={{ width: "100%" }}>
               <div>
                 <Title level={3} style={{ margin: 0 }}>
                   {fullName}
@@ -316,7 +316,7 @@ export default function InstructorProfilePage() {
                     </Tag>
                   }
                 >
-                  <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                  <Space orientation="vertical" size={8} style={{ width: "100%" }}>
                     <Text type="secondary">
                       {course.description || "بدون وصف"}
                     </Text>

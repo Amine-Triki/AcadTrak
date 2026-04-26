@@ -112,15 +112,11 @@ export default function TeacherQuizzesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<QuizItem | null>(null);
 
+  // ✅ Admin لا يُدير الاختبارات — فقط الأستاذ
   const myCourses = useMemo(() => {
-    if (!user?.id) {
+    if (!user?.id || user.role !== "teacher") {
       return [];
     }
-
-    if (user.role === "admin") {
-      return courses;
-    }
-
     return courses.filter((course) => getInstructorId(course.instructor) === user.id);
   }, [courses, user?.id, user?.role]);
 
@@ -341,9 +337,9 @@ export default function TeacherQuizzesPage() {
   const currentCourse = myCourses.find((course) => course.id === selectedCourseId);
 
   return (
-    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={16} style={{ width: "100%" }}>
       <Card>
-        <Space direction="vertical" size={6} style={{ width: "100%" }}>
+        <Space orientation="vertical" size={6} style={{ width: "100%" }}>
           <Title level={4} style={{ margin: 0 }}>إدارة الاختبارات</Title>
           <Text type="secondary">
             من هنا يمكنك تنظيم اختبارات الدورات ومتابعة حالة خدمة Quiz.
@@ -402,7 +398,7 @@ export default function TeacherQuizzesPage() {
         ) : quizzes.length === 0 ? (
           <Empty description="لا يوجد اختبارات في هذه الدورة" />
         ) : (
-          <Space direction="vertical" size={12} style={{ width: "100%" }}>
+          <Space orientation="vertical" size={12} style={{ width: "100%" }}>
             {quizzes.map((quiz) => (
               <Card
                 key={quiz.id}
@@ -507,7 +503,7 @@ export default function TeacherQuizzesPage() {
 
           <Form.List name="questions">
             {(fields, { add, remove, move }) => (
-              <Space direction="vertical" size={12} style={{ width: "100%" }}>
+              <Space orientation="vertical" size={12} style={{ width: "100%" }}>
                 {fields.map((field, index) => (
                   <Card
                     key={field.key}
@@ -550,7 +546,7 @@ export default function TeacherQuizzesPage() {
 
                     <Form.List name={[field.name, "options"]}>
                       {(optionFields, { add: addOption, remove: removeOption }) => (
-                        <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                        <Space orientation="vertical" size={8} style={{ width: "100%" }}>
                           {optionFields.map((optionField, optionIndex) => (
                             <Space key={optionField.key} style={{ width: "100%" }} align="baseline">
                               <Form.Item

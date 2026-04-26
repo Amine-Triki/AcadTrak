@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { App, Alert, Button, Card, Checkbox, Form, Radio, Space, Spin, Typography } from "antd";
+import { App, Alert, Button, Card, Checkbox, Form, Radio, Space, Spin, Typography, Result } from "antd";
 import type { CheckboxValueType, RadioChangeEvent } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined, TrophyOutlined } from "@ant-design/icons";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text, Paragraph } = Typography;
@@ -43,7 +43,13 @@ export default function StudentCourseQuizPage() {
   const [submitting, setSubmitting] = useState(false);
   const [quiz, setQuiz] = useState<QuizItem | null>(null);
   const [answers, setAnswers] = useState<number[][]>([]);
-  const [result, setResult] = useState<{ score: number; passed: boolean; results: QuizResult[] } | null>(null);
+  const [result, setResult] = useState<{
+    score: number;
+    passed: boolean;
+    results: QuizResult[];
+    certificateIssued?: boolean;
+    message?: string;
+  } | null>(null);
 
   const fetchQuiz = async () => {
     if (!courseId || !quizId) {
@@ -115,7 +121,7 @@ export default function StudentCourseQuizPage() {
       });
 
       const payload = (await response.json().catch(() => null)) as
-        | { message?: string; score?: number; passed?: boolean; results?: QuizResult[] }
+        | { message?: string; score?: number; passed?: boolean; results?: QuizResult[]; certificateIssued?: boolean }
         | null;
 
       if (!response.ok) {
@@ -126,6 +132,8 @@ export default function StudentCourseQuizPage() {
         score: payload?.score ?? 0,
         passed: Boolean(payload?.passed),
         results: payload?.results ?? [],
+        certificateIssued: payload?.certificateIssued,
+        message: payload?.message,
       });
 
       message.success(payload?.message || "تم تسليم الاختبار بنجاح");
@@ -149,9 +157,9 @@ export default function StudentCourseQuizPage() {
   }
 
   return (
-    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={16} style={{ width: "100%" }}>
       <Card>
-        <Space direction="vertical" size={8} style={{ width: "100%" }}>
+        <Space orientation="vertical" size={8} style={{ width: "100%" }}>
           <Title level={3} style={{ margin: 0 }}>{quiz.title}</Title>
           <Text type="secondary">
             {quiz.type === "final_exam" ? "اختبار نهائي" : "Quiz"} • نسبة النجاح {quiz.passingScore}%
@@ -168,17 +176,46 @@ export default function StudentCourseQuizPage() {
       </Card>
 
       {result ? (
-        <Alert
-          type={result.passed ? "success" : "warning"}
-          showIcon
-          message={result.passed ? `نجحت بنسبة ${result.score}%` : `لم تنجح. نتيجتك ${result.score}%`}
-          description={result.passed ? "يمكنك الآن متابعة المحتوى التالي." : "راجع الإجابات وحاول مرة أخرى إذا سمح الأستاذ بذلك."}
-        />
+        result.certificateIssued ? (
+          // ✅ شهادة جديدة — احتفال كامل
+          <Result
+            icon={<TrophyOutlined style={{ color: "#faad14" }} />}
+            status="success"
+            title={`🎓 تهانينا! اجتزت الاختبار النهائي بنسبة ${result.score}%`}
+            subTitle="تم إصدار شهادتك تلقائياً — يمكنك رؤيتها في صفحة درجاتي"
+            extra={[
+              <Button
+                type="primary"
+                key="grades"
+                href="/dashboard/student/grades"
+              >
+                عرض شهادتي 🏆
+              </Button>,
+              <Button
+                key="course"
+                onClick={() => navigate(`/dashboard/student/courses/${courseId}`)}
+              >
+                رجوع للدورة
+              </Button>,
+            ]}
+          />
+        ) : (
+          <Alert
+            type={result.passed ? "success" : "warning"}
+            showIcon
+            title={result.passed ? `نجحت بنسبة ${result.score}%` : `لم تنجح. نتيجتك ${result.score}%`}
+            description={
+              result.passed
+                ? "يمكنك الآن متابعة المحتوى التالي."
+                : "راجع الإجابات وحاول مرة أخرى إذا سمح الأستاذ بذلك."
+            }
+          />
+        )
       ) : null}
 
       <Card>
         <Form layout="vertical" onFinish={submitQuiz}>
-          <Space direction="vertical" size={16} style={{ width: "100%" }}>
+          <Space orientation="vertical" size={16} style={{ width: "100%" }}>
             {quiz.questions.map((question, questionIndex) => (
               <Card key={`${questionIndex}-${question.text}`} size="small" title={`السؤال ${questionIndex + 1}`}>
                 <Paragraph style={{ marginBottom: 16 }}>{question.text}</Paragraph>
@@ -188,7 +225,7 @@ export default function StudentCourseQuizPage() {
                     value={answers[questionIndex]}
                     onChange={(values) => handleMultipleAnswerChange(questionIndex, values)}
                   >
-                    <Space direction="vertical" style={{ width: "100%" }}>
+                    <Space orientation="vertical" style={{ width: "100%" }}>
                       {question.options.map((option, optionIndex) => (
                         <Checkbox key={optionIndex} value={optionIndex}>
                           {option}
@@ -202,7 +239,7 @@ export default function StudentCourseQuizPage() {
                     value={answers[questionIndex]?.[0] ?? -1}
                     onChange={(event: RadioChangeEvent) => handleSingleAnswerChange(questionIndex, event.target.value)}
                   >
-                    <Space direction="vertical" style={{ width: "100%" }}>
+                    <Space orientation="vertical" style={{ width: "100%" }}>
                       {question.options.map((option, optionIndex) => (
                         <Radio key={optionIndex} value={optionIndex}>
                           {option}
@@ -223,13 +260,13 @@ export default function StudentCourseQuizPage() {
 
       {result ? (
         <Card title="تفاصيل الإجابات">
-          <Space direction="vertical" size={12} style={{ width: "100%" }}>
+          <Space orientation="vertical" size={12} style={{ width: "100%" }}>
             {result.results.map((item, index) => (
               <Alert
                 key={index}
                 type={item.isCorrect ? "success" : "error"}
                 showIcon
-                message={`السؤال ${index + 1}: ${item.isCorrect ? "إجابة صحيحة" : "إجابة خاطئة"}`}
+                title={`السؤال ${index + 1}: ${item.isCorrect ? "إجابة صحيحة" : "إجابة خاطئة"}`}
                 description={item.explanation || ""}
               />
             ))}

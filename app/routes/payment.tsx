@@ -194,7 +194,7 @@ export default function PaymentPage() {
   }
 
   if (!course) {
-    return <Alert type="error" message="الكورس غير موجود" />;
+    return <Alert type="error" title="الكورس غير موجود" />;
   }
 
   const isFree     = course.type === "free";
@@ -204,12 +204,21 @@ export default function PaymentPage() {
   return (
     <div style={{ maxWidth: 600, margin: "40px auto", padding: "0 16px" }}>
       <Card>
-        <Space direction="vertical" size={20} style={{ width: "100%" }}>
-          <Title level={3} style={{ margin: 0 }}>إتمام التسجيل</Title>
+        <Space orientation="vertical" size={20} style={{ width: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Title level={3} style={{ margin: 0 }}>إتمام التسجيل</Title>
+            {/* ✅ زر الصفحة الرئيسية + زر لوحة التحكم */}
+            <Space>
+              <Button size="small" href="/">الرئيسية</Button>
+              <Button size="small" href={user?.role === "teacher" ? "/dashboard/teacher" : "/dashboard/student"}>
+                لوحتي
+              </Button>
+            </Space>
+          </div>
 
           {/* معلومات الكورس */}
           <Card size="small" style={{ background: "#f9f9ff" }}>
-            <Space direction="vertical" size={4}>
+            <Space orientation="vertical" size={4}>
               <Text strong style={{ fontSize: 16 }}>{course.title}</Text>
               <Text type="secondary">{course.description.slice(0, 100)}...</Text>
               <Space>
@@ -298,7 +307,7 @@ export default function PaymentPage() {
               تسجيل مجاني بالكوبون
             </Button>
           ) : (
-            <Space direction="vertical" size={12} style={{ width: "100%" }}>
+            <Space orientation="vertical" size={12} style={{ width: "100%" }}>
               {/* Konnect */}
               <Button
                 size="large"
@@ -321,7 +330,7 @@ export default function PaymentPage() {
             <Alert
               type="info"
               showIcon
-              message="وضع الاختبار (Development فقط)"
+              title="وضع الاختبار (Development فقط)"
               description="استخدم حساب/بيانات Sandbox الخاصة بـ Konnect من لوحة المزود."
             />
           )}

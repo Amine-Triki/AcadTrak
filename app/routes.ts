@@ -14,10 +14,11 @@ export default [
   // 🌐 الصفحات العامة — Navbar أفقي
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   layout("routes/guest/_public.tsx", [
-    index("routes/guest/_public.home.tsx"),              // /
-    route("about",   "routes/guest/_public.about.tsx"),  // /about
-    route("contact", "routes/guest/_public.contact.tsx"),// /contact
-    route("courses", "routes/guest/_public.courses.tsx"),// /courses
+    index("routes/guest/_public.home.tsx"),
+    route("about",         "routes/guest/_public.about.tsx"),
+    route("contact",       "routes/guest/_public.contact.tsx"),
+    route("courses",       "routes/guest/_public.courses.tsx"),
+    route("courses/:id",   "routes/guest/_public.course-detail.tsx"), // ✅ صفحة تفاصيل عامة
   ]),
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
