@@ -36,6 +36,13 @@ export default function PublicLayout() {
     return fullName || user.userName || user.name || user.email || "User";
   }, [user]);
 
+  const dashboardPath = useMemo(() => {
+    if (!user?.role) return "/";
+    if (user.role === "admin") return "/dashboard/admin";
+    if (user.role === "teacher") return "/dashboard/teacher";
+    return "/dashboard/student";
+  }, [user]);
+
   const handleLogout = async () => {
     await apiFetch("/api/users/logout", { method: "POST" });
     setUser(null);
@@ -142,6 +149,9 @@ export default function PublicLayout() {
                   >
                     {displayName}
                   </span>
+                  <Button type="primary" size="middle">
+                    <Link to={dashboardPath}>Dashboard</Link>
+                  </Button>
                   <Button danger size="middle" onClick={handleLogout}>
                     log out
                   </Button>
@@ -233,6 +243,9 @@ export default function PublicLayout() {
               >
                 {displayName}
               </div>
+              <Button block type="primary" size="large" onClick={() => setDrawerOpen(false)}>
+                <Link to={dashboardPath}>Dashboard</Link>
+              </Button>
               <Button danger block size="large" onClick={handleLogout}>
                 log out
               </Button>
