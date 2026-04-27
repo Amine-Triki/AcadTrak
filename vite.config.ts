@@ -13,10 +13,10 @@ export default defineConfig({
     VitePWA({
       // ✅ SPA / CSR — ssr: false
       strategies: "injectManifest",
-      srcDir: "app",
-      filename: "sw.ts",
       registerType: "prompt", // يسأل المستخدم قبل التحديث
       injectManifest: {
+        swSrc: "app/sw.ts",
+        swDest: "sw.js",
         injectionPoint: "self.__WB_MANIFEST",
       },
       manifest: {
