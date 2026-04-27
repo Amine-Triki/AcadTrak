@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   Alert, App, Badge, Button, Card, Col,
   Collapse, Divider, Row, Skeleton, Space, Tag, Typography,
@@ -50,6 +51,7 @@ export default function PublicCourseDetailPage() {
   const { id: courseId } = useParams<{ id: string }>();
   const navigate         = useNavigate();
   const { message }      = App.useApp();
+  const { t }            = useTranslation();
   const { user }         = useAuth();
 
   const [loading,    setLoading]    = useState(true);
@@ -75,7 +77,7 @@ export default function PublicCourseDetailPage() {
         qRes.json().catch(() => null),
       ]);
 
-      if (!cRes.ok) throw new Error(cData?.message || "فشل تحميل الكورس");
+      if (!cRes.ok) throw new Error(cData?.message || t("publicCourseDetail.errors.failedLoadCourse"));
 
       setCourse(cData?.course ?? null);
       setLessons(lData?.lessons ?? []);
@@ -96,11 +98,11 @@ export default function PublicCourseDetailPage() {
         setIsEnrolled(enrolled);
       }
     } catch (err) {
-      message.error(err instanceof Error ? err.message : "خطأ في التحميل");
+      message.error(err instanceof Error ? err.message : t("publicCourseDetail.errors.loadError"));
     } finally {
       setLoading(false);
     }
-  }, [courseId, user, message]);
+  }, [courseId, user, message, t]);
 
   useEffect(() => { void fetchData(); }, [fetchData]);
 
@@ -122,11 +124,11 @@ export default function PublicCourseDetailPage() {
     try {
       const res  = await apiFetch(`/api/enrollments/course/${courseId}/enroll`, { method: "POST" });
       const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.message || "فشل التسجيل");
-      message.success("تم التسجيل! 🎉");
+      if (!res.ok) throw new Error(data?.message || t("publicCourseDetail.errors.failedEnroll"));
+      message.success(t("publicCourseDetail.messages.enrolled"));
       navigate(`/dashboard/student/courses/${courseId}`);
     } catch (err) {
-      message.error(err instanceof Error ? err.message : "فشل التسجيل");
+      message.error(err instanceof Error ? err.message : t("publicCourseDetail.errors.failedEnroll"));
     } finally {
       setEnrolling(false);
     }
@@ -141,7 +143,7 @@ export default function PublicCourseDetailPage() {
 
   if (!course) return (
     <div style={{ maxWidth: 900, margin: "32px auto", padding: "0 16px" }}>
-      <Alert type="error" title="تعذر تحميل الدورة" showIcon />
+      <Alert type="error" title={t("publicCourseDetail.errors.courseUnavailable")} showIcon />
     </div>
   );
 
@@ -149,8 +151,8 @@ export default function PublicCourseDetailPage() {
   const instructorName = course.instructor
     ? (course.instructor.firstName && course.instructor.lastName
         ? `${course.instructor.firstName} ${course.instructor.lastName}`
-        : course.instructor.userName ?? "الأستاذ")
-    : "الأستاذ";
+        : course.instructor.userName ?? t("publicCourseDetail.teacherFallback"))
+      : t("publicCourseDetail.teacherFallback");
 
   const categoryName = typeof course.category === "object"
     ? course.category.name
@@ -183,7 +185,7 @@ export default function PublicCourseDetailPage() {
         <Col xs={24} lg={16}>
           {/* Breadcrumb */}
           <Space size={4} style={{ marginBottom: 12 }}>
-            <Link to="/courses"><Text type="secondary">الدورات</Text></Link>
+            <Link to="/courses"><Text type="secondary">{t("common.courses")}</Text></Link>
             <Text type="secondary">/</Text>
             {categoryName && <Text type="secondary">{categoryName}</Text>}
           </Space>
@@ -198,29 +200,29 @@ export default function PublicCourseDetailPage() {
                 <StarFilled style={{ color: "#f59e0b" }} />
                 <Text strong>{course.averageRating.toFixed(1)}</Text>
                 {course.totalRatingsCount && (
-                  <Text type="secondary">({course.totalRatingsCount} تقييم)</Text>
+                  <Text type="secondary">({course.totalRatingsCount} {t("publicCourseDetail.meta.ratings")})</Text>
                 )}
               </Space>
             ) : null}
             <Space size={4}>
               <TeamOutlined />
-              <Text type="secondary">{totalLessons} درس</Text>
+              <Text type="secondary">{t("publicCourseDetail.meta.lessons", { count: totalLessons })}</Text>
             </Space>
             {regularQuizzes.length > 0 && (
               <Space size={4}>
                 <FileTextOutlined />
-                <Text type="secondary">{regularQuizzes.length} اختبار</Text>
+                <Text type="secondary">{t("publicCourseDetail.meta.quizzes", { count: regularQuizzes.length })}</Text>
               </Space>
             )}
             {finalExam && (
-              <Tag color="red" icon={<FileTextOutlined />}>اختبار نهائي + شهادة</Tag>
+              <Tag color="red" icon={<FileTextOutlined />}>{t("publicCourseDetail.meta.finalExamCertificate")}</Tag>
             )}
           </Space>
 
           {/* الأستاذ */}
           <Space style={{ marginBottom: 20 }}>
             <BookOutlined />
-            <Text>بقلم: </Text>
+            <Text>{t("publicCourseDetail.by")}: </Text>
             {instructorId ? (
               <Link to={`/instructor/${instructorId}`}>
                 <Text strong style={{ color: "#1677ff" }}>{instructorName}</Text>
@@ -232,7 +234,7 @@ export default function PublicCourseDetailPage() {
 
           {/* الوصف */}
           <Card style={{ marginBottom: 24 }}>
-            <Title level={4}>عن هذه الدورة</Title>
+            <Title level={4}>{t("publicCourseDetail.about")}</Title>
             <Paragraph>{course.description}</Paragraph>
           </Card>
 
@@ -241,18 +243,18 @@ export default function PublicCourseDetailPage() {
             title={
               <Space>
                 <PlayCircleOutlined />
-                <span>محتوى الدورة</span>
+                <span>{t("publicCourseDetail.content.title")}</span>
                 <Badge count={allContent.length} color="#1677ff" />
                 {previewLessons > 0 && (
                   <Text type="secondary" style={{ fontSize: 12 }}>
-                    ({previewLessons} معاينة مجانية)
+                    ({t("publicCourseDetail.content.freePreviewCount", { count: previewLessons })})
                   </Text>
                 )}
               </Space>
             }
           >
             {allContent.length === 0 ? (
-              <Text type="secondary">لا يوجد محتوى منشور بعد.</Text>
+              <Text type="secondary">{t("publicCourseDetail.content.empty")}</Text>
             ) : (
               <Collapse
                 ghost
@@ -279,9 +281,9 @@ export default function PublicCourseDetailPage() {
                           : <FileTextOutlined style={{ color: "#fa8c16" }} />
                         }
                         <Text>{idx + 1}. {item.data.title}</Text>
-                        {isPreview && <Tag color="green" style={{ fontSize: 11 }}>معاينة مجانية</Tag>}
-                        {isFinal   && <Tag color="red"   style={{ fontSize: 11 }}>اختبار نهائي 🏆</Tag>}
-                        {!isLesson && !isFinal && <Tag color="orange" style={{ fontSize: 11 }}>اختبار</Tag>}
+                        {isPreview && <Tag color="green" style={{ fontSize: 11 }}>{t("publicCourseDetail.content.freePreview")}</Tag>}
+                        {isFinal   && <Tag color="red"   style={{ fontSize: 11 }}>{t("publicCourseDetail.content.finalExam")}</Tag>}
+                        {!isLesson && !isFinal && <Tag color="orange" style={{ fontSize: 11 }}>{t("publicCourseDetail.content.quiz")}</Tag>}
                       </Space>
                     ),
                     children: isLocked ? (
@@ -289,7 +291,7 @@ export default function PublicCourseDetailPage() {
                         type="info"
                         showIcon
                         icon={<LockOutlined />}
-                        message="سجّل في الدورة لفتح هذا المحتوى"
+                        message={t("publicCourseDetail.content.enrollToUnlock")}
                         action={
                           <Button
                             type="primary"
@@ -297,7 +299,9 @@ export default function PublicCourseDetailPage() {
                             icon={user ? undefined : <LoginOutlined />}
                             onClick={() => void handleEnroll()}
                           >
-                            {user ? (course.type === "paid" ? "اشترِ الدورة" : "التسجيل المجاني") : "سجّل دخولك"}
+                            {user
+                              ? (course.type === "paid" ? t("publicCourseDetail.actions.buyCourse") : t("publicCourseDetail.actions.freeEnroll"))
+                              : t("publicCourseDetail.actions.login")}
                           </Button>
                         }
                       />
@@ -312,19 +316,19 @@ export default function PublicCourseDetailPage() {
                               : `https://www.youtube.com/watch?v=${lesson.video.youtubeId}`}
                             target={isEnrolled ? undefined : "_blank"}
                           >
-                            {isEnrolled ? "شاهد في لوحة التحكم" : "شاهد المعاينة"}
+                            {isEnrolled ? t("publicCourseDetail.actions.watchInDashboard") : t("publicCourseDetail.actions.watchPreview")}
                           </Button>
                         ) : (
-                          <Text type="secondary">محتوى الدرس متاح بعد التسجيل</Text>
+                          <Text type="secondary">{t("publicCourseDetail.content.lessonAvailableAfterEnroll")}</Text>
                         )}
                       </Space>
                     ) : (
                       isEnrolled ? (
                         <Link to={`/dashboard/student/courses/${courseId}`}>
-                          <Button type="primary" size="small">ابدأ الاختبار من لوحة التحكم</Button>
+                          <Button type="primary" size="small">{t("publicCourseDetail.actions.startQuizFromDashboard")}</Button>
                         </Link>
                       ) : (
-                        <Text type="secondary">الاختبار متاح بعد التسجيل</Text>
+                        <Text type="secondary">{t("publicCourseDetail.content.quizAvailableAfterEnroll")}</Text>
                       )
                     ),
                   };
@@ -359,7 +363,7 @@ export default function PublicCourseDetailPage() {
               {/* السعر */}
               <div style={{ textAlign: "center", marginBottom: 16 }}>
                 {course.type === "free" ? (
-                  <Tag color="green" style={{ fontSize: 20, padding: "4px 16px" }}>مجاني</Tag>
+                  <Tag color="green" style={{ fontSize: 20, padding: "4px 16px" }}>{t("publicCourseDetail.pricing.free")}</Tag>
                 ) : (
                   <Space orientation="vertical" size={2}>
                     {course.effectivePrice !== undefined &&
@@ -387,12 +391,12 @@ export default function PublicCourseDetailPage() {
                   <Alert
                     type="success" showIcon
                     icon={<CheckCircleOutlined />}
-                    title="أنت مسجل في هذه الدورة"
+                    title={t("publicCourseDetail.messages.alreadyEnrolled")}
                     style={{ marginBottom: 0 }}
                   />
                   <Link to={`/dashboard/student/courses/${courseId}`} style={{ display: "block" }}>
                     <Button type="primary" block size="large" icon={<PlayCircleOutlined />}>
-                      متابعة التعلم
+                      {t("publicCourseDetail.actions.continueLearning")}
                     </Button>
                   </Link>
                 </Space>
@@ -408,45 +412,45 @@ export default function PublicCourseDetailPage() {
                   }}
                 >
                   {!user
-                    ? "سجّل دخولك للتسجيل"
+                    ? t("publicCourseDetail.actions.loginToEnroll")
                     : course.type === "paid"
-                    ? `اشترِ الدورة — $${course.price}`
-                    : "التسجيل المجاني"}
+                    ? t("publicCourseDetail.actions.buyWithPrice", { price: course.price })
+                    : t("publicCourseDetail.actions.freeEnroll")}
                 </Button>
               )}
 
               <Divider style={{ margin: "16px 0" }} />
 
               {/* ما ستحصل عليه */}
-              <Title level={5} style={{ marginBottom: 12 }}>تشمل الدورة:</Title>
+              <Title level={5} style={{ marginBottom: 12 }}>{t("publicCourseDetail.includes.title")}</Title>
               <Space orientation="vertical" size={8} style={{ width: "100%" }}>
                 {totalLessons > 0 && (
                   <Space>
                     <PlayCircleOutlined style={{ color: "#1677ff" }} />
-                    <Text>{totalLessons} درس</Text>
+                    <Text>{t("publicCourseDetail.meta.lessons", { count: totalLessons })}</Text>
                   </Space>
                 )}
                 {regularQuizzes.length > 0 && (
                   <Space>
                     <FileTextOutlined style={{ color: "#fa8c16" }} />
-                    <Text>{regularQuizzes.length} اختبار</Text>
+                    <Text>{t("publicCourseDetail.meta.quizzes", { count: regularQuizzes.length })}</Text>
                   </Space>
                 )}
                 {finalExam && (
                   <Space>
                     <FileTextOutlined style={{ color: "#f5222d" }} />
-                    <Text>اختبار نهائي + شهادة إتمام</Text>
+                    <Text>{t("publicCourseDetail.meta.finalExamCertificate")}</Text>
                   </Space>
                 )}
                 {course.duration && (
                   <Space>
                     <ClockCircleOutlined />
-                    <Text>{course.duration} ساعة محتوى</Text>
+                    <Text>{t("publicCourseDetail.includes.hoursContent", { count: course.duration })}</Text>
                   </Space>
                 )}
                 <Space>
                   <CheckCircleOutlined style={{ color: "#52c41a" }} />
-                  <Text>وصول مدى الحياة</Text>
+                  <Text>{t("publicCourseDetail.includes.lifetimeAccess")}</Text>
                 </Space>
               </Space>
             </Card>

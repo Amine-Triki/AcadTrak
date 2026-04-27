@@ -7,6 +7,7 @@ import {
 import {
   BookOutlined, PlayCircleOutlined, ReloadOutlined, TrophyOutlined,
 } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
@@ -33,7 +34,7 @@ const getCourseId = (c: EnrollmentCourse | string) =>
   typeof c === "string" ? c : (c.id || c._id || "");
 
 const getCourseName = (c: EnrollmentCourse | string) =>
-  typeof c === "string" ? "دورة" : (c.title ?? "دورة");
+  typeof c === "string" ? "course" : (c.title ?? "course");
 
 const getInstructorName = (c: EnrollmentCourse | string) => {
   if (typeof c === "string") return null;
@@ -44,6 +45,7 @@ const getInstructorName = (c: EnrollmentCourse | string) => {
 };
 
 export default function StudentCoursesPage() {
+  const { t } = useTranslation();
   const { message }   = App.useApp();
   const [loading,     setLoading]     = useState(true);
   const [enrollments, setEnrollments] = useState<EnrollmentItem[]>([]);
@@ -54,7 +56,7 @@ export default function StudentCoursesPage() {
     try {
       const res  = await apiFetch("/api/enrollments/my");
       const data = (await res.json().catch(() => null)) as { enrollments?: EnrollmentItem[] } | null;
-      if (!res.ok) throw new Error("فشل تحميل الدورات");
+      if (!res.ok) throw new Error(t("studentCourses.errors.failedLoadCourses"));
       const items = data?.enrollments ?? [];
       setEnrollments(items);
 
@@ -75,7 +77,7 @@ export default function StudentCoursesPage() {
       progEntries.forEach((e) => { if (e) map[e[0]] = e[1]; });
       setProgressMap(map);
     } catch (err) {
-      message.error(err instanceof Error ? err.message : "فشل تحميل الدورات");
+      message.error(err instanceof Error ? err.message : t("studentCourses.errors.failedLoadCourses"));
     } finally { setLoading(false); }
   };
 
@@ -87,11 +89,11 @@ export default function StudentCoursesPage() {
     <Space orientation="vertical" size={24} style={{ width: "100%" }}>
       <Row justify="space-between" align="middle">
         <Col>
-          <Title level={3} style={{ margin: 0 }}>دوراتي</Title>
-          <Text type="secondary">{enrollments.length} دورة مسجل فيها</Text>
+          <Title level={3} style={{ margin: 0 }}>{t("studentCourses.title")}</Title>
+          <Text type="secondary">{t("studentCourses.enrolledCount", { count: enrollments.length })}</Text>
         </Col>
         <Col>
-          <Button icon={<ReloadOutlined />} onClick={() => void fetchEnrollments()}>تحديث</Button>
+          <Button icon={<ReloadOutlined />} onClick={() => void fetchEnrollments()}>{t("studentCourses.actions.refresh")}</Button>
         </Col>
       </Row>
 
@@ -100,8 +102,8 @@ export default function StudentCoursesPage() {
           image={<BookOutlined style={{ fontSize: 48, color: "#d9d9d9" }} />}
           description={
             <Space orientation="vertical" size={4}>
-              <Text>لا تملك أي دورة مسجل فيها بعد.</Text>
-              <Link to="/courses"><Button type="primary">استعرض الدورات</Button></Link>
+              <Text>{t("studentCourses.empty.description")}</Text>
+              <Link to="/courses"><Button type="primary">{t("studentCourses.empty.browseCourses")}</Button></Link>
             </Space>
           }
         />
@@ -169,17 +171,17 @@ export default function StudentCoursesPage() {
                           {pct}%
                         </Text>
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                          {pct === 100 ? "✅ مكتمل"
-                            : prog ? `(${prog.completedItems}/${prog.totalItems})`
-                            : "لم يبدأ بعد"}
+                          {pct === 100 ? t("studentCourses.progress.completed")
+                            : prog ? t("studentCourses.progress.items", { completed: prog.completedItems, total: prog.totalItems })
+                            : t("studentCourses.progress.notStarted")}
                         </Text>
                         {prog?.canAccessFinalExam && pct < 100 && (
-                          <Tag color="gold" style={{ fontSize: 11 }}>جاهز للاختبار النهائي 🏆</Tag>
+                          <Tag color="gold" style={{ fontSize: 11 }}>{t("studentCourses.progress.readyForFinal")}</Tag>
                         )}
                       </Space>
 
                       <Text type="secondary" style={{ fontSize: 11 }}>
-                        تسجيل: {new Date(item.enrolledAt).toLocaleDateString("ar-TN")}
+                        {t("studentCourses.enrolledAt", { date: new Date(item.enrolledAt).toLocaleDateString("ar-TN") })}
                         {item.paidPrice > 0 && ` · ${item.paidPrice} USD`}
                       </Text>
 
@@ -189,18 +191,18 @@ export default function StudentCoursesPage() {
                           <Link to={`/dashboard/student/courses/${courseId}`}>
                             <Button type="primary" icon={<PlayCircleOutlined />}
                               style={{ background: pct === 100 ? "#52c41a" : undefined, border: "none" }}>
-                              {pct === 0 ? "ابدأ التعلم" : pct === 100 ? "مراجعة" : "متابعة"}
+                              {pct === 0 ? t("studentCourses.actions.startLearning") : pct === 100 ? t("studentCourses.actions.review") : t("studentCourses.actions.continue")}
                             </Button>
                           </Link>
                         )}
                         {courseId && (
                           <Link to={`/dashboard/student/courses/${courseId}/discussions`}>
-                            <Button size="small">النقاشات</Button>
+                            <Button size="small">{t("studentCourses.actions.discussions")}</Button>
                           </Link>
                         )}
                         {pct === 100 && (
                           <Link to="/dashboard/student/grades">
-                            <Button size="small" icon={<TrophyOutlined />}>شهادتي</Button>
+                            <Button size="small" icon={<TrophyOutlined />}>{t("studentCourses.actions.myCertificate")}</Button>
                           </Link>
                         )}
                       </Space>

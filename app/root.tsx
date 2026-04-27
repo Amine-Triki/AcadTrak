@@ -7,11 +7,15 @@ import {
   ScrollRestoration,
   Link,
 } from "react-router";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button, Result, ConfigProvider, App as AntApp, theme } from "antd";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import "./i18n";
+import { appDirection } from "./i18n";
 
 import { AuthProvider } from "./context/auth";
 import CrispChat from "./components/crisp-chat";
@@ -44,8 +48,11 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { i18n } = useTranslation();
+  const direction = useMemo(() => appDirection(i18n.resolvedLanguage ?? i18n.language), [i18n.language, i18n.resolvedLanguage]);
+
   return (
-    <html lang="en">
+    <html lang={i18n.resolvedLanguage ?? "en"} dir={direction}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -53,7 +60,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body suppressHydrationWarning>
-        <ConfigProvider theme={acadTrakTheme} direction="ltr">
+        <ConfigProvider theme={acadTrakTheme} direction={direction}>
           <AntApp>
             <AuthProvider>
               <CrispChat />
@@ -73,6 +80,8 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  const { t } = useTranslation();
+
   return (
     <div
       style={{
@@ -84,15 +93,15 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     >
       <Result
         status="500"
-        title="An unexpected error occurred"
+        title={t("error.title")}
         subTitle={
           import.meta.env.DEV && error instanceof Error
             ? error.message
-            : "Please try again"
+            : t("error.retry")
         }
         extra={
           <Button type="primary">
-            <Link to="/">Back to Home</Link>
+            <Link to="/">{t("error.backHome")}</Link>
           </Button>
         }
       />

@@ -21,9 +21,11 @@ import {
   ArrowRightOutlined,
   LoginOutlined,
 } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import type { Route } from "./+types/_public.courses";
 import { apiFetch } from "~/utils/api";
 import { useAuth } from "~/context/auth";
+import i18n from "~/i18n";
 
 const { Title, Text } = Typography;
 
@@ -180,11 +182,10 @@ const mapApiCourse = (course: ApiCourse): CourseCardItem => ({
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "AcadTrak | All Courses" },
+    { title: i18n.t("publicCourses.meta.title") },
     {
       name: "description",
-      content:
-        "Browse expert-led courses in development, design, marketing, and more.",
+      content: i18n.t("publicCourses.meta.description"),
     },
   ];
 }
@@ -213,6 +214,7 @@ export async function clientLoader(): Promise<CoursesLoaderData> {
 }
 
 export default function CoursesPage({ loaderData }: Route.ComponentProps) {
+  const { t } = useTranslation();
   const { message } = App.useApp();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -283,7 +285,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
 
     // ✅ Student وTeacher يمكنهما التسجيل — Admin مراقب فقط
     if (user.role !== "student" && user.role !== "teacher") {
-      message.info("فقط الطلاب والأساتذة يمكنهم التسجيل في الدورات.");
+      message.info(t("publicCourses.messages.onlyStudentTeacher"));
       return;
     }
 
@@ -297,19 +299,19 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
         | null;
 
       if (response.status === 409) {
-        message.success(payload?.message || "You are already enrolled.");
+        message.success(payload?.message || t("publicCourses.messages.alreadyEnrolled"));
         navigate(`/dashboard/student/courses/${course.id}`);
         return;
       }
 
       if (!response.ok) {
-        throw new Error(payload?.message || "Failed to enroll in course.");
+        throw new Error(payload?.message || t("publicCourses.errors.failedEnroll"));
       }
 
-      message.success(payload?.message || "You are now enrolled.");
+      message.success(payload?.message || t("publicCourses.messages.enrolled"));
       navigate(`/dashboard/student/courses/${course.id}`);
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "Failed to enroll in course.");
+      message.error(error instanceof Error ? error.message : t("publicCourses.errors.failedEnroll"));
     } finally {
       setEnrollingCourseId(null);
     }
@@ -317,14 +319,14 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
 
   const getPrimaryActionLabel = (course: CourseCardItem) => {
     if (course.type === "paid") {
-      return user ? "الانتقال إلى الدفع" : "سجّل الدخول للدفع";
+      return user ? t("publicCourses.actions.goToPayment") : t("publicCourses.actions.loginForPayment");
     }
 
     if (!user) {
-      return "سجّل الدخول للانضمام";
+      return t("publicCourses.actions.loginToJoin");
     }
 
-    return "الانضمام الآن";
+    return t("publicCourses.actions.joinNow");
   };
 
   return (
@@ -344,7 +346,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
             marginBottom: 12,
           }}
         >
-          Explore All Courses
+          {t("publicCourses.hero.title")}
         </Title>
         <Text
           style={{
@@ -354,14 +356,14 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
             marginBottom: 32,
           }}
         >
-          Discover expert-led courses and start learning with real content.
+          {t("publicCourses.hero.subtitle")}
         </Text>
 
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
           <Input
             size="large"
             prefix={<SearchOutlined style={{ color: "#9ca3af" }} />}
-            placeholder="Search courses, instructors, topics..."
+            placeholder={t("publicCourses.hero.searchPlaceholder")}
             value={search}
             onChange={(event) => handleSearch(event.target.value)}
             allowClear
@@ -412,7 +414,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                 whiteSpace: "nowrap",
               }}
             >
-              {item}
+              {item === "All" ? t("publicCourses.filters.all") : item}
             </button>
           ))}
 
@@ -432,11 +434,11 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
               size="small"
               style={{ width: 150 }}
               options={[
-                { label: "Most Popular", value: "popular" },
-                { label: "Top Rated", value: "rating" },
-                { label: "Price: Low", value: "price_asc" },
-                { label: "Price: High", value: "price_desc" },
-                { label: "Newest", value: "newest" },
+                { label: t("publicCourses.sort.popular"), value: "popular" },
+                { label: t("publicCourses.sort.rating"), value: "rating" },
+                { label: t("publicCourses.sort.priceAsc"), value: "price_asc" },
+                { label: t("publicCourses.sort.priceDesc"), value: "price_desc" },
+                { label: t("publicCourses.sort.newest"), value: "newest" },
               ]}
             />
           </div>
@@ -467,12 +469,15 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
         >
           <Text type="secondary">
             {search
-              ? `Showing ${filtered.length} results for "${search}"`
-              : `${filtered.length} courses available`}
-            {category !== "All" && ` in ${category}`}
+              ? t("publicCourses.summary.search", { count: filtered.length, search })
+              : t("publicCourses.summary.available", { count: filtered.length })}
+            {category !== "All" && ` ${t("publicCourses.summary.inCategory", { category })}`}
           </Text>
           <Text type="secondary" style={{ fontSize: 13 }}>
-            Page {page} of {Math.ceil(filtered.length / PAGE_SIZE) || 1}
+            {t("publicCourses.summary.page", {
+              page,
+              total: Math.ceil(filtered.length / PAGE_SIZE) || 1,
+            })}
           </Text>
         </div>
 
@@ -480,7 +485,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
           <Empty
             description={
               <span>
-                No courses found.
+                {t("publicCourses.empty.noCourses")}
                 <button
                   onClick={() => {
                     setSearch("");
@@ -495,7 +500,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                     marginLeft: 6,
                   }}
                 >
-                  Clear filters
+                  {t("publicCourses.empty.clearFilters")}
                 </button>
               </span>
             }
@@ -538,7 +543,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                             margin: 0,
                           }}
                         >
-                          {course.type === "paid" ? "Paid" : "Free"}
+                          {course.type === "paid" ? t("publicCourses.type.paid") : t("publicCourses.type.free")}
                         </Tag>
                       </div>
                     }
@@ -597,7 +602,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                         {course.rating}
                       </Text>
                       <Text type="secondary" style={{ fontSize: 12 }}>
-                        ({course.students.toLocaleString()} ratings)
+                        ({t("publicCourses.ratings", { count: course.students.toLocaleString() })})
                       </Text>
                     </div>
 
@@ -619,7 +624,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                           color: "#4f46e5",
                         }}
                       >
-                        {course.price === 0 ? "Free" : `$${course.price}`}
+                        {course.price === 0 ? t("publicCourses.type.free") : `$${course.price}`}
                       </span>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                         <Button
@@ -644,7 +649,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                             iconPlacement="end"
                             style={{ borderRadius: 6 }}
                           >
-                            تفاصيل
+                            {t("publicCourses.actions.details")}
                           </Button>
                         </Link>
                       </div>
@@ -670,7 +675,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                     setPage(nextPage);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  showTotal={(total) => `Total ${total} courses`}
+                  showTotal={(total) => t("publicCourses.pagination.total", { total })}
                   showSizeChanger={false}
                 />
               </div>

@@ -1,5 +1,6 @@
 import type { Route } from "./+types/_public.contact";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 import {
   contactFormSchema,
@@ -37,62 +38,49 @@ const generateIdempotencyKey = () => {
 const CONTACT_INFO = [
   {
     icon: <MailOutlined />,
-    title: "Email",
+    key: "email",
     value: "hello@acadtrak.com",
-    sub: "We reply within 24 hours",
+    subKey: "replyWithin24h",
   },
   {
     icon: <PhoneOutlined />,
-    title: "Phone and WhatsApp",
+    key: "phoneWhatsapp",
     value: "+1 (555) 123-4567",
-    sub: "Mon–Fri, 9am–6pm PST",
+    subKey: "workdaysPst",
   },
   {
     icon: <EnvironmentOutlined />,
-    title: "Office",
+    key: "office",
     value: "San Francisco, CA",
-    sub: "123 Learning St, Suite 400",
+    subKey: "officeAddress",
   },
   {
     icon: <ClockCircleOutlined />,
-    title: "Support Hours",
+    key: "supportHours",
     value: "Mon–Fri, 9am–6pm",
-    sub: "Weekend: limited support",
+    subKey: "weekendSupport",
   },
 ];
 
 const FAQ_ITEMS = [
-  {
-    key: "1",
-    label: "How do I enroll in a course?",
-    children: "Simply create an account, browse our course catalog, and click 'Enroll Now'. You'll get instant access after payment.",
-  },
-  {
-    key: "2",
-    label: "What payment methods do you accept?",
-    children: "We accept all major credit cards (Visa, Mastercard, Amex), PayPal, and bank transfers for institutional purchases.",
-  },
-  {
-    key: "3",
-    label: "Can I get a refund?",
-    children: "Yes! We offer a 30-day money-back guarantee on all courses. Contact our support team to initiate a refund.",
-  },
-  {
-    key: "4",
-    label: "Do courses have an expiry date?",
-    children: "No. Once enrolled, you have lifetime access to the course content, including all future updates.",
-  },
-  {
-    key: "5",
-    label: "Can I become an instructor?",
-    children: "We'd love to have you! Click 'Become an Instructor' in the dashboard or contact us at instructors@acadtrak.com.",
-  },
+  { key: "1", id: "enroll" },
+  { key: "2", id: "payments" },
+  { key: "3", id: "refund" },
+  { key: "4", id: "expiry" },
+  { key: "5", id: "instructor" },
 ];
 
 export default function ContactPage() {
+  const { t } = useTranslation();
   const [form] = Form.useForm();
   const { message } = App.useApp();
   const [submitting, setSubmitting] = useState(false);
+
+  const faqItems = FAQ_ITEMS.map((item) => ({
+    key: item.key,
+    label: t(`publicContact.faq.items.${item.id}.question`),
+    children: t(`publicContact.faq.items.${item.id}.answer`),
+  }));
 
   const handleSubmit = async (values: ContactFormInput) => {
     if (submitting) {
@@ -101,7 +89,7 @@ export default function ContactPage() {
 
     const parsed = contactFormSchema.safeParse(values);
     if (!parsed.success) {
-      message.error(parsed.error.issues[0]?.message || "Invalid form data");
+      message.error(parsed.error.issues[0]?.message || t("publicContact.messages.invalidData"));
       return;
     }
 
@@ -121,21 +109,21 @@ export default function ContactPage() {
         | null;
 
       if (!response.ok) {
-        throw new Error(payload?.message || "Failed to send your message");
+        throw new Error(payload?.message || t("publicContact.errors.failedSend"));
       }
 
       if (payload?.duplicate) {
-        message.info("This message was already sent recently.");
+        message.info(t("publicContact.messages.duplicate"));
         return;
       }
 
-      message.success("Message sent! We'll get back to you within 24 hours.");
+      message.success(t("publicContact.messages.sentSuccess"));
       form.resetFields();
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "Failed to send your message. Please try again.";
+          : t("publicContact.errors.tryAgain");
       message.error(errorMessage);
     } finally {
       setSubmitting(false);
@@ -166,13 +154,13 @@ export default function ContactPage() {
             marginBottom: 20,
           }}
         >
-          Get in Touch
+          {t("publicContact.hero.badge")}
         </span>
         <Title
           level={1}
           style={{ color: "#fff", fontSize: "clamp(28px, 4vw, 48px)", marginBottom: 16 }}
         >
-          We'd Love to Hear From You
+          {t("publicContact.hero.title")}
         </Title>
         <Paragraph
           style={{
@@ -183,8 +171,7 @@ export default function ContactPage() {
             lineHeight: 1.8,
           }}
         >
-          Have a question, feedback, or partnership inquiry?
-          Our team is always ready to help.
+          {t("publicContact.hero.description")}
         </Paragraph>
       </section>
 
@@ -199,7 +186,7 @@ export default function ContactPage() {
         >
           {CONTACT_INFO.map((info) => (
             <Card
-              key={info.title}
+              key={info.key}
               style={{ borderRadius: 14, border: "1px solid #e5e7eb", textAlign: "center" }}
               styles={{ body: { padding: 24 } }}
             >
@@ -220,12 +207,14 @@ export default function ContactPage() {
                 {info.icon}
               </div>
               <Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 4 }}>
-                {info.title}
+                {t(`publicContact.contactInfo.${info.key}.title`)}
               </Text>
               <div style={{ fontWeight: 600, fontSize: 14, color: "#111827", marginBottom: 4 }}>
                 {info.value}
               </div>
-              <Text type="secondary" style={{ fontSize: 12 }}>{info.sub}</Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {t(`publicContact.contactInfo.${info.key}.${info.subKey}`)}
+              </Text>
             </Card>
           ))}
         </div>
@@ -246,9 +235,9 @@ export default function ContactPage() {
             style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}
             styles={{ body: { padding: 36 } }}
           >
-            <Title level={3} style={{ marginBottom: 8 }}>Send a Message</Title>
+            <Title level={3} style={{ marginBottom: 8 }}>{t("publicContact.form.title")}</Title>
             <Text type="secondary" style={{ display: "block", marginBottom: 28 }}>
-              Fill out the form and we'll respond within 24 hours.
+              {t("publicContact.form.subtitle")}
             </Text>
 
             <Form
@@ -260,54 +249,54 @@ export default function ContactPage() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 <Form.Item
                   name="firstName"
-                  label="First Name"
-                  rules={[{ required: true, message: "Required" }]}
+                  label={t("publicContact.form.firstName")}
+                  rules={[{ required: true, message: t("publicContact.form.required") }]}
                 >
-                  <Input placeholder="John" size="large" />
+                  <Input placeholder={t("publicContact.form.firstNamePlaceholder")} size="large" />
                 </Form.Item>
                 <Form.Item
                   name="lastName"
-                  label="Last Name"
-                  rules={[{ required: true, message: "Required" }]}
+                  label={t("publicContact.form.lastName")}
+                  rules={[{ required: true, message: t("publicContact.form.required") }]}
                 >
-                  <Input placeholder="Doe" size="large" />
+                  <Input placeholder={t("publicContact.form.lastNamePlaceholder")} size="large" />
                 </Form.Item>
               </div>
 
               <Form.Item
                 name="email"
-                label="Email Address"
+                label={t("publicContact.form.email")}
                 rules={[
-                  { required: true, message: "Required" },
-                  { type: "email", message: "Invalid email" },
+                  { required: true, message: t("publicContact.form.required") },
+                  { type: "email", message: t("publicContact.form.invalidEmail") },
                 ]}
               >
                 <Input
                   prefix={<MailOutlined style={{ color: "#9ca3af" }} />}
-                  placeholder="john@example.com"
+                  placeholder={t("publicContact.form.emailPlaceholder")}
                   size="large"
                 />
               </Form.Item>
 
               <Form.Item
                 name="subject"
-                label="Subject"
-                rules={[{ required: true, message: "Required" }]}
+                label={t("publicContact.form.subject")}
+                rules={[{ required: true, message: t("publicContact.form.required") }]}
               >
-                <Input placeholder="How can we help you?" size="large" />
+                <Input placeholder={t("publicContact.form.subjectPlaceholder")} size="large" />
               </Form.Item>
 
               <Form.Item
                 name="message"
-                label="Message"
+                label={t("publicContact.form.message")}
                 rules={[
-                  { required: true, message: "Required" },
-                  { min: 20, message: "At least 20 characters" },
+                  { required: true, message: t("publicContact.form.required") },
+                  { min: 20, message: t("publicContact.form.min20") },
                 ]}
               >
                 <TextArea
                   rows={5}
-                  placeholder="Tell us more about your inquiry..."
+                  placeholder={t("publicContact.form.messagePlaceholder")}
                   style={{ resize: "none" }}
                 />
               </Form.Item>
@@ -329,19 +318,19 @@ export default function ContactPage() {
                   fontWeight: 600,
                 }}
               >
-                Send Message
+                {t("publicContact.form.submit")}
               </Button>
             </Form>
           </Card>
           {/* ── FAQ ── */}
           <div>
-            <Title level={3} style={{ marginBottom: 8 }}>Frequently Asked Questions</Title>
+            <Title level={3} style={{ marginBottom: 8 }}>{t("publicContact.faq.title")}</Title>
             <Text type="secondary" style={{ display: "block", marginBottom: 28 }}>
-              Quick answers to common questions.
+              {t("publicContact.faq.subtitle")}
             </Text>
 
             <Collapse
-              items={FAQ_ITEMS}
+              items={faqItems}
               accordion
               style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12 }}
               expandIconPlacement="end"

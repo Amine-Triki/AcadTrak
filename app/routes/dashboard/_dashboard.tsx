@@ -6,6 +6,7 @@ import {
   Layout, Menu, Button, Avatar,
   Dropdown, Space, theme, Badge,
 } from "antd";
+import { useTranslation } from "react-i18next";
 import {
   DashboardOutlined, BookOutlined, UserOutlined,
   TeamOutlined, SettingOutlined, MenuFoldOutlined,
@@ -69,28 +70,28 @@ export async function clientLoader() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━
 // القوائم — النوع الصحيح
 // ━━━━━━━━━━━━━━━━━━━━━━━━
-const menuByRole: Record<string, MenuItem> = {
+const buildMenuByRole = (t: (key: string) => string): Record<string, MenuItem> => ({
 
   student: [
     {
       key: "/dashboard/student",
       icon: <DashboardOutlined />,
-      label: <Link to="/dashboard/student">لوحتي</Link>,
+      label: <Link to="/dashboard/student">{t("dashboardLayout.studentHome")}</Link>,
     },
     {
       key: "/dashboard/student/courses",
       icon: <BookOutlined />,
-      label: <Link to="/dashboard/student/courses">كورساتي</Link>,
+      label: <Link to="/dashboard/student/courses">{t("studentCourses.title")}</Link>,
     },
     {
       key: "/dashboard/student/grades",
       icon: <TrophyOutlined />,
-      label: <Link to="/dashboard/student/grades">درجاتي وشهاداتي</Link>,
+      label: <Link to="/dashboard/student/grades">{t("dashboardLayout.myGrades")}</Link>,
     },
     {
       key: "/dashboard/student/upgrade-to-teacher",
       icon: <UploadOutlined />,
-      label: <Link to="/dashboard/student/upgrade-to-teacher">التحول إلى أستاذ</Link>,
+      label: <Link to="/dashboard/student/upgrade-to-teacher">{t("upgradeToTeacher.title")}</Link>,
     },
   ],
 
@@ -98,43 +99,43 @@ const menuByRole: Record<string, MenuItem> = {
     // ✅ type: "group" يعمل الآن لأن MenuItem يعرفه
     {
       type: "group",
-      label: "كأستاذ",
+      label: t("dashboardLayout.asTeacher"),
       children: [
         {
           key: "/dashboard/teacher",
           icon: <DashboardOutlined />,
-          label: <Link to="/dashboard/teacher">لوحتي</Link>,
+          label: <Link to="/dashboard/teacher">{t("dashboardLayout.teacherHome")}</Link>,
         },
         {
           key: "/dashboard/teacher/courses",
           icon: <UploadOutlined />,
-          label: <Link to="/dashboard/teacher/courses">دوراتي</Link>,
+          label: <Link to="/dashboard/teacher/courses">{t("teacherDashboard.myCourses")}</Link>,
         },
         {
           key: "/dashboard/teacher/quizzes",
           icon: <FileTextOutlined />,
-          label: <Link to="/dashboard/teacher/quizzes">اختباراتي</Link>,
+          label: <Link to="/dashboard/teacher/quizzes">{t("dashboardLayout.myQuizzes")}</Link>,
         },
         {
           key: "/dashboard/teacher/students",
           icon: <TeamOutlined />,
-          label: <Link to="/dashboard/teacher/students">طلابي</Link>,
+          label: <Link to="/dashboard/teacher/students">{t("teacherStudents.title")}</Link>,
         },
       ],
     },
     {
       type: "group",
-      label: "كطالب",
+      label: t("dashboardLayout.asStudent"),
       children: [
         {
           key: "/dashboard/student/courses",
           icon: <BookOutlined />,
-          label: <Link to="/dashboard/student/courses">الدورات المشتراة</Link>,
+          label: <Link to="/dashboard/student/courses">{t("dashboardLayout.enrolledCourses")}</Link>,
         },
         {
           key: "/dashboard/student/grades",
           icon: <TrophyOutlined />,
-          label: <Link to="/dashboard/student/grades">درجاتي وشهاداتي</Link>,
+          label: <Link to="/dashboard/student/grades">{t("dashboardLayout.myGrades")}</Link>,
         },
       ],
     },
@@ -144,35 +145,36 @@ const menuByRole: Record<string, MenuItem> = {
     {
       key: "/dashboard/admin",
       icon: <DashboardOutlined />,
-      label: <Link to="/dashboard/admin">لوحة التحكم</Link>,
+      label: <Link to="/dashboard/admin">{t("adminDashboard.title")}</Link>,
     },
     {
       key: "/dashboard/admin/users",
       icon: <TeamOutlined />,
-      label: <Link to="/dashboard/admin/users">المستخدمون</Link>,
+      label: <Link to="/dashboard/admin/users">{t("adminUsers.title")}</Link>,
     },
     {
       key: "/dashboard/admin/courses",
       icon: <BookOutlined />,
-      label: <Link to="/dashboard/admin/courses">الكورسات</Link>,
+      label: <Link to="/dashboard/admin/courses">{t("adminCourses.title")}</Link>,
     },
     {
       key: "/dashboard/admin/messages",
       icon: <MailOutlined />,
-      label: <Link to="/dashboard/admin/messages">رسائل التواصل</Link>,
+      label: <Link to="/dashboard/admin/messages">{t("adminMessages.title")}</Link>,
     },
     {
       key: "/dashboard/admin/settings",
       icon: <SettingOutlined />,
-      label: <Link to="/dashboard/admin/settings">الإعدادات</Link>,
+      label: <Link to="/dashboard/admin/settings">{t("adminSettings.title")}</Link>,
     },
   ],
-};
+});
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━
 // المكون الرئيسي
 // ━━━━━━━━━━━━━━━━━━━━━━━━
 export default function DashboardLayout() {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const { user, isAuthenticated, setUser } = useAuth();
   const loaderData = useLoaderData() as {
@@ -206,19 +208,22 @@ export default function DashboardLayout() {
     return <Navigate to={`/dashboard/${authUser?.role || "student"}`} replace />;
   }
 
-  const menuItems = menuByRole[authUser.role!] ?? menuByRole.student;
+  const menuByRole = buildMenuByRole(t);
+  const rawMenuItems = menuByRole[authUser.role!] ?? menuByRole.student ?? [];
+
+  const menuItems = rawMenuItems;
 
   const userMenuItems: MenuProps["items"] = [
     {
       key: "profile",
       icon: <UserOutlined />,
-      label: "الملف الشخصي",
+      label: t("dashboardLayout.profile"),
     },
     { type: "divider" },
     {
       key: "logout",
       icon: <LogoutOutlined />,
-      label: "تسجيل الخروج",
+      label: t("common.logout"),
       danger: true,
     },
   ];
@@ -321,7 +326,7 @@ export default function DashboardLayout() {
             icon={<HomeOutlined />}
             onClick={() => window.open("/", "_blank")}
             style={{ fontSize: token.fontSizeLG }}
-            title="الذهاب إلى الصفحة الرئيسية"
+            title={t("dashboardLayout.goHome")}
           />
 
           <Space size={token.marginSM}>
@@ -345,7 +350,7 @@ export default function DashboardLayout() {
                   <span style={{ color: token.colorText }}>
                     {authUser.firstName && authUser.lastName
                       ? `${authUser.firstName} ${authUser.lastName}`
-                      : authUser.userName || authUser.email || "User"}
+                      : authUser.userName || authUser.email || t("common.userFallback")}
                   </span>
                 )}
               </Space>

@@ -21,6 +21,7 @@ import {
   ReloadOutlined,
   BookOutlined,
 } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 import { useAuth } from "~/context/auth";
 
@@ -55,6 +56,7 @@ interface InstructorCourse {
 }
 
 export default function InstructorProfilePage() {
+  const { t } = useTranslation();
   const { message } = App.useApp();
   const { user, setUser } = useAuth();
   const [form] = Form.useForm();
@@ -72,7 +74,7 @@ export default function InstructorProfilePage() {
   const fetchInstructorData = async () => {
     if (!instructorId) {
       setLoading(false);
-      message.error("معرف الأستاذ غير موجود");
+      message.error(t("instructorProfile.errors.missingId"));
       return;
     }
 
@@ -91,13 +93,13 @@ export default function InstructorProfilePage() {
         | null;
 
       if (!instructorResponse.ok) {
-        throw new Error(instructorPayload?.message || "فشل تحميل بيانات الأستاذ");
+        throw new Error(instructorPayload?.message || t("instructorProfile.errors.failedLoadInstructor"));
       }
 
       const user = instructorPayload?.user;
       // ✅ فقط الأستاذ يظهر كـ instructor — Admin ليس مدرساً
       if (!user || user.role !== "teacher") {
-        throw new Error("هذا المستخدم ليس أستاذاً");
+        throw new Error(t("instructorProfile.errors.notTeacher"));
       }
 
       setInstructor(user);
@@ -111,7 +113,7 @@ export default function InstructorProfilePage() {
       setCourses(publishedCourses);
 
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "فشل تحميل البيانات");
+      message.error(error instanceof Error ? error.message : t("instructorProfile.errors.failedLoadData"));
     } finally {
       setLoading(false);
     }
@@ -137,10 +139,10 @@ export default function InstructorProfilePage() {
         | null;
 
       if (!response.ok) {
-        throw new Error(payload?.message || "فشل تحديث الملف الشخصي");
+        throw new Error(payload?.message || t("instructorProfile.errors.failedUpdateProfile"));
       }
 
-      message.success(payload?.message || "تم تحديث الملف الشخصي");
+      message.success(payload?.message || t("instructorProfile.messages.profileUpdated"));
       if (payload?.user) {
         setInstructor((prev) => (prev ? { ...prev, ...payload.user } : prev));
         setUser((user && user.id === payload.user.id)
@@ -158,7 +160,7 @@ export default function InstructorProfilePage() {
       setEditOpen(false);
       await fetchInstructorData();
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "فشل تحديث الملف الشخصي");
+      message.error(error instanceof Error ? error.message : t("instructorProfile.errors.failedUpdateProfile"));
     } finally {
       setSavingProfile(false);
     }
@@ -194,8 +196,8 @@ export default function InstructorProfilePage() {
   if (!instructor) {
     return (
       <Card>
-        <Title level={4}>معلومات الأستاذ</Title>
-        <Text type="secondary">تعذر تحميل بيانات الأستاذ.</Text>
+        <Title level={4}>{t("instructorProfile.infoTitle")}</Title>
+        <Text type="secondary">{t("instructorProfile.errors.couldNotLoad")}</Text>
       </Card>
     );
   }
@@ -203,7 +205,7 @@ export default function InstructorProfilePage() {
   const fullName =
     instructor.firstName && instructor.lastName
       ? `${instructor.firstName} ${instructor.lastName}`
-      : instructor.userName || "أستاذ";
+      : instructor.userName || t("instructorProfile.fallbackTeacher");
 
   return (
     <Space orientation="vertical" size={24} style={{ width: "100%" }}>
@@ -226,7 +228,7 @@ export default function InstructorProfilePage() {
                   {fullName}
                 </Title>
                 <Text type="secondary" style={{ display: "block", marginTop: 4 }}>
-                  @{instructor.userName || "user"}
+                  @{instructor.userName || t("instructorProfile.userFallback")}
                 </Text>
               </div>
 
@@ -240,11 +242,11 @@ export default function InstructorProfilePage() {
               <Space>
                 {isOwnProfile ? (
                   <Button type="primary" onClick={() => setEditOpen(true)}>
-                    تعديل صفحتي
+                    {t("instructorProfile.actions.editMyPage")}
                   </Button>
                 ) : null}
                 <Button icon={<ReloadOutlined />} onClick={() => void fetchInstructorData()}>
-                  تحديث
+                  {t("instructorProfile.actions.refresh")}
                 </Button>
               </Space>
             </Space>
@@ -255,7 +257,7 @@ export default function InstructorProfilePage() {
           <>
             <Divider />
             <div>
-              <Text strong>نبذة عني:</Text>
+              <Text strong>{t("instructorProfile.aboutMe")}</Text>
               <Paragraph style={{ marginTop: 8 }}>{instructor.bio}</Paragraph>
             </div>
           </>
@@ -264,32 +266,32 @@ export default function InstructorProfilePage() {
         {instructor.createdAt && (
           <div style={{ marginTop: 12 }}>
             <Text type="secondary" style={{ fontSize: 12 }}>
-              عضو منذ {new Date(instructor.createdAt).toLocaleDateString("ar-SA")}
+              {t("instructorProfile.memberSince", { date: new Date(instructor.createdAt).toLocaleDateString("ar-SA") })}
             </Text>
           </div>
         )}
       </Card>
 
       {/* ─── إحصائيات ─── */}
-      <Card title="الإحصائيات">
+      <Card title={t("instructorProfile.stats.title")}>
         <Space size={32}>
           <div style={{ textAlign: "center" }}>
             <Title level={5} style={{ margin: 0, color: "#1890ff" }}>
               {courses.length}
             </Title>
-            <Text type="secondary">دورة منشورة</Text>
+            <Text type="secondary">{t("instructorProfile.stats.publishedCourses")}</Text>
           </div>
           <div style={{ textAlign: "center" }}>
             <Title level={5} style={{ margin: 0, color: "#52c41a" }}>
               {courses.filter((c) => c.type === "free").length}
             </Title>
-            <Text type="secondary">دورات مجانية</Text>
+            <Text type="secondary">{t("instructorProfile.stats.freeCourses")}</Text>
           </div>
           <div style={{ textAlign: "center" }}>
             <Title level={5} style={{ margin: 0, color: "#faad14" }}>
               {courses.filter((c) => c.type === "paid").length}
             </Title>
-            <Text type="secondary">دورات مدفوعة</Text>
+            <Text type="secondary">{t("instructorProfile.stats.paidCourses")}</Text>
           </div>
         </Space>
       </Card>
@@ -298,10 +300,10 @@ export default function InstructorProfilePage() {
       <div>
         <Title level={4}>
           <BookOutlined style={{ marginRight: 8 }} />
-          الدورات المتاحة
+          {t("instructorProfile.availableCourses")}
         </Title>
         <Text type="secondary" style={{ display: "block", marginBottom: 12 }}>
-          إضافة أو تعديل coupon تتم من لوحة الأستاذ: دوراتي ثم تعديل الدورة.
+          {t("instructorProfile.couponHint")}
         </Text>
         {courses.length > 0 ? (
           <Row gutter={[16, 16]}>
@@ -312,13 +314,13 @@ export default function InstructorProfilePage() {
                   title={course.title}
                   extra={
                     <Tag color={course.type === "paid" ? "gold" : "green"}>
-                      {course.type === "paid" ? "مدفوع" : "مجاني"}
+                      {course.type === "paid" ? t("instructorProfile.courseType.paid") : t("instructorProfile.courseType.free")}
                     </Tag>
                   }
                 >
                   <Space orientation="vertical" size={8} style={{ width: "100%" }}>
                     <Text type="secondary">
-                      {course.description || "بدون وصف"}
+                      {course.description || t("instructorProfile.noDescription")}
                     </Text>
 
                     {course.type === "paid" && course.price && (
@@ -331,7 +333,7 @@ export default function InstructorProfilePage() {
 
                     <Link to={`/dashboard/student/courses/${course.id || course._id}`}>
                       <Button type="primary" block style={{ marginTop: 8 }}>
-                        عرض الدورة
+                        {t("instructorProfile.actions.viewCourse")}
                       </Button>
                     </Link>
                   </Space>
@@ -341,7 +343,7 @@ export default function InstructorProfilePage() {
           </Row>
         ) : (
           <Card>
-            <Text type="secondary">لا توجد دورات منشورة حالياً.</Text>
+            <Text type="secondary">{t("instructorProfile.noPublishedCourses")}</Text>
           </Card>
         )}
       </div>
@@ -349,30 +351,30 @@ export default function InstructorProfilePage() {
       <Modal
         open={editOpen}
         onCancel={() => setEditOpen(false)}
-        title="تعديل الصفحة الشخصية"
-        okText="حفظ"
-        cancelText="إلغاء"
+        title={t("instructorProfile.modal.editTitle")}
+        okText={t("instructorProfile.modal.save")}
+        cancelText={t("instructorProfile.modal.cancel")}
         onOk={() => form.submit()}
         confirmLoading={savingProfile}
       >
         <Form form={form} layout="vertical" onFinish={handleSaveProfile}>
-          <Form.Item name="firstName" label="الاسم" rules={[{ required: true, message: "الاسم مطلوب" }]}>
+          <Form.Item name="firstName" label={t("instructorProfile.form.firstName")} rules={[{ required: true, message: t("instructorProfile.form.firstNameRequired") }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="lastName" label="اللقب" rules={[{ required: true, message: "اللقب مطلوب" }]}>
+          <Form.Item name="lastName" label={t("instructorProfile.form.lastName")} rules={[{ required: true, message: t("instructorProfile.form.lastNameRequired") }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="userName" label="اسم المستخدم" rules={[{ required: true, message: "اسم المستخدم مطلوب" }]}>
+          <Form.Item name="userName" label={t("instructorProfile.form.userName")} rules={[{ required: true, message: t("instructorProfile.form.userNameRequired") }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="country" label="الدولة" rules={[{ required: true, message: "الدولة مطلوبة" }]}>
+          <Form.Item name="country" label={t("instructorProfile.form.country")} rules={[{ required: true, message: t("instructorProfile.form.countryRequired") }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="bio" label="نبذة عني">
+          <Form.Item name="bio" label={t("instructorProfile.form.bio")}>
             <Input.TextArea rows={3} />
           </Form.Item>
-          <Form.Item name="avatar" label="رابط الصورة الشخصية">
-            <Input placeholder="https://..." />
+          <Form.Item name="avatar" label={t("instructorProfile.form.avatarUrl")}>
+            <Input placeholder={t("instructorProfile.form.avatarPlaceholder")} />
           </Form.Item>
         </Form>
       </Modal>

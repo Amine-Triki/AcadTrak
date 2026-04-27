@@ -7,6 +7,7 @@ import {
   CheckCircleOutlined, CloseCircleOutlined,
   PrinterOutlined, SafetyCertificateOutlined, TrophyOutlined,
 } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
@@ -170,7 +171,7 @@ function CertificateModal({ cert, open, onClose }: { cert: Certificate; open: bo
           <div style={{
             fontSize: 28, fontWeight: "bold", color: "#c8a951",
             borderBottom: "2px solid #c8a951",
-            display: "inline-block", padding: "0 32px 4px",
+            padding: "0 32px 4px",
             margin: "12px auto 16px", display: "block",
           }}>
             {cert.studentName ?? "الطالب"}
@@ -238,6 +239,7 @@ function CertificateModal({ cert, open, onClose }: { cert: Certificate; open: bo
 
 /* ── Main Page ─────────────────────────────────── */
 export default function StudentGradesPage() {
+  const { t } = useTranslation();
   const [loading,      setLoading]      = useState(true);
   const [attempts,     setAttempts]     = useState<QuizAttempt[]>([]);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
@@ -309,7 +311,7 @@ export default function StudentGradesPage() {
         title={
           <Space>
             <TrophyOutlined style={{ color: "#faad14", fontSize: 20 }} />
-            <Title level={4} style={{ margin: 0 }}>شهاداتي</Title>
+            <Title level={4} style={{ margin: 0 }}>{t("studentGrades.certificates")}</Title>
             <Badge count={certificates.length} color="#52c41a" />
           </Space>
         }
@@ -317,7 +319,7 @@ export default function StudentGradesPage() {
         {certificates.length === 0 ? (
           <Empty
             image={<SafetyCertificateOutlined style={{ fontSize: 48, color: "#d9d9d9" }} />}
-            description="لا توجد شهادات بعد — اجتز الاختبار النهائي للحصول على شهادتك"
+            description={t("studentGrades.noCertificates")}
           />
         ) : (
           <Row gutter={[16, 16]}>
@@ -335,11 +337,11 @@ export default function StudentGradesPage() {
                 >
                   <Space orientation="vertical" size={6} style={{ width: "100%" }}>
                     <SafetyCertificateOutlined style={{ fontSize: 40, color: "#faad14" }} />
-                    <Text strong style={{ fontSize: 15 }}>{cert.course?.title ?? "دورة"}</Text>
+                    <Text strong style={{ fontSize: 15 }}>{cert.course?.title ?? t("studentGrades.fallbackCourse")}</Text>
                     <Text type="secondary" style={{ fontSize: 12 }}>
-                      {cert.finalExam?.title ?? "الاختبار النهائي"}
+                      {cert.finalExam?.title ?? t("studentGrades.finalExam")}
                     </Text>
-                    <Tag color="gold" style={{ fontSize: 13 }}>الدرجة: {cert.score}%</Tag>
+                    <Tag color="gold" style={{ fontSize: 13 }}>{t("studentGrades.score", { score: cert.score })}</Tag>
                     <Text type="secondary" style={{ fontSize: 11 }}>
                       {cert.instructorName && `الأستاذ: ${cert.instructorName}`}
                     </Text>
@@ -352,7 +354,7 @@ export default function StudentGradesPage() {
                       size="small" type="dashed" icon={<PrinterOutlined />}
                       onClick={(e) => { e.stopPropagation(); setSelectedCert(cert); }}
                     >
-                      عرض وطباعة
+                      {t("studentGrades.viewAndPrint")}
                     </Button>
                     <Text
                       copyable={{ text: cert.certificateId }}
@@ -373,13 +375,13 @@ export default function StudentGradesPage() {
       <Card
         title={
           <Space>
-            <Title level={4} style={{ margin: 0 }}>الاختبارات النهائية</Title>
+            <Title level={4} style={{ margin: 0 }}>{t("studentGrades.finalExams")}</Title>
             <Badge count={finalAttempts.length} color="#ff4d4f" />
           </Space>
         }
       >
         {finalAttempts.length === 0 ? (
-          <Empty description="لم تُقدِّم أي اختبار نهائي بعد" />
+          <Empty description={t("studentGrades.noFinalExams")} />
         ) : (
           <Table dataSource={finalAttempts} columns={attemptsColumns}
             rowKey="_id" pagination={{ pageSize: 5 }} scroll={{ x: true }} />
@@ -390,13 +392,13 @@ export default function StudentGradesPage() {
       <Card
         title={
           <Space>
-            <Title level={4} style={{ margin: 0 }}>الاختبارات</Title>
+            <Title level={4} style={{ margin: 0 }}>{t("studentGrades.quizzes")}</Title>
             <Badge count={quizAttempts.length} />
           </Space>
         }
       >
         {quizAttempts.length === 0 ? (
-          <Empty description="لم تُقدِّم أي اختبار بعد" />
+          <Empty description={t("studentGrades.noQuizzes")} />
         ) : (
           <Table dataSource={quizAttempts} columns={attemptsColumns}
             rowKey="_id" pagination={{ pageSize: 8 }} scroll={{ x: true }} />

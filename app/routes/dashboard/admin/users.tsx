@@ -13,6 +13,7 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { DeleteOutlined, ReloadOutlined, RollbackOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 import { useAuth } from "~/context/auth";
 
@@ -30,6 +31,7 @@ type UserRow = {
 };
 
 export default function AdminUsersPage() {
+	const { t } = useTranslation();
 	const { message } = App.useApp();
 	const { user: currentUser } = useAuth();
 	const [loading, setLoading] = useState(false);
@@ -46,12 +48,12 @@ export default function AdminUsersPage() {
 				| null;
 
 			if (!response.ok) {
-				throw new Error(payload?.message || "Failed to load users");
+				throw new Error(payload?.message || t("adminUsers.errors.failedLoadUsers"));
 			}
 
 			setRows(payload?.users ?? []);
 		} catch (error) {
-			message.error(error instanceof Error ? error.message : "Failed to load users");
+			message.error(error instanceof Error ? error.message : t("adminUsers.errors.failedLoadUsers"));
 		} finally {
 			setLoading(false);
 		}
@@ -72,13 +74,13 @@ export default function AdminUsersPage() {
 			const payload = (await response.json().catch(() => null)) as { message?: string } | null;
 
 			if (!response.ok) {
-				throw new Error(payload?.message || "Action failed");
+				throw new Error(payload?.message || t("adminUsers.errors.actionFailed"));
 			}
 
-			message.success(payload?.message || "Done");
+			message.success(payload?.message || t("adminUsers.messages.done"));
 			await fetchUsers();
 		} catch (error) {
-			message.error(error instanceof Error ? error.message : "Action failed");
+			message.error(error instanceof Error ? error.message : t("adminUsers.errors.actionFailed"));
 		} finally {
 			setActionLoadingId(null);
 		}
@@ -86,15 +88,15 @@ export default function AdminUsersPage() {
 
 	const columns: ColumnsType<UserRow> = [
 		{
-			title: "Name",
+			title: t("adminUsers.table.name"),
 			key: "name",
 			render: (_, row) => `${row.firstName} ${row.lastName}`.trim() || row.userName,
 		},
-		{ title: "Username", dataIndex: "userName", key: "userName" },
-		{ title: "Email", dataIndex: "email", key: "email" },
-		{ title: "Country", dataIndex: "country", key: "country" },
+		{ title: t("adminUsers.table.username"), dataIndex: "userName", key: "userName" },
+		{ title: t("adminUsers.table.email"), dataIndex: "email", key: "email" },
+		{ title: t("adminUsers.table.country"), dataIndex: "country", key: "country" },
 		{
-			title: "Role",
+			title: t("adminUsers.table.role"),
 			dataIndex: "role",
 			key: "role",
 			render: (role: UserRow["role"]) => {
@@ -103,13 +105,13 @@ export default function AdminUsersPage() {
 			},
 		},
 		{
-			title: "Status",
+			title: t("adminUsers.table.status"),
 			key: "status",
 			render: (_, row) =>
-				row.deletedAt ? <Tag color="volcano">Deleted</Tag> : <Tag color="success">Active</Tag>,
+				row.deletedAt ? <Tag color="volcano">{t("adminUsers.status.deleted")}</Tag> : <Tag color="success">{t("adminUsers.status.active")}</Tag>,
 		},
 		{
-			title: "Actions",
+			title: t("adminUsers.table.actions"),
 			key: "actions",
 			render: (_, row) => {
 				// ✅ لا يمكن حذف حسابات Admin أو حذف النفس
@@ -122,16 +124,16 @@ export default function AdminUsersPage() {
 							loading={actionLoadingId === row.id}
 							onClick={() => void runAction(row, "restore")}
 						>
-							Restore
+							{t("adminUsers.actions.restore")}
 						</Button>
 					);
 				}
 
 				if (isProtected) {
 					return (
-						<Tooltip title={row.role === "admin" ? "Admin accounts cannot be deleted" : "You cannot delete your own account"}>
+						<Tooltip title={row.role === "admin" ? t("adminUsers.actions.adminProtected") : t("adminUsers.actions.selfProtected")}>
 							<Button danger icon={<DeleteOutlined />} disabled>
-								Delete
+								{t("adminUsers.actions.delete")}
 							</Button>
 						</Tooltip>
 					);
@@ -139,13 +141,13 @@ export default function AdminUsersPage() {
 
 				return (
 					<Popconfirm
-						title="Soft delete this user?"
+						title={t("adminUsers.actions.softDeleteTitle")}
 						onConfirm={() => void runAction(row, "delete")}
-						okText="Yes"
-						cancelText="No"
+						okText={t("adminUsers.actions.yes")}
+						cancelText={t("adminUsers.actions.no")}
 					>
 						<Button danger icon={<DeleteOutlined />} loading={actionLoadingId === row.id}>
-							Delete
+							{t("adminUsers.actions.delete")}
 						</Button>
 					</Popconfirm>
 				);
@@ -157,14 +159,14 @@ export default function AdminUsersPage() {
 		<Card>
 			<Space style={{ width: "100%", justifyContent: "space-between", marginBottom: 16 }} wrap>
 				<div>
-					<Title level={4} style={{ margin: 0 }}>Users</Title>
-					<Text type="secondary">Manage active and soft-deleted users.</Text>
+					<Title level={4} style={{ margin: 0 }}>{t("adminUsers.title")}</Title>
+					<Text type="secondary">{t("adminUsers.subtitle")}</Text>
 				</div>
 				<Space>
-					<Text>Include deleted</Text>
+					<Text>{t("adminUsers.includeDeleted")}</Text>
 					<Switch checked={includeDeleted} onChange={setIncludeDeleted} />
 					<Button icon={<ReloadOutlined />} onClick={() => void fetchUsers()}>
-						Refresh
+						{t("adminUsers.actions.refresh")}
 					</Button>
 				</Space>
 			</Space>

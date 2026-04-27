@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { App, Button, Card, Empty, Space, Spin, Table, Tag, Typography } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
@@ -21,6 +22,7 @@ interface TeacherStudentItem {
 }
 
 export default function TeacherStudentsPage() {
+	const { t } = useTranslation();
 	const { message } = App.useApp();
 	const [loading, setLoading] = useState(true);
 	const [students, setStudents] = useState<TeacherStudentItem[]>([]);
@@ -34,12 +36,12 @@ export default function TeacherStudentsPage() {
 				| null;
 
 			if (!response.ok) {
-				throw new Error(payload?.message || "فشل تحميل الطلاب");
+				throw new Error(payload?.message || t("teacherStudents.errors.failedLoadStudents"));
 			}
 
 			setStudents(payload?.students ?? []);
 		} catch (error) {
-			message.error(error instanceof Error ? error.message : "فشل تحميل الطلاب");
+			message.error(error instanceof Error ? error.message : t("teacherStudents.errors.failedLoadStudents"));
 		} finally {
 			setLoading(false);
 		}
@@ -51,7 +53,7 @@ export default function TeacherStudentsPage() {
 
 	const columns = [
 		{
-			title: "الطالب",
+			title: t("teacherStudents.table.student"),
 			dataIndex: "fullName",
 			key: "fullName",
 			render: (_: unknown, record: TeacherStudentItem) => (
@@ -62,31 +64,31 @@ export default function TeacherStudentsPage() {
 			),
 		},
 		{
-			title: "التواصل",
+			title: t("teacherStudents.table.contact"),
 			dataIndex: "email",
 			key: "email",
 			render: (value: string) => <Text>{value}</Text>,
 		},
 		{
-			title: "الدورة",
+			title: t("teacherStudents.table.course"),
 			dataIndex: "courseTitle",
 			key: "courseTitle",
 			render: (value: string) => <Tag color="blue">{value}</Tag>,
 		},
 		{
-			title: "المدفوع",
+			title: t("teacherStudents.table.paid"),
 			dataIndex: "paidPrice",
 			key: "paidPrice",
 			render: (value: number) => <Text strong>{value} USD</Text>,
 		},
 		{
-			title: "الكوبون",
+			title: t("teacherStudents.table.coupon"),
 			dataIndex: "couponCode",
 			key: "couponCode",
-			render: (value?: string) => (value ? <Tag color="gold">{value}</Tag> : <Text type="secondary">—</Text>),
+			render: (value?: string) => (value ? <Tag color="gold">{value}</Tag> : <Text type="secondary">{t("teacherStudents.none")}</Text>),
 		},
 		{
-			title: "تاريخ التسجيل",
+			title: t("teacherStudents.table.enrolledAt"),
 			dataIndex: "enrolledAt",
 			key: "enrolledAt",
 			render: (value: string) => new Date(value).toLocaleDateString(),
@@ -98,11 +100,11 @@ export default function TeacherStudentsPage() {
 			<Card>
 				<Space style={{ width: "100%", justifyContent: "space-between" }} wrap>
 					<div>
-						<Title level={4} style={{ margin: 0 }}>الطلاب</Title>
-						<Text type="secondary">قائمة الطلاب المسجلين في دوراتك</Text>
+						<Title level={4} style={{ margin: 0 }}>{t("teacherStudents.title")}</Title>
+						<Text type="secondary">{t("teacherStudents.subtitle")}</Text>
 					</div>
 					<Button icon={<ReloadOutlined />} onClick={() => void fetchStudents()}>
-						تحديث
+						{t("teacherStudents.actions.refresh")}
 					</Button>
 				</Space>
 			</Card>
@@ -113,7 +115,7 @@ export default function TeacherStudentsPage() {
 						<Spin />
 					</div>
 				) : students.length === 0 ? (
-					<Empty description="لا يوجد طلاب مسجلين حالياً" />
+					<Empty description={t("teacherStudents.empty")} />
 				) : (
 					<Table
 						rowKey={(record) => `${record.id}-${record.courseId}-${record.enrolledAt}`}

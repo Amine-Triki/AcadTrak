@@ -23,6 +23,7 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text, Paragraph } = Typography;
@@ -65,6 +66,7 @@ const formatDateTime = (dateIso: string) => {
 };
 
 export default function AdminContactMessagesPage() {
+  const { t } = useTranslation();
   const { message } = App.useApp();
 
   const [rows, setRows] = useState<ContactMessageRow[]>([]);
@@ -114,7 +116,7 @@ export default function AdminContactMessagesPage() {
           | null;
 
         if (!response.ok || !payload?.messages || !payload.pagination) {
-          throw new Error(payload?.message || "فشل تحميل الرسائل");
+          throw new Error(payload?.message || t("adminMessages.errors.failedLoadMessages"));
         }
 
         if (cancelled) {
@@ -126,7 +128,7 @@ export default function AdminContactMessagesPage() {
       } catch (error) {
         if (!cancelled) {
           const errorMessage =
-            error instanceof Error ? error.message : "تعذر تحميل الرسائل";
+            error instanceof Error ? error.message : t("adminMessages.errors.failedLoadMessages");
           message.error(errorMessage);
         }
       } finally {
@@ -161,7 +163,7 @@ export default function AdminContactMessagesPage() {
         | null;
 
       if (!response.ok) {
-        throw new Error(payload?.message || "فشل تحديث حالة الرسالة");
+        throw new Error(payload?.message || t("adminMessages.errors.failedUpdateRead"));
       }
 
       setRows((previous) =>
@@ -187,11 +189,11 @@ export default function AdminContactMessagesPage() {
       );
 
       if (!silent) {
-        message.success(payload?.message || (isRead ? "تم تعيين الرسالة كمقروءة" : "تم تعيين الرسالة كغير مقروءة"));
+        message.success(payload?.message || (isRead ? t("adminMessages.messages.markedRead") : t("adminMessages.messages.markedUnread")));
       }
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "تعذر تحديث حالة القراءة";
+        error instanceof Error ? error.message : t("adminMessages.errors.failedUpdateRead");
       message.error(errorMessage);
     } finally {
       setActionLoadingId(null);
@@ -212,10 +214,10 @@ export default function AdminContactMessagesPage() {
         | null;
 
       if (!response.ok) {
-        throw new Error(payload?.message || "فشل تحديث الأرشفة");
+        throw new Error(payload?.message || t("adminMessages.errors.failedUpdateArchive"));
       }
 
-      message.success(payload?.message || (isArchived ? "تمت الأرشفة" : "تمت استعادة الرسالة"));
+      message.success(payload?.message || (isArchived ? t("adminMessages.messages.archived") : t("adminMessages.messages.restored")));
 
       if (!includeArchived && isArchived) {
         setRows((previous) => previous.filter((item) => item.id !== row.id));
@@ -244,7 +246,7 @@ export default function AdminContactMessagesPage() {
           : current,
       );
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "تعذر تحديث الأرشفة";
+      const errorMessage = error instanceof Error ? error.message : t("adminMessages.errors.failedUpdateArchive");
       message.error(errorMessage);
     } finally {
       setActionLoadingId(null);
@@ -264,16 +266,16 @@ export default function AdminContactMessagesPage() {
         | null;
 
       if (!response.ok) {
-        throw new Error(payload?.message || "فشل حذف الرسالة");
+        throw new Error(payload?.message || t("adminMessages.errors.failedDelete"));
       }
 
-      message.success(payload?.message || "تم حذف الرسالة");
+      message.success(payload?.message || t("adminMessages.messages.deleted"));
       setRows((previous) => previous.filter((item) => item.id !== row.id));
       setTotal((value) => Math.max(0, value - 1));
       setSelectedMessage((current) => (current?.id === row.id ? null : current));
       setDetailsOpen((open) => (selectedMessage?.id === row.id ? false : open));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "تعذر حذف الرسالة";
+      const errorMessage = error instanceof Error ? error.message : t("adminMessages.errors.failedDelete");
       message.error(errorMessage);
     } finally {
       setActionLoadingId(null);
@@ -292,7 +294,7 @@ export default function AdminContactMessagesPage() {
   const columns: ColumnsType<ContactMessageRow> = useMemo(
     () => [
       {
-        title: "المرسل",
+        title: t("adminMessages.table.sender"),
         key: "sender",
         width: 220,
         render: (_, row) => (
@@ -303,40 +305,40 @@ export default function AdminContactMessagesPage() {
         ),
       },
       {
-        title: "الموضوع",
+        title: t("adminMessages.table.subject"),
         dataIndex: "subject",
         key: "subject",
         width: 220,
         render: (value: string, row) => (
           <Space size={8}>
             <span>{value}</span>
-            {!row.isRead ? <Tag color="blue">جديد</Tag> : null}
-            {row.isArchived ? <Tag>مؤرشف</Tag> : null}
+            {!row.isRead ? <Tag color="blue">{t("adminMessages.tags.new")}</Tag> : null}
+            {row.isArchived ? <Tag>{t("adminMessages.tags.archived")}</Tag> : null}
           </Space>
         ),
       },
       {
-        title: "الرسالة",
+        title: t("adminMessages.table.message"),
         dataIndex: "message",
         key: "message",
         render: (value: string) => (
           <Paragraph
             style={{ marginBottom: 0, maxWidth: 500 }}
-            ellipsis={{ rows: 2, expandable: true, symbol: "عرض المزيد" }}
+            ellipsis={{ rows: 2, expandable: true, symbol: t("adminMessages.actions.showMore") }}
           >
             {value}
           </Paragraph>
         ),
       },
       {
-        title: "تاريخ الإرسال",
+        title: t("adminMessages.table.sentAt"),
         dataIndex: "createdAt",
         key: "createdAt",
         width: 200,
         render: (value: string) => formatDateTime(value),
       },
       {
-        title: "إجراءات",
+        title: t("adminMessages.table.actions"),
         key: "actions",
         width: 280,
         render: (_, row) => (
@@ -348,7 +350,7 @@ export default function AdminContactMessagesPage() {
                 void openDetails(row);
               }}
             >
-              تفاصيل
+              {t("adminMessages.actions.details")}
             </Button>
 
             <Button
@@ -359,7 +361,7 @@ export default function AdminContactMessagesPage() {
                 void updateReadStatus(row, !row.isRead);
               }}
             >
-              {row.isRead ? "غير مقروء" : "مقروء"}
+              {row.isRead ? t("adminMessages.actions.markUnread") : t("adminMessages.actions.markRead")}
             </Button>
 
             <Button
@@ -369,14 +371,14 @@ export default function AdminContactMessagesPage() {
                 void updateArchiveStatus(row, !row.isArchived);
               }}
             >
-              {row.isArchived ? "استعادة" : "أرشفة"}
+              {row.isArchived ? t("adminMessages.actions.restore") : t("adminMessages.actions.archive")}
             </Button>
 
             <Popconfirm
-              title="حذف الرسالة"
-              description="هل أنت متأكد من حذف هذه الرسالة نهائياً؟"
-              okText="نعم"
-              cancelText="إلغاء"
+              title={t("adminMessages.actions.deleteTitle")}
+              description={t("adminMessages.actions.deleteDescription")}
+              okText={t("adminMessages.actions.yes")}
+              cancelText={t("adminMessages.actions.cancel")}
               onConfirm={() => {
                 void deleteMessage(row);
               }}
@@ -387,7 +389,7 @@ export default function AdminContactMessagesPage() {
                 icon={<DeleteOutlined />}
                 loading={actionLoadingId === row.id}
               >
-                حذف
+                {t("adminMessages.actions.delete")}
               </Button>
             </Popconfirm>
           </Space>
@@ -403,10 +405,10 @@ export default function AdminContactMessagesPage() {
     <div style={{ display: "grid", gap: 16 }}>
       <Card>
         <Title level={4} style={{ marginBottom: 6 }}>
-          رسائل التواصل
+          {t("adminMessages.title")}
         </Title>
         <Text type="secondary">
-          هنا تظهر كل الرسائل القادمة من صفحة Contact، ويمكنك البحث بالاسم أو البريد أو الموضوع.
+          {t("adminMessages.subtitle")}
         </Text>
       </Card>
 
@@ -420,7 +422,7 @@ export default function AdminContactMessagesPage() {
               setCurrentPage(1);
               setAppliedSearch(searchInput);
             }}
-            placeholder="ابحث بالاسم، البريد، الموضوع أو نص الرسالة"
+            placeholder={t("adminMessages.searchPlaceholder")}
             style={{ minWidth: 320 }}
           />
           <Button
@@ -431,7 +433,7 @@ export default function AdminContactMessagesPage() {
               setAppliedSearch(searchInput);
             }}
           >
-            بحث
+            {t("adminMessages.actions.search")}
           </Button>
           <Button
             icon={<ReloadOutlined />}
@@ -444,11 +446,11 @@ export default function AdminContactMessagesPage() {
               reloadMessages();
             }}
           >
-            إعادة ضبط
+            {t("adminMessages.actions.reset")}
           </Button>
 
           <Space>
-            <Text>غير المقروء فقط</Text>
+            <Text>{t("adminMessages.filters.unreadOnly")}</Text>
             <Switch
               checked={unreadOnly}
               onChange={(checked) => {
@@ -459,7 +461,7 @@ export default function AdminContactMessagesPage() {
           </Space>
 
           <Space>
-            <Text>إظهار المؤرشف</Text>
+            <Text>{t("adminMessages.filters.includeArchived")}</Text>
             <Switch
               checked={includeArchived}
               onChange={(checked) => {
@@ -475,7 +477,7 @@ export default function AdminContactMessagesPage() {
             type="info"
             showIcon
             style={{ marginBottom: 16 }}
-            title={`نتائج البحث عن: ${appliedSearch}`}
+            title={t("adminMessages.searchResults", { value: appliedSearch })}
           />
         ) : null}
 
@@ -505,7 +507,7 @@ export default function AdminContactMessagesPage() {
       </Card>
 
       <Drawer
-        title="تفاصيل الرسالة"
+        title={t("adminMessages.details.title")}
         open={detailsOpen}
         width={620}
         onClose={() => setDetailsOpen(false)}
@@ -513,26 +515,26 @@ export default function AdminContactMessagesPage() {
         {selectedMessage ? (
           <Space orientation="vertical" style={{ width: "100%" }} size={16}>
             <Descriptions bordered size="small" column={1}>
-              <Descriptions.Item label="المرسل">
+              <Descriptions.Item label={t("adminMessages.details.sender")}>
                 {selectedMessage.firstName} {selectedMessage.lastName}
               </Descriptions.Item>
-              <Descriptions.Item label="البريد الإلكتروني">
+              <Descriptions.Item label={t("adminMessages.details.email")}>
                 {selectedMessage.email}
               </Descriptions.Item>
-              <Descriptions.Item label="الموضوع">
+              <Descriptions.Item label={t("adminMessages.details.subject")}>
                 {selectedMessage.subject}
               </Descriptions.Item>
-              <Descriptions.Item label="الحالة">
+              <Descriptions.Item label={t("adminMessages.details.status")}>
                 <Space>
                   {selectedMessage.isRead ? (
-                    <Tag color="green">مقروءة</Tag>
+                    <Tag color="green">{t("adminMessages.tags.read")}</Tag>
                   ) : (
-                    <Tag color="blue">غير مقروءة</Tag>
+                    <Tag color="blue">{t("adminMessages.tags.unread")}</Tag>
                   )}
-                  {selectedMessage.isArchived ? <Tag>مؤرشفة</Tag> : null}
+                  {selectedMessage.isArchived ? <Tag>{t("adminMessages.tags.archivedFemale")}</Tag> : null}
                 </Space>
               </Descriptions.Item>
-              <Descriptions.Item label="وقت الإرسال">
+              <Descriptions.Item label={t("adminMessages.details.sentTime")}>
                 {formatDateTime(selectedMessage.createdAt)}
               </Descriptions.Item>
               <Descriptions.Item label="IP">
@@ -540,7 +542,7 @@ export default function AdminContactMessagesPage() {
               </Descriptions.Item>
             </Descriptions>
 
-            <Card size="small" title="نص الرسالة">
+            <Card size="small" title={t("adminMessages.details.messageText")}>
               <Paragraph style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>
                 {selectedMessage.message}
               </Paragraph>

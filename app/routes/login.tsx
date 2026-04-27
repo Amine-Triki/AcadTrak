@@ -6,6 +6,7 @@ import {
 import {
   UserOutlined, LockOutlined, BookOutlined,
 } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "~/context/auth";
 import { apiFetch } from "~/utils/api";
 
@@ -18,6 +19,7 @@ const REDIRECT_MAP: Record<string, string> = {
 };
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const [form] = Form.useForm();
   const { setUser } = useAuth();
   const navigate = useNavigate();
@@ -50,18 +52,18 @@ export default function LoginPage() {
         | null;
 
       if (!response.ok || !payload?.user) {
-        throw new Error(payload?.message || "Invalid email or password");
+        throw new Error(payload?.message || t("login.errors.invalidCredentials"));
       }
 
       const userName = `${payload.user.firstName} ${payload.user.lastName}`.trim();
       setUser(payload.user);
-      message.success(`Welcome back, ${userName} 👋`);
+      message.success(t("login.messages.welcomeBack", { userName }));
       navigate(from ?? REDIRECT_MAP[payload.user.role] ?? "/");
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "Invalid email or password";
+          : t("login.errors.invalidCredentials");
       message.error(errorMessage);
     }
   };
@@ -90,9 +92,9 @@ export default function LoginPage() {
             </Title>
           </Space>
           <Title level={4} style={{ marginTop: 16, marginBottom: 4 }}>
-            Welcome Back
+            {t("login.title")}
           </Title>
-          <Text type="secondary">Sign in to continue</Text>
+          <Text type="secondary">{t("login.subtitle")}</Text>
         </div>
 
         {/* ── Form ── */}
@@ -104,22 +106,22 @@ export default function LoginPage() {
         >
           <Form.Item
             name="identifier"
-            label="Email or Username"
+            label={t("login.form.identifierLabel")}
             rules={[
-              { required: true, message: "Please enter your email or username" },
+              { required: true, message: t("login.form.identifierRequired") },
             ]}
           >
             <Input
               prefix={<UserOutlined />}
-              placeholder="example@email.com or username"
+              placeholder={t("login.form.identifierPlaceholder")}
               size="large"
             />
           </Form.Item>
 
           <Form.Item
             name="password"
-            label="Password"
-            rules={[{ required: true, message: "Please enter your password" }]}
+            label={t("login.form.passwordLabel")}
+            rules={[{ required: true, message: t("login.form.passwordRequired") }]}
           >
             <Input.Password
               prefix={<LockOutlined />}
@@ -135,21 +137,21 @@ export default function LoginPage() {
               block
               size="large"
             >
-              Sign In
+              {t("login.form.submit")}
             </Button>
           </Form.Item>
         </Form>
 
         {/* ── Links ── */}
         <div style={{ textAlign: "center", marginBottom: 8 }}>
-          <Text type="secondary">Don\'t have an account? </Text>
+          <Text type="secondary">{t("login.links.noAccount")} </Text>
           <Link to="/register" style={{ color: "#4f46e5", fontWeight: 500 }}>
-            Create one now
+            {t("login.links.createNow")}
           </Link>
         </div>
         <div style={{ textAlign: "center" }}>
           <Link to="/" style={{ color: "#4f46e5" }}>
-            Back to Home
+            {t("common.home")}
           </Link>
         </div>
 

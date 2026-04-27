@@ -7,12 +7,14 @@ import {
   MailOutlined, LockOutlined,
   UserOutlined, BookOutlined,
 } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "~/context/auth";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
 
 export default function RegisterPage() {
+  const { t } = useTranslation();
   const [form] = Form.useForm();
   const { setUser } = useAuth();
   const navigate = useNavigate();
@@ -57,19 +59,19 @@ export default function RegisterPage() {
         | null;
 
       if (!response.ok || !payload?.user) {
-        throw new Error(payload?.message || payload?.data || "Failed to create account");
+        throw new Error(payload?.message || payload?.data || t("register.errors.failedCreate"));
       }
 
       setUser(payload.user);
 
-      message.success("Your account has been created successfully!");
+      message.success(t("register.messages.success"));
       navigate("/dashboard/student");
 
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "An error occurred during registration. Please try again.";
+          : t("register.errors.generic");
       message.error(errorMessage);
     }
   };
@@ -98,15 +100,15 @@ export default function RegisterPage() {
             </Title>
           </Space>
           <Title level={4} style={{ marginTop: 16, marginBottom: 4 }}>
-            Create a New Account
+            {t("register.title")}
           </Title>
-          <Text type="secondary">Join AcadTrak for free</Text>
+          <Text type="secondary">{t("register.subtitle")}</Text>
         </div>
 
         {/* ── Role Notice ── */}
         <Alert
-          title="New accounts are assigned as Student by default"
-          description="You can upgrade later."
+          title={t("register.notice.title")}
+          description={t("register.notice.description")}
           type="info"
           showIcon
           style={{ marginBottom: 20 }}
@@ -123,8 +125,8 @@ export default function RegisterPage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <Form.Item
               name="firstName"
-              label="First Name"
-              rules={[{ required: true, message: "Required" }]}
+              label={t("register.form.firstName")}
+              rules={[{ required: true, message: t("register.form.required") }]}
               style={{ marginBottom: 16 }}
             >
               <Input
@@ -136,8 +138,8 @@ export default function RegisterPage() {
 
             <Form.Item
               name="lastName"
-              label="Last Name"
-              rules={[{ required: true, message: "Required" }]}
+              label={t("register.form.lastName")}
+              rules={[{ required: true, message: t("register.form.required") }]}
               style={{ marginBottom: 16 }}
             >
               <Input
@@ -150,10 +152,10 @@ export default function RegisterPage() {
 
           <Form.Item
             name="userName"
-            label="Username"
+            label={t("register.form.username")}
             rules={[
-              { required: true, message: "Username is required" },
-              { min: 3, message: "At least 3 characters" },
+              { required: true, message: t("register.form.usernameRequired") },
+              { min: 3, message: t("register.form.min3") },
             ]}
           >
             <Input
@@ -165,18 +167,18 @@ export default function RegisterPage() {
 
           <Form.Item
             name="country"
-            label="Country"
-            rules={[{ required: true, message: "Country is required" }]}
+            label={t("register.form.country")}
+            rules={[{ required: true, message: t("register.form.countryRequired") }]}
           >
-            <Input placeholder="Algeria" size="large" />
+            <Input placeholder={t("register.form.countryPlaceholder")} size="large" />
           </Form.Item>
 
           <Form.Item
             name="email"
-            label="Email"
+            label={t("register.form.email")}
             rules={[
-              { required: true, message: "Please enter your email" },
-              { type: "email", message: "Invalid email format" },
+              { required: true, message: t("register.form.emailRequired") },
+              { type: "email", message: t("register.form.emailInvalid") },
             ]}
           >
             <Input
@@ -190,21 +192,21 @@ export default function RegisterPage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <Form.Item
               name="password"
-              label="Password"
+              label={t("register.form.password")}
               rules={[
-                { required: true, message: "Required" },
-                { min: 8, message: "At least 8 characters" },
+                { required: true, message: t("register.form.required") },
+                { min: 8, message: t("register.form.min8") },
                 {
                   pattern: /[a-z]/,
-                  message: "Must contain at least one lowercase letter (a-z)",
+                  message: t("register.form.passwordLower"),
                 },
                 {
                   pattern: /[A-Z]/,
-                  message: "Must contain at least one uppercase letter (A-Z)",
+                  message: t("register.form.passwordUpper"),
                 },
                 {
                   pattern: /[0-9]/,
-                  message: "Must contain at least one digit (0-9)",
+                  message: t("register.form.passwordDigit"),
                 },
               ]}
               style={{ marginBottom: 16 }}
@@ -218,16 +220,16 @@ export default function RegisterPage() {
 
             <Form.Item
               name="confirmPassword"
-              label="Confirm Password"
+              label={t("register.form.confirmPassword")}
               dependencies={["password"]}
               rules={[
-                { required: true, message: "Required" },
+                { required: true, message: t("register.form.required") },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
                     if (!value || getFieldValue("password") === value) {
                       return Promise.resolve();
                     }
-                    return Promise.reject("Passwords do not match");
+                    return Promise.reject(new Error(t("register.form.passwordMismatch")));
                   },
                 }),
               ]}
@@ -248,21 +250,21 @@ export default function RegisterPage() {
               block
               size="large"
             >
-              Create Account
+              {t("register.form.submit")}
             </Button>
           </Form.Item>
         </Form>
 
         {/* ── Links ── */}
         <div style={{ textAlign: "center", marginBottom: 8 }}>
-          <Text type="secondary">Already have an account? </Text>
+          <Text type="secondary">{t("register.links.alreadyHaveAccount")} </Text>
           <Link to="/login" style={{ color: "#4f46e5", fontWeight: 500 }}>
-            Sign in
+            {t("register.links.signIn")}
           </Link>
         </div>
         <div style={{ textAlign: "center" }}>
           <Link to="/" style={{ color: "#4f46e5" }}>
-            Back to Home
+            {t("common.home")}
           </Link>
         </div>
       </Card>

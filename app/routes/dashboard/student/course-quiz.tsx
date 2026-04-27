@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { App, Alert, Button, Card, Checkbox, Form, Radio, Space, Spin, Typography, Result } from "antd";
 import type { CheckboxValueType, RadioChangeEvent } from "antd";
 import { ReloadOutlined, TrophyOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text, Paragraph } = Typography;
@@ -32,6 +33,7 @@ interface QuizResult {
 }
 
 export default function StudentCourseQuizPage() {
+  const { t } = useTranslation();
   const { message } = App.useApp();
   const navigate = useNavigate();
   const params = useParams();
@@ -54,7 +56,7 @@ export default function StudentCourseQuizPage() {
   const fetchQuiz = async () => {
     if (!courseId || !quizId) {
       setLoading(false);
-      message.error("بيانات الاختبار غير مكتملة");
+      message.error(t("studentQuiz.errors.missingQuizData"));
       return;
     }
 
@@ -66,12 +68,12 @@ export default function StudentCourseQuizPage() {
         | null;
 
       if (!response.ok) {
-        throw new Error(payload?.message || "فشل تحميل الاختبار");
+        throw new Error(payload?.message || t("studentQuiz.errors.failedLoadQuiz"));
       }
 
       const foundQuiz = payload?.quizzes?.find((item) => item.id === quizId);
       if (!foundQuiz) {
-        throw new Error("الاختبار غير موجود أو غير متاح لك");
+        throw new Error(t("studentQuiz.errors.quizNotAvailable"));
       }
 
       setQuiz(foundQuiz);
@@ -79,7 +81,7 @@ export default function StudentCourseQuizPage() {
       setResult(null);
       form.resetFields();
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "فشل تحميل الاختبار");
+      message.error(error instanceof Error ? error.message : t("studentQuiz.errors.failedLoadQuiz"));
       navigate(`/dashboard/student/courses/${courseId}`);
     } finally {
       setLoading(false);
@@ -125,7 +127,7 @@ export default function StudentCourseQuizPage() {
         | null;
 
       if (!response.ok) {
-        throw new Error(payload?.message || "فشل إرسال الإجابات");
+        throw new Error(payload?.message || t("studentQuiz.errors.failedSubmit"));
       }
 
       setResult({
@@ -136,9 +138,9 @@ export default function StudentCourseQuizPage() {
         message: payload?.message,
       });
 
-      message.success(payload?.message || "تم تسليم الاختبار بنجاح");
+      message.success(payload?.message || t("studentQuiz.messages.submitSuccess"));
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "فشل إرسال الإجابات");
+      message.error(error instanceof Error ? error.message : t("studentQuiz.errors.failedSubmit"));
     } finally {
       setSubmitting(false);
     }
@@ -162,14 +164,14 @@ export default function StudentCourseQuizPage() {
         <Space orientation="vertical" size={8} style={{ width: "100%" }}>
           <Title level={3} style={{ margin: 0 }}>{quiz.title}</Title>
           <Text type="secondary">
-            {quiz.type === "final_exam" ? "اختبار نهائي" : "Quiz"} • نسبة النجاح {quiz.passingScore}%
+            {quiz.type === "final_exam" ? t("studentQuiz.finalExam") : t("studentQuiz.quiz")} • {t("studentQuiz.passingScore", { score: quiz.passingScore })}
           </Text>
           <Space>
             <Button icon={<ReloadOutlined />} onClick={() => void fetchQuiz()}>
-              تحديث
+              {t("studentQuiz.actions.refresh")}
             </Button>
             <Button onClick={() => navigate(`/dashboard/student/courses/${courseId}`)}>
-              رجوع للدورة
+              {t("studentQuiz.actions.backToCourse")}
             </Button>
           </Space>
         </Space>
@@ -181,21 +183,21 @@ export default function StudentCourseQuizPage() {
           <Result
             icon={<TrophyOutlined style={{ color: "#faad14" }} />}
             status="success"
-            title={`🎓 تهانينا! اجتزت الاختبار النهائي بنسبة ${result.score}%`}
-            subTitle="تم إصدار شهادتك تلقائياً — يمكنك رؤيتها في صفحة درجاتي"
+            title={t("studentQuiz.result.certificateTitle", { score: result.score })}
+            subTitle={t("studentQuiz.result.certificateSubtitle")}
             extra={[
               <Button
                 type="primary"
                 key="grades"
                 href="/dashboard/student/grades"
               >
-                عرض شهادتي 🏆
+                {t("studentQuiz.actions.viewCertificate")}
               </Button>,
               <Button
                 key="course"
                 onClick={() => navigate(`/dashboard/student/courses/${courseId}`)}
               >
-                رجوع للدورة
+                {t("studentQuiz.actions.backToCourse")}
               </Button>,
             ]}
           />
@@ -203,11 +205,11 @@ export default function StudentCourseQuizPage() {
           <Alert
             type={result.passed ? "success" : "warning"}
             showIcon
-            title={result.passed ? `نجحت بنسبة ${result.score}%` : `لم تنجح. نتيجتك ${result.score}%`}
+            title={result.passed ? t("studentQuiz.result.passed", { score: result.score }) : t("studentQuiz.result.failed", { score: result.score })}
             description={
               result.passed
-                ? "يمكنك الآن متابعة المحتوى التالي."
-                : "راجع الإجابات وحاول مرة أخرى إذا سمح الأستاذ بذلك."
+                ? t("studentQuiz.result.passedDescription")
+                : t("studentQuiz.result.failedDescription")
             }
           />
         )
@@ -217,7 +219,7 @@ export default function StudentCourseQuizPage() {
         <Form layout="vertical" onFinish={submitQuiz}>
           <Space orientation="vertical" size={16} style={{ width: "100%" }}>
             {quiz.questions.map((question, questionIndex) => (
-              <Card key={`${questionIndex}-${question.text}`} size="small" title={`السؤال ${questionIndex + 1}`}>
+              <Card key={`${questionIndex}-${question.text}`} size="small" title={t("studentQuiz.question", { index: questionIndex + 1 })}>
                 <Paragraph style={{ marginBottom: 16 }}>{question.text}</Paragraph>
                 {question.allowMultipleAnswers ? (
                   <Checkbox.Group
@@ -252,21 +254,24 @@ export default function StudentCourseQuizPage() {
             ))}
 
             <Button type="primary" htmlType="submit" loading={submitting} disabled={!canSubmit}>
-              إرسال الاختبار
+              {t("studentQuiz.actions.submitQuiz")}
             </Button>
           </Space>
         </Form>
       </Card>
 
       {result ? (
-        <Card title="تفاصيل الإجابات">
+        <Card title={t("studentQuiz.answerDetails")}>
           <Space orientation="vertical" size={12} style={{ width: "100%" }}>
             {result.results.map((item, index) => (
               <Alert
                 key={index}
                 type={item.isCorrect ? "success" : "error"}
                 showIcon
-                title={`السؤال ${index + 1}: ${item.isCorrect ? "إجابة صحيحة" : "إجابة خاطئة"}`}
+                title={t("studentQuiz.answerStatus", {
+                  index: index + 1,
+                  status: item.isCorrect ? t("studentQuiz.correct") : t("studentQuiz.wrong"),
+                })}
                 description={item.explanation || ""}
               />
             ))}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, Col, Row, Statistic, Typography } from "antd";
+import { useTranslation } from "react-i18next";
 
 const { Title, Text } = Typography;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
@@ -17,6 +18,7 @@ interface AdminStats {
 }
 
 export default function AdminDashboardHome() {
+	const { t } = useTranslation();
 	const [stats, setStats] = useState<AdminStats>({
 		users: 0,
 		courses: 0,
@@ -62,44 +64,44 @@ export default function AdminDashboardHome() {
 	return (
 		<div style={{ display: "grid", gap: 16 }}>
 			<Card>
-				<Title level={4} style={{ marginBottom: 6 }}>لوحة الإدارة</Title>
-				<Text type="secondary">راقب المنصة بالكامل: المستخدمين، الدورات، والنشاط العام.</Text>
+				<Title level={4} style={{ marginBottom: 6 }}>{t("adminDashboard.title")}</Title>
+				<Text type="secondary">{t("adminDashboard.subtitle")}</Text>
 			</Card>
 
 			<Row gutter={[16, 16]}>
 				<Col xs={24} md={8}>
 					<Card loading={loading}>
-						<Statistic title="المستخدمون" value={stats.users} />
+						<Statistic title={t("adminDashboard.users")} value={stats.users} />
 					</Card>
 				</Col>
 				<Col xs={24} md={8}>
 					<Card loading={loading}>
-						<Statistic title="الدورات" value={stats.courses} />
+						<Statistic title={t("adminDashboard.totalCourses")} value={stats.courses} />
 					</Card>
 				</Col>
 				<Col xs={24} md={8}>
 					<Card loading={loading}>
-						<Statistic title="المدفوعات" value={stats.payments} />
+						<Statistic title={t("adminDashboard.totalPayments")} value={stats.payments} />
 					</Card>
 				</Col>
 				<Col xs={24} sm={12} lg={6}>
 					<Card loading={loading}>
-						<Statistic title="مدفوعات ناجحة" value={stats.paymentsByStatus.success} />
+						<Statistic title={t("adminDashboard.successPayments")} value={stats.paymentsByStatus.success} />
 					</Card>
 				</Col>
 				<Col xs={24} sm={12} lg={6}>
 					<Card loading={loading}>
-						<Statistic title="مدفوعات معلّقة" value={stats.paymentsByStatus.pending} />
+						<Statistic title={t("adminDashboard.pendingPayments")} value={stats.paymentsByStatus.pending} />
 					</Card>
 				</Col>
 				<Col xs={24} sm={12} lg={6}>
 					<Card loading={loading}>
-						<Statistic title="مدفوعات فاشلة" value={stats.paymentsByStatus.failed} />
+						<Statistic title={t("adminDashboard.failedPayments")} value={stats.paymentsByStatus.failed} />
 					</Card>
 				</Col>
 				<Col xs={24} sm={12} lg={6}>
 					<Card loading={loading}>
-						<Statistic title="مدفوعات منتهية" value={stats.paymentsByStatus.expired} />
+						<Statistic title={t("adminDashboard.expiredPayments")} value={stats.paymentsByStatus.expired} />
 					</Card>
 				</Col>
 			</Row>

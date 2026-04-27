@@ -1,23 +1,18 @@
 // app/routes/guest/_public.tsx
 import { useMemo, useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
-import { Layout, Menu, Button, Drawer, Grid, theme } from "antd";
+import { Layout, Menu, Button, Drawer, Grid, theme, Select } from "antd";
 import { BookOutlined, MenuOutlined, CloseOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useAuth } from "~/context/auth";
 import { apiFetch } from "~/utils/api";
+import { useTranslation } from "react-i18next";
+import type { AppLanguage } from "~/i18n/resources";
 
 const { Header, Content, Footer } = Layout;
 const { useBreakpoint } = Grid;
 
 type MenuItem = MenuProps["items"];
-
-const navItems: MenuItem = [
-  { key: "/", label: <Link to="/">Home</Link> },
-  { key: "/about", label: <Link to="/about">About Us</Link> },
-  { key: "/courses", label: <Link to="/courses">Courses</Link> },
-  { key: "/contact", label: <Link to="/contact">Contact Us</Link> },
-];
 
 export default function PublicLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -26,6 +21,7 @@ export default function PublicLayout() {
   const screens = useBreakpoint();
   const { user, isAuthenticated, setUser } = useAuth();
   const { token } = theme.useToken();
+  const { t, i18n } = useTranslation();
 
   // screens.md = true إذا العرض >= 768px
   const isMobile = !screens.md;
@@ -33,8 +29,28 @@ export default function PublicLayout() {
   const displayName = useMemo(() => {
     if (!user) return "";
     const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
-    return fullName || user.userName || user.name || user.email || "User";
-  }, [user]);
+    return fullName || user.userName || user.name || user.email || t("common.userFallback");
+  }, [user, t]);
+
+  const currentLanguage = useMemo<AppLanguage>(() => {
+    const base = (i18n.resolvedLanguage ?? i18n.language ?? "en").split("-")[0];
+    if (base === "fr" || base === "ar") return base;
+    return "en";
+  }, [i18n.language, i18n.resolvedLanguage]);
+
+  const navItems: MenuItem = useMemo(
+    () => [
+      { key: "/", label: <Link to="/">{t("common.home")}</Link> },
+      { key: "/about", label: <Link to="/about">{t("common.about")}</Link> },
+      { key: "/courses", label: <Link to="/courses">{t("common.courses")}</Link> },
+      { key: "/contact", label: <Link to="/contact">{t("common.contact")}</Link> },
+    ],
+    [t],
+  );
+
+  const handleLanguageChange = (value: AppLanguage) => {
+    void i18n.changeLanguage(value);
+  };
 
   const dashboardPath = useMemo(() => {
     if (!user?.role) return "/";
@@ -140,6 +156,18 @@ export default function PublicLayout() {
             >
               {isAuthenticated ? (
                 <>
+                  <Select<AppLanguage>
+                    aria-label={t("common.language")}
+                    size="middle"
+                    value={currentLanguage}
+                    onChange={handleLanguageChange}
+                    style={{ width: 120 }}
+                    options={[
+                      { value: "ar", label: "العربية" },
+                      { value: "fr", label: "Français" },
+                      { value: "en", label: "English" },
+                    ]}
+                  />
                   <span
                     style={{
                       color: token.colorText,
@@ -150,19 +178,31 @@ export default function PublicLayout() {
                     {displayName}
                   </span>
                   <Button type="primary" size="middle">
-                    <Link to={dashboardPath}>Dashboard</Link>
+                    <Link to={dashboardPath}>{t("common.dashboard")}</Link>
                   </Button>
                   <Button danger size="middle" onClick={handleLogout}>
-                    log out
+                    {t("common.logout")}
                   </Button>
                 </>
               ) : (
                 <>
+                  <Select<AppLanguage>
+                    aria-label={t("common.language")}
+                    size="middle"
+                    value={currentLanguage}
+                    onChange={handleLanguageChange}
+                    style={{ width: 120 }}
+                    options={[
+                      { value: "ar", label: "العربية" },
+                      { value: "fr", label: "Français" },
+                      { value: "en", label: "English" },
+                    ]}
+                  />
                   <Button size="middle">
-                    <Link to="/login">login</Link>
+                    <Link to="/login">{t("common.login")}</Link>
                   </Button>
                   <Button type="primary" size="middle">
-                    <Link to="/register">register</Link>
+                    <Link to="/register">{t("common.register")}</Link>
                   </Button>
                 </>
               )}
@@ -232,6 +272,17 @@ export default function PublicLayout() {
             gap: 8,
           }}
         >
+          <Select<AppLanguage>
+            aria-label={t("common.language")}
+            size="large"
+            value={currentLanguage}
+            onChange={handleLanguageChange}
+            options={[
+              { value: "ar", label: "العربية" },
+              { value: "fr", label: "Français" },
+              { value: "en", label: "English" },
+            ]}
+          />
           {isAuthenticated ? (
             <>
               <div
@@ -244,16 +295,16 @@ export default function PublicLayout() {
                 {displayName}
               </div>
               <Button block type="primary" size="large" onClick={() => setDrawerOpen(false)}>
-                <Link to={dashboardPath}>Dashboard</Link>
+                <Link to={dashboardPath}>{t("common.dashboard")}</Link>
               </Button>
               <Button danger block size="large" onClick={handleLogout}>
-                log out
+                {t("common.logout")}
               </Button>
             </>
           ) : (
             <>
               <Button block size="large" onClick={() => setDrawerOpen(false)}>
-                <Link to="/login">login</Link>
+                <Link to="/login">{t("common.login")}</Link>
               </Button>
               <Button
                 type="primary"
@@ -261,7 +312,7 @@ export default function PublicLayout() {
                 size="large"
                 onClick={() => setDrawerOpen(false)}
               >
-                <Link to="/register">register</Link>
+                <Link to="/register">{t("common.register")}</Link>
               </Button>
             </>
           )}
@@ -284,7 +335,7 @@ export default function PublicLayout() {
           fontSize: 13,
         }}
       >
-        AcadTrak ©{new Date().getFullYear()} — made with ❤️ by  
+        {t("publicLayout.footerText", { year: new Date().getFullYear() })} - {t("common.madeWith")} ❤ {t("common.by")} 
         <Link to="https://amine-triki.tn"> Amine Triki</Link>
       </Footer>
     </Layout>

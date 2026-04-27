@@ -5,6 +5,7 @@ import {
   BookOutlined, SafetyCertificateOutlined,
   TeamOutlined, FileTextOutlined, ReadOutlined,
 } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
@@ -18,6 +19,7 @@ interface TeacherStats {
 }
 
 export default function TeacherDashboardHome() {
+	const { t } = useTranslation();
 	const [stats, setStats] = useState<TeacherStats>({
 		myCourses: 0,
 		enrolledStudents: 0,
@@ -57,26 +59,26 @@ export default function TeacherDashboardHome() {
 	return (
 		<div style={{ display: "grid", gap: 16 }}>
 			<Card>
-				<Title level={4} style={{ marginBottom: 6 }}>لوحة الأستاذ</Title>
-				<Text type="secondary">أنشئ دوراتك وتابع تفاعل الطلاب مع المحتوى والاختبارات.</Text>
+				<Title level={4} style={{ marginBottom: 6 }}>{t("teacherDashboard.title")}</Title>
+				<Text type="secondary">{t("teacherDashboard.subtitle")}</Text>
 			</Card>
 
 			{/* إحصائيات كأستاذ */}
-			<Text strong style={{ fontSize: 15 }}>كأستاذ</Text>
+			<Text strong style={{ fontSize: 15 }}>{t("teacherDashboard.asTeacher")}</Text>
 			<Row gutter={[16, 16]}>
 				<Col xs={24} md={8}>
 					<Card loading={loading}>
-						<Statistic title="دوراتي" value={stats.myCourses} prefix={<BookOutlined />} />
+						<Statistic title={t("teacherDashboard.myCourses")} value={stats.myCourses} prefix={<BookOutlined />} />
 					</Card>
 				</Col>
 				<Col xs={24} md={8}>
 					<Card loading={loading}>
-						<Statistic title="طلاب مسجلون" value={stats.enrolledStudents} prefix={<TeamOutlined />} />
+						<Statistic title={t("teacherDashboard.enrolledStudents")} value={stats.enrolledStudents} prefix={<TeamOutlined />} />
 					</Card>
 				</Col>
 				<Col xs={24} md={8}>
 					<Card loading={loading}>
-						<Statistic title="اختبارات منشورة" value={stats.publishedQuizzes} prefix={<FileTextOutlined />} />
+						<Statistic title={t("teacherDashboard.publishedQuizzes")} value={stats.publishedQuizzes} prefix={<FileTextOutlined />} />
 					</Card>
 				</Col>
 			</Row>
@@ -85,29 +87,29 @@ export default function TeacherDashboardHome() {
 			{((stats.enrolledAsStudent ?? 0) > 0 || (stats.certificates ?? 0) > 0) && (
 				<>
 					<Divider />
-					<Text strong style={{ fontSize: 15 }}>كطالب في دورات أخرى</Text>
+					<Text strong style={{ fontSize: 15 }}>{t("teacherDashboard.asStudent")}</Text>
 					<Row gutter={[16, 16]}>
 						<Col xs={24} md={12}>
 							<Card loading={loading}>
 								<Statistic
-									title="دورات مسجل فيها"
+									title={t("teacherDashboard.enrolledAsStudent")}
 									value={stats.enrolledAsStudent}
 									prefix={<ReadOutlined />}
 								/>
 								<Link to="/dashboard/student/courses" style={{ fontSize: 12 }}>
-									عرض دوراتي ←
+									{t("teacherDashboard.viewMyCourses")}
 								</Link>
 							</Card>
 						</Col>
 						<Col xs={24} md={12}>
 							<Card loading={loading}>
 								<Statistic
-									title="شهاداتي"
+									title={t("teacherDashboard.certificates")}
 									value={stats.certificates}
 									prefix={<SafetyCertificateOutlined style={{ color: "#faad14" }} />}
 								/>
 								<Link to="/dashboard/student/grades" style={{ fontSize: 12 }}>
-									عرض الشهادات ←
+									{t("teacherDashboard.viewCertificates")}
 								</Link>
 							</Card>
 						</Col>

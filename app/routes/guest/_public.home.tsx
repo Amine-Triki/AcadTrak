@@ -2,6 +2,7 @@ import type { Route } from "./+types/_public.home";
 
 
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Button, Rate, Tag, Avatar, Input,
@@ -126,13 +127,14 @@ export async function clientLoader(): Promise<HomeLoaderData> {
 }
 
 const FEATURES = [
-  { icon: <UserOutlined />,              title: "Expert Instructors",  desc: "Learn from industry veterans." },
-  { icon: <ClockCircleOutlined />,       title: "Lifetime Access",     desc: "Enroll once, keep forever." },
-  { icon: <SafetyCertificateOutlined />, title: "Flexible Learning",   desc: "Study at your own pace anywhere." },
-  { icon: <TrophyOutlined />,            title: "98.2% Success",       desc: "High completion and success rate." },
-];
+  { icon: <UserOutlined />, key: "expertInstructors" },
+  { icon: <ClockCircleOutlined />, key: "lifetimeAccess" },
+  { icon: <SafetyCertificateOutlined />, key: "flexibleLearning" },
+  { icon: <TrophyOutlined />, key: "highSuccess" },
+] as const;
 
 export default function HomePage({ loaderData }: Route.ComponentProps) {
+  const { t } = useTranslation();
   const featuredCourses = loaderData?.featuredCourses ?? [];
 
   return (
@@ -182,7 +184,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               marginBottom: 24,
             }}
           >
-            <RocketOutlined /> LMS EVOLUTION 2.0
+            <RocketOutlined /> {t("publicHome.hero.badge")}
           </div>
 
           {/* عنوان رئيسي */}
@@ -195,8 +197,8 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               maxWidth: 620,
             }}
           >
-            Learn from the{" "}
-            <span style={{ color: "#818cf8" }}>World's Best</span>
+            {t("publicHome.hero.titlePrefix")} {" "}
+            <span style={{ color: "#818cf8" }}>{t("publicHome.hero.titleHighlight")}</span>
           </Title>
 
           {/* وصف */}
@@ -209,15 +211,14 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               lineHeight: 1.7,
             }}
           >
-            Master new skills with expert-led courses designed for deep focus
-            and professional growth. Access world-class education from anywhere.
+            {t("publicHome.hero.description")}
           </Paragraph>
 
           {/* Search + CTA */}
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 40 }}>
             <Input
               prefix={<SearchOutlined style={{ color: "#9ca3af" }} />}
-              placeholder="Search courses..."
+              placeholder={t("publicHome.hero.searchPlaceholder")}
               size="large"
               style={{ width: 300, borderRadius: 8 }}
             />
@@ -234,7 +235,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                 height: 40,
               }}
             >
-              Explore Courses
+              {t("publicHome.hero.explore")}
             </Button>
           </div>
 
@@ -256,7 +257,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               ))}
             </div>
             <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14 }}>
-              <strong style={{ color: "#fff" }}>15k+</strong> students already joined
+              <strong style={{ color: "#fff" }}>15k+</strong> {t("publicHome.hero.socialProof")}
             </Text>
           </div>
         </div>
@@ -277,7 +278,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           }}
         >
           {FEATURES.map((f) => (
-            <div key={f.title} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <div key={f.key} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
               <div
                 style={{
                   flexShrink: 0,
@@ -294,8 +295,12 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                 {f.icon}
               </div>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}>{f.title}</div>
-                <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{f.desc}</div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}>
+                  {t(`publicHome.features.${f.key}.title`)}
+                </div>
+                <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
+                  {t(`publicHome.features.${f.key}.description`)}
+                </div>
               </div>
             </div>
           ))}
@@ -310,12 +315,12 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
         {/* عنوان القسم */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
           <div>
-            <Title level={2} style={{ margin: 0 }}>Featured Courses</Title>
-            <Text type="secondary">The most sought-after industry skills, taught by professionals.</Text>
+            <Title level={2} style={{ margin: 0 }}>{t("publicHome.featured.title")}</Title>
+            <Text type="secondary">{t("publicHome.featured.subtitle")}</Text>
           </div>
           <Link to="/courses">
             <Button type="link" style={{ color: "#4f46e5", padding: 0 }}>
-              View All <ArrowRightOutlined />
+              {t("publicHome.featured.viewAll")} <ArrowRightOutlined />
             </Button>
           </Link>
         </div>
@@ -384,7 +389,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
 
         {featuredCourses.length === 0 ? (
           <Text type="secondary" style={{ display: "block", marginTop: 16 }}>
-            No featured courses available right now.
+            {t("publicHome.featured.empty")}
           </Text>
         ) : null}
       </section>
@@ -401,10 +406,10 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           }}
         >
           <Title level={2} style={{ textAlign: "center", marginBottom: 8 }}>
-            Built for Serious Learners
+            {t("publicHome.stats.title")}
           </Title>
           <Text type="secondary" style={{ display: "block", textAlign: "center", marginBottom: 48 }}>
-            Our platform is an integrated ecosystem designed to ensure you reach your career goals.
+            {t("publicHome.stats.subtitle")}
           </Text>
           <div
             style={{
@@ -415,10 +420,10 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             }}
           >
             {[
-              { value: "15,000+", label: "Active Students" },
-              { value: "200+",    label: "Expert Courses" },
-              { value: "98.2%",   label: "Success Rate" },
-              { value: "50+",     label: "Expert Instructors" },
+              { value: "15,000+", label: t("publicHome.stats.items.activeStudents") },
+              { value: "200+", label: t("publicHome.stats.items.expertCourses") },
+              { value: "98.2%", label: t("publicHome.stats.items.successRate") },
+              { value: "50+", label: t("publicHome.stats.items.expertInstructors") },
             ].map((s) => (
               <div key={s.label}>
                 <div style={{ fontSize: 40, fontWeight: 700, color: "#4f46e5", lineHeight: 1 }}>
@@ -446,7 +451,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           }}
         >
           <Title level={2} style={{ color: "#fff", marginBottom: 16 }}>
-            Ready to start your journey?
+            {t("publicHome.cta.title")}
           </Title>
           <Paragraph
             style={{
@@ -457,7 +462,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               margin: "0 auto 32px",
             }}
           >
-            Join over 15,000 students and start building the career you've always dreamed of with AcadTrak.
+            {t("publicHome.cta.description")}
           </Paragraph>
           <Button
             size="large"
@@ -472,7 +477,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               fontSize: 15,
             }}
           >
-            <Link to="/register">Get Started for Free</Link>
+            <Link to="/register">{t("publicHome.cta.button")}</Link>
           </Button>
         </div>
       </section>

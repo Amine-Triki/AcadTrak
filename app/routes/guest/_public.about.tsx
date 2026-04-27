@@ -8,89 +8,33 @@ import {
   SafetyCertificateOutlined,
   TrophyOutlined,
 } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import i18n from "~/i18n";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "AcadTrak | About Us" },
+    { title: i18n.t("publicAbout.meta.title") },
     {
       name: "description",
-      content:
-        "Learn more about AcadTrak, our mission, and how we are revolutionizing the learning experience for students and educators alike.",
+      content: i18n.t("publicAbout.meta.description"),
     },
   ];
 }
 
 const { Title, Text, Paragraph } = Typography;
 
-const TEAM = [
-  {
-    name: "Sarah Chen",
-    role: "CEO & Founder",
-    img: "https://i.pravatar.cc/80?img=10",
-  },
-  {
-    name: "Alex Rivera",
-    role: "Head of Design",
-    img: "https://i.pravatar.cc/80?img=11",
-  },
-  {
-    name: "Mark Thompson",
-    role: "Lead Engineer",
-    img: "https://i.pravatar.cc/80?img=12",
-  },
-  {
-    name: "Lena Müller",
-    role: "Head of Content",
-    img: "https://i.pravatar.cc/80?img=13",
-  },
-  {
-    name: "James Park",
-    role: "Product Manager",
-    img: "https://i.pravatar.cc/80?img=14",
-  },
-  {
-    name: "Nina Patel",
-    role: "Marketing Director",
-    img: "https://i.pravatar.cc/80?img=20",
-  },
-];
-
-const STATS = [
-  { value: "15,000+", label: "Active Students" },
-  { value: "200+", label: "Expert Courses" },
-  { value: "50+", label: "Instructors" },
-  { value: "98.2%", label: "Success Rate" },
-];
-
-const VALUES = [
-  {
-    icon: <TrophyOutlined />,
-    title: "Excellence",
-    desc: "We deliver only top-quality, rigorously vetted course content.",
-  },
-  {
-    icon: <GlobalOutlined />,
-    title: "Accessibility",
-    desc: "World-class education for every learner, anywhere on the planet.",
-  },
-  {
-    icon: <TeamOutlined />,
-    title: "Community",
-    desc: "A thriving network where students and instructors grow together.",
-  },
-  {
-    icon: <RocketOutlined />,
-    title: "Innovation",
-    desc: "Constantly evolving our platform to meet tomorrow's demands.",
-  },
-  {
-    icon: <SafetyCertificateOutlined />,
-    title: "Trust",
-    desc: "Transparent pricing, honest reviews, and real career outcomes.",
-  },
-];
-
 export default function AboutPage() {
+  const { t } = useTranslation();
+
+  const stats = t("publicAbout.stats.items", { returnObjects: true }) as Array<{
+    value: string;
+    label: string;
+  }>;
+  const values = t("publicAbout.values.items", { returnObjects: true }) as Array<{
+    title: string;
+    description: string;
+  }>;
+
   return (
     <div style={{ background: "#f8f9fc" }}>
       {/* ━━━━━━ Hero ━━━━━━ */}
@@ -114,7 +58,7 @@ export default function AboutPage() {
             marginBottom: 20,
           }}
         >
-          Our Story
+          {t("publicAbout.hero.badge")}
         </span>
         <Title
           level={1}
@@ -124,7 +68,7 @@ export default function AboutPage() {
             marginBottom: 16,
           }}
         >
-          Built for the Future of Learning
+          {t("publicAbout.hero.title")}
         </Title>
         <Paragraph
           style={{
@@ -135,9 +79,7 @@ export default function AboutPage() {
             lineHeight: 1.8,
           }}
         >
-          We believe education should be accessible, engaging, and
-          career-focused. AcadTrak was founded in 2021 to bridge the gap between
-          traditional learning and modern industry demands.
+          {t("publicAbout.hero.description")}
         </Paragraph>
       </section>
 
@@ -156,7 +98,7 @@ export default function AboutPage() {
             textAlign: "center",
           }}
         >
-          {STATS.map((s) => (
+          {stats.map((s) => (
             <div key={s.label}>
               <div
                 style={{
@@ -199,27 +141,22 @@ export default function AboutPage() {
                 letterSpacing: "0.08em",
               }}
             >
-              Our Mission
+              {t("publicAbout.mission.label")}
             </Text>
             <Title level={2} style={{ marginTop: 12, marginBottom: 20 }}>
-              Empowering Learners Worldwide
+              {t("publicAbout.mission.title")}
             </Title>
             <Paragraph
               type="secondary"
               style={{ fontSize: 15, lineHeight: 1.8, marginBottom: 24 }}
             >
-              AcadTrak was born from a simple belief: everyone deserves access
-              to world-class education. We partner with industry experts to
-              create courses that are not just informative — they're
-              transformative.
+              {t("publicAbout.mission.paragraph1")}
             </Paragraph>
             <Paragraph
               type="secondary"
               style={{ fontSize: 15, lineHeight: 1.8 }}
             >
-              From beginners finding their path to professionals leveling up
-              their skills, our platform serves learners at every stage of their
-              journey.
+              {t("publicAbout.mission.paragraph2")}
             </Paragraph>
           </div>
 
@@ -249,10 +186,10 @@ export default function AboutPage() {
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <Title level={2} style={{ marginBottom: 8 }}>
-              What We Stand For
+              {t("publicAbout.values.title")}
             </Title>
             <Text type="secondary" style={{ fontSize: 15 }}>
-              The principles that guide everything we do at AcadTrak.
+              {t("publicAbout.values.subtitle")}
             </Text>
           </div>
           <div
@@ -262,7 +199,16 @@ export default function AboutPage() {
               gap: 20,
             }}
           >
-            {VALUES.map((v) => (
+            {values.map((v, index) => {
+              const icons = [
+                <TrophyOutlined key="excellence" />,
+                <GlobalOutlined key="accessibility" />,
+                <TeamOutlined key="community" />,
+                <RocketOutlined key="innovation" />,
+                <SafetyCertificateOutlined key="trust" />,
+              ];
+
+              return (
               <Card
                 key={v.title}
                 style={{ borderRadius: 14, border: "1px solid #e5e7eb" }}
@@ -282,16 +228,17 @@ export default function AboutPage() {
                     marginBottom: 16,
                   }}
                 >
-                  {v.icon}
+                  {icons[index]}
                 </div>
                 <Title level={4} style={{ marginBottom: 8 }}>
                   {v.title}
                 </Title>
                 <Text type="secondary" style={{ lineHeight: 1.7 }}>
-                  {v.desc}
+                  {v.description}
                 </Text>
               </Card>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -311,7 +258,7 @@ export default function AboutPage() {
           }}
         >
           <Title level={2} style={{ color: "#fff", marginBottom: 16 }}>
-            Join Our Growing Community
+            {t("publicAbout.cta.title")}
           </Title>
           <Paragraph
             style={{
@@ -320,8 +267,7 @@ export default function AboutPage() {
               marginBottom: 32,
             }}
           >
-            Be part of 15,000+ learners transforming their careers with
-            AcadTrak.
+            {t("publicAbout.cta.description")}
           </Paragraph>
           <a href="/register">
             <button
@@ -337,7 +283,7 @@ export default function AboutPage() {
                 cursor: "pointer",
               }}
             >
-              Get Started Free
+              {t("publicAbout.cta.button")}
             </button>
           </a>
         </div>

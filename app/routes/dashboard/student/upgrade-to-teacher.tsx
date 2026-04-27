@@ -6,12 +6,14 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 import { useAuth } from "~/context/auth";
 
 const { Title, Paragraph, Text } = Typography;
 
 export default function UpgradeToTeacherPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { message } = App.useApp();
   const { user, setUser } = useAuth();
@@ -24,10 +26,10 @@ export default function UpgradeToTeacherPage() {
   }
 
   const benefits = [
-    "Create and manage your own courses",
-    "Build quizzes and monitor student progress",
-    "Answer course discussions as an instructor",
-    "Access teacher dashboard tools instantly",
+    t("upgradeToTeacher.benefits.createCourses"),
+    t("upgradeToTeacher.benefits.buildQuizzes"),
+    t("upgradeToTeacher.benefits.answerDiscussions"),
+    t("upgradeToTeacher.benefits.accessTools"),
   ];
 
   const handleUpgrade = async () => {
@@ -54,14 +56,14 @@ export default function UpgradeToTeacherPage() {
         | null;
 
       if (!response.ok || !payload?.user) {
-        throw new Error(payload?.message || payload?.data || "Failed to upgrade account");
+        throw new Error(payload?.message || payload?.data || t("upgradeToTeacher.errors.failedUpgrade"));
       }
 
       setUser(payload.user);
-      message.success(payload.message || "Your account is now a teacher account");
+      message.success(payload.message || t("upgradeToTeacher.messages.success"));
       navigate("/dashboard/teacher", { replace: true });
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "Upgrade failed");
+      message.error(error instanceof Error ? error.message : t("upgradeToTeacher.errors.generic"));
     } finally {
       setLoading(false);
     }
@@ -74,20 +76,19 @@ export default function UpgradeToTeacherPage() {
           <Space align="center">
             <UserSwitchOutlined style={{ fontSize: 22, color: "#1677ff" }} />
             <Title level={3} style={{ margin: 0 }}>
-              Upgrade to Teacher
+              {t("upgradeToTeacher.title")}
             </Title>
           </Space>
 
           <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            Activate your teacher role to start creating courses and managing your students.
-            Your current account data stays the same.
+            {t("upgradeToTeacher.subtitle")}
           </Paragraph>
 
           <Card size="small" styles={{ body: { padding: 16 } }}>
             <Space orientation="vertical" size={10} style={{ width: "100%" }}>
               <Text strong>
                 <TeamOutlined style={{ marginRight: 8 }} />
-                What you get as a teacher
+                {t("upgradeToTeacher.benefitsTitle")}
               </Text>
               <Space orientation="vertical" size={8} style={{ width: "100%" }}>
                 {benefits.map((item) => (
@@ -109,7 +110,7 @@ export default function UpgradeToTeacherPage() {
             onClick={() => void handleUpgrade()}
             icon={<UserSwitchOutlined />}
           >
-            Upgrade My Account to Teacher
+            {t("upgradeToTeacher.cta")}
           </Button>
         </Space>
       </Card>

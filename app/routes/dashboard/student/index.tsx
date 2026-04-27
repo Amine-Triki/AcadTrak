@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, Col, Row, Statistic, Typography } from "antd";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
@@ -11,6 +12,7 @@ interface StudentStats {
 }
 
 export default function StudentDashboardHome() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<StudentStats>({
     enrolledCourses: 0,
     completedAssessments: 0,
@@ -48,24 +50,24 @@ export default function StudentDashboardHome() {
   return (
     <div style={{ display: "grid", gap: 16 }}>
       <Card>
-        <Title level={4} style={{ marginBottom: 6 }}>لوحة الطالب</Title>
-        <Text type="secondary">تابع تقدّمك، دروسك، ونتائج اختباراتك من مكان واحد.</Text>
+        <Title level={4} style={{ marginBottom: 6 }}>{t("studentDashboard.title")}</Title>
+        <Text type="secondary">{t("studentDashboard.subtitle")}</Text>
       </Card>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} md={8}>
           <Card loading={loading}>
-            <Statistic title="الدورات المسجّلة" value={stats.enrolledCourses} />
+            <Statistic title={t("studentDashboard.enrolledCourses")} value={stats.enrolledCourses} />
           </Card>
         </Col>
         <Col xs={24} md={8}>
           <Card loading={loading}>
-            <Statistic title="الاختبارات المنجزة" value={stats.completedAssessments} />
+            <Statistic title={t("studentDashboard.completedAssessments")} value={stats.completedAssessments} />
           </Card>
         </Col>
         <Col xs={24} md={8}>
           <Card loading={loading}>
-            <Statistic title="الشهادات" value={stats.certificates} />
+            <Statistic title={t("studentDashboard.certificates")} value={stats.certificates} />
           </Card>
         </Col>
       </Row>

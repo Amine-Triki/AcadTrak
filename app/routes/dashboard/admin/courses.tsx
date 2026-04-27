@@ -12,6 +12,7 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { DeleteOutlined, EyeOutlined, EyeInvisibleOutlined, ReloadOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
@@ -29,6 +30,7 @@ type CourseRow = {
 };
 
 export default function AdminCoursesPage() {
+	const { t } = useTranslation();
 	const { message } = App.useApp();
 	const [loading, setLoading] = useState(false);
 	const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
@@ -43,12 +45,12 @@ export default function AdminCoursesPage() {
 				| null;
 
 			if (!response.ok) {
-				throw new Error(payload?.message || "Failed to load courses");
+				throw new Error(payload?.message || t("adminCourses.errors.failedLoadCourses"));
 			}
 
 			setRows(payload?.courses ?? []);
 		} catch (error) {
-			message.error(error instanceof Error ? error.message : "Failed to load courses");
+			message.error(error instanceof Error ? error.message : t("adminCourses.errors.failedLoadCourses"));
 		} finally {
 			setLoading(false);
 		}
@@ -65,13 +67,13 @@ export default function AdminCoursesPage() {
 			const payload = (await response.json().catch(() => null)) as { message?: string } | null;
 
 			if (!response.ok) {
-				throw new Error(payload?.message || "Action failed");
+				throw new Error(payload?.message || t("adminCourses.errors.actionFailed"));
 			}
 
-			message.success(payload?.message || "Done");
+			message.success(payload?.message || t("adminCourses.messages.done"));
 			await fetchCourses();
 		} catch (error) {
-			message.error(error instanceof Error ? error.message : "Action failed");
+			message.error(error instanceof Error ? error.message : t("adminCourses.errors.actionFailed"));
 		} finally {
 			setActionLoadingId(null);
 		}
@@ -79,23 +81,23 @@ export default function AdminCoursesPage() {
 
 	const columns: ColumnsType<CourseRow> = [
 		{
-			title: "Title",
+			title: t("adminCourses.table.title"),
 			dataIndex: "title",
 			key: "title",
 			ellipsis: true,
 		},
 		{
-			title: "Instructor",
+			title: t("adminCourses.table.instructor"),
 			key: "instructor",
 			render: (_, row) => row.instructorDetails?.name || "-",
 		},
 		{
-			title: "Category",
+			title: t("adminCourses.table.category"),
 			key: "category",
 			render: (_, row) => row.categoryDetails?.name || row.category || "-",
 		},
 		{
-			title: "Type",
+			title: t("adminCourses.table.type"),
 			dataIndex: "type",
 			key: "type",
 			render: (type: CourseRow["type"]) => (
@@ -103,7 +105,7 @@ export default function AdminCoursesPage() {
 			),
 		},
 		{
-			title: "Status",
+			title: t("adminCourses.table.status"),
 			dataIndex: "status",
 			key: "status",
 			render: (status: CourseRow["status"]) => (
@@ -111,39 +113,39 @@ export default function AdminCoursesPage() {
 			),
 		},
 		{
-			title: "Visibility",
+			title: t("adminCourses.table.visibility"),
 			key: "visibility",
 			render: (_, row) =>
 				row.isHidden ? (
-					<Tag icon={<EyeInvisibleOutlined />} color="volcano">Hidden</Tag>
+					<Tag icon={<EyeInvisibleOutlined />} color="volcano">{t("adminCourses.visibility.hidden")}</Tag>
 				) : (
-					<Tag icon={<EyeOutlined />} color="success">Visible</Tag>
+					<Tag icon={<EyeOutlined />} color="success">{t("adminCourses.visibility.visible")}</Tag>
 				),
 		},
 		{
-			title: "Price",
+			title: t("adminCourses.table.price"),
 			key: "price",
-			render: (_, row) => (row.type === "free" ? "Free" : `${row.price} USD`),
+			render: (_, row) => (row.type === "free" ? t("adminCourses.free") : `${row.price} USD`),
 		},
 		{
-			title: "Actions",
+			title: t("adminCourses.table.actions"),
 			key: "actions",
 			render: (_, row) => {
 				// ✅ إذا كان مخفياً → زر Restore (DELETE مرة ثانية يُعيده)
 				if (row.isHidden) {
 					return (
-						<Tooltip title="Restore this hidden course">
+						<Tooltip title={t("adminCourses.actions.restoreTooltip")}>
 							<Popconfirm
-								title="Restore this course visibility?"
+								title={t("adminCourses.actions.restoreTitle")}
 								onConfirm={() => void removeCourse(row.id)}
-								okText="Yes"
-								cancelText="No"
+								okText={t("adminCourses.actions.yes")}
+								cancelText={t("adminCourses.actions.no")}
 							>
 								<Button
 									icon={<EyeOutlined />}
 									loading={actionLoadingId === row.id}
 								>
-									Restore
+									{t("adminCourses.actions.restore")}
 								</Button>
 							</Popconfirm>
 						</Tooltip>
@@ -154,19 +156,19 @@ export default function AdminCoursesPage() {
 					<Popconfirm
 						title={
 							row.type === "paid"
-								? "Hide this paid course? (students keep access)"
-								: "Permanently delete this free course?"
+								? t("adminCourses.actions.hideTitle")
+								: t("adminCourses.actions.deleteTitle")
 						}
 						onConfirm={() => void removeCourse(row.id)}
-						okText="Yes"
-						cancelText="No"
+						okText={t("adminCourses.actions.yes")}
+						cancelText={t("adminCourses.actions.no")}
 					>
 						<Button
 							icon={<DeleteOutlined />}
 							danger
 							loading={actionLoadingId === row.id}
 						>
-							{row.type === "paid" ? "Hide" : "Delete"}
+							{row.type === "paid" ? t("adminCourses.actions.hide") : t("adminCourses.actions.delete")}
 						</Button>
 					</Popconfirm>
 				);
@@ -178,13 +180,13 @@ export default function AdminCoursesPage() {
 		<Card>
 			<Space style={{ width: "100%", justifyContent: "space-between", marginBottom: 16 }} wrap>
 				<div>
-					<Title level={4} style={{ margin: 0 }}>Courses</Title>
+					<Title level={4} style={{ margin: 0 }}>{t("adminCourses.title")}</Title>
 					<Text type="secondary">
-						Manage all courses. Paid courses are hidden (students keep access), free courses are deleted.
+						{t("adminCourses.subtitle")}
 					</Text>
 				</div>
 				<Button icon={<ReloadOutlined />} onClick={() => void fetchCourses()}>
-					Refresh
+					{t("adminCourses.actions.refresh")}
 				</Button>
 			</Space>
 

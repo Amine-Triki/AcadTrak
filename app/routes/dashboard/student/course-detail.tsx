@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   App, Alert, Button, Card, Col, Progress,
   Row, Space, Spin, Tag, Tooltip, Typography,
@@ -53,6 +54,7 @@ const getQuizId   = (q: QuizItem)   => q.id  || q._id  || "";
 export default function StudentCourseDetailPage() {
   const { message } = App.useApp();
   const { id: courseId } = useParams<{ id: string }>();
+  const { t } = useTranslation();
 
   const [loading,    setLoading]    = useState(true);
   const [markingId,  setMarkingId]  = useState<string | null>(null);
@@ -76,7 +78,7 @@ export default function StudentCourseDetailPage() {
         cRes.json().catch(() => null), lRes.json().catch(() => null),
         qRes.json().catch(() => null), eRes.json().catch(() => null),
       ]);
-      if (!cRes.ok) throw new Error(cData?.message || "فشل تحميل الكورس");
+      if (!cRes.ok) throw new Error(cData?.message || t("studentCourseDetail.errors.failedLoadCourse"));
 
       const enrolled = Boolean(
         eData?.enrollments?.some((e: { course?: string | { id?: string; _id?: string } }) => {
@@ -96,9 +98,9 @@ export default function StudentCourseDetailPage() {
         if (pRes.ok) setProgress(pData);
       }
     } catch (err) {
-      message.error(err instanceof Error ? err.message : "فشل تحميل الدورة");
+      message.error(err instanceof Error ? err.message : t("studentCourseDetail.errors.failedLoadCourse"));
     } finally { setLoading(false); }
-  }, [courseId, message]);
+  }, [courseId, message, t]);
 
   useEffect(() => { void fetchAll(); }, [fetchAll]);
 
@@ -108,12 +110,12 @@ export default function StudentCourseDetailPage() {
     try {
       const res  = await apiFetch(`/api/progress/course/${courseId}/lesson/${lessonId}/complete`, { method: "POST" });
       const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.message || "فشل التأشير");
-      message.success("✅ تم إكمال الدرس");
+      if (!res.ok) throw new Error(data?.message || t("studentCourseDetail.errors.failedMarkComplete"));
+      message.success(t("studentCourseDetail.messages.lessonCompleted"));
       const pRes  = await apiFetch(`/api/progress/course/${courseId}`);
       const pData = await pRes.json().catch(() => null);
       if (pRes.ok) setProgress(pData);
-    } catch (err) { message.error(err instanceof Error ? err.message : "خطأ");
+    } catch (err) { message.error(err instanceof Error ? err.message : t("studentCourseDetail.errors.generic"));
     } finally { setMarkingId(null); }
   };
 
@@ -122,7 +124,7 @@ export default function StudentCourseDetailPage() {
   const getProgItem       = (id: string) => progress?.items.find((it) => it.id === id);
 
   if (loading) return <div style={{ textAlign: "center", padding: 48 }}><Spin size="large" /></div>;
-  if (!course) return <Card><Text type="secondary">تعذر تحميل الكورس.</Text></Card>;
+  if (!course) return <Card><Text type="secondary">{t("studentCourseDetail.errors.courseUnavailable")}</Text></Card>;
 
   type MixedItem = { kind: "lesson"; item: LessonItem } | { kind: "quiz"; item: QuizItem };
 
@@ -148,7 +150,7 @@ export default function StudentCourseDetailPage() {
           <Title level={3} style={{ margin: 0 }}>{course.title}</Title>
           {instructorName && instructorId && (
             <Link to={`/instructor/${instructorId}`}>
-              <Text type="secondary">الأستاذ: {instructorName}</Text>
+              <Text type="secondary">{t("studentCourseDetail.teacher")}: {instructorName}</Text>
             </Link>
           )}
         </Col>
@@ -156,10 +158,10 @@ export default function StudentCourseDetailPage() {
           <Space>
             {courseId && (
               <Link to={`/dashboard/student/courses/${courseId}/discussions`}>
-                <Button icon={<MessageOutlined />}>النقاشات</Button>
+                <Button icon={<MessageOutlined />}>{t("studentCourseDetail.actions.discussions")}</Button>
               </Link>
             )}
-            <Button icon={<ReloadOutlined />} onClick={() => void fetchAll()}>تحديث</Button>
+            <Button icon={<ReloadOutlined />} onClick={() => void fetchAll()}>{t("studentCourseDetail.actions.refresh")}</Button>
           </Space>
         </Col>
       </Row>
@@ -170,8 +172,8 @@ export default function StudentCourseDetailPage() {
           <Space orientation="vertical" size={8} style={{ width: "100%" }}>
             <Space>
               <TrophyOutlined style={{ color: "#1677ff" }} />
-              <Text strong>تقدمك في الدورة</Text>
-              <Text type="secondary">({progress.completedItems} / {progress.totalItems} مكتمل)</Text>
+              <Text strong>{t("studentCourseDetail.progress.title")}</Text>
+              <Text type="secondary">({progress.completedItems} / {progress.totalItems} {t("studentCourseDetail.progress.completed")})</Text>
             </Space>
             <Progress
               percent={progress.progressPct}
@@ -179,7 +181,7 @@ export default function StudentCourseDetailPage() {
             />
             {progress.canAccessFinalExam && finalExam && !isQuizPassed(getQuizId(finalExam)) && (
               <Alert type="success" showIcon
-                title="🎉 أكملت كل المحتوى! يمكنك الآن تقديم الاختبار النهائي للحصول على شهادتك." />
+                title={t("studentCourseDetail.progress.readyForFinal")} />
             )}
           </Space>
         </Card>
@@ -190,19 +192,19 @@ export default function StudentCourseDetailPage() {
         <Space orientation="vertical" size={8} style={{ width: "100%" }}>
           <Space>
             <Tag color={course.type === "paid" ? "gold" : "green"}>
-              {course.type === "paid" ? "مدفوع" : "مجاني"}
+              {course.type === "paid" ? t("payment.courseType.paid") : t("payment.courseType.free")}
             </Tag>
             <Tag color={course.status === "published" ? "blue" : "default"}>
-              {course.status === "published" ? "منشور" : "مسودة"}
+              {course.status === "published" ? t("studentCourseDetail.status.published") : t("studentCourseDetail.status.draft")}
             </Tag>
           </Space>
           <Text>{course.description}</Text>
           {course.duration && (
-            <Space size={4}><ClockCircleOutlined /><Text>{course.duration} ساعة</Text></Space>
+            <Space size={4}><ClockCircleOutlined /><Text>{t("studentCourseDetail.durationHours", { count: course.duration })}</Text></Space>
           )}
           {!isEnrolled && (
-            <Alert type="info" showIcon title="الدروس الكاملة متاحة بعد التسجيل"
-              action={<Button type="primary" size="small" href={`/payment/${courseId}`}>التسجيل الآن</Button>}
+            <Alert type="info" showIcon title={t("studentCourseDetail.enrollment.lessonsAfterEnroll")}
+              action={<Button type="primary" size="small" href={`/payment/${courseId}`}>{t("studentCourseDetail.enrollment.enrollNow")}</Button>}
             />
           )}
         </Space>
@@ -210,7 +212,7 @@ export default function StudentCourseDetailPage() {
 
       {/* محتوى الدورة */}
       <Title level={4} style={{ marginBottom: 0 }}>
-        محتوى الدورة ({sorted.length + (finalExam ? 1 : 0)} عنصر)
+        {t("studentCourseDetail.content.title", { count: sorted.length + (finalExam ? 1 : 0) })}
       </Title>
 
       <Row gutter={[0, 8]}>
@@ -234,14 +236,14 @@ export default function StudentCourseDetailPage() {
                         : isUnlocked ? <YoutubeOutlined style={{ color: "#1677ff" }} />
                         : <LockOutlined style={{ color: "#bfbfbf" }} />}
                       <Text strong>{lesson.title}</Text>
-                      {lesson.isPreview && <Tag color="green">معاينة مجانية</Tag>}
-                      {completed && <Tag color="success">مكتمل ✓</Tag>}
+                      {lesson.isPreview && <Tag color="green">{t("studentCourseDetail.content.freePreview")}</Tag>}
+                      {completed && <Tag color="success">{t("studentCourseDetail.content.completed")}</Tag>}
                     </Space>
                   }
                 >
                   {!isUnlocked ? (
                     <Alert type="warning" showIcon icon={<LockOutlined />}
-                      title="أكمل الدرس السابق أولاً لفتح هذا الدرس" />
+                      title={t("studentCourseDetail.content.completePreviousLesson")} />
                   ) : (
                     <Space orientation="vertical" size={8} style={{ width: "100%" }}>
                       {lesson.description && <Text type="secondary">{lesson.description}</Text>}
@@ -249,12 +251,12 @@ export default function StudentCourseDetailPage() {
                         {lesson.video?.youtubeId && (
                           <Button type="primary" ghost icon={<YoutubeOutlined />}
                             href={`https://www.youtube.com/watch?v=${lesson.video.youtubeId}`} target="_blank">
-                            مشاهدة الفيديو
+                            {t("studentCourseDetail.actions.watchVideo")}
                           </Button>
                         )}
                         {lesson.pdf?.url && (
                           <Button icon={<FilePdfOutlined />} href={lesson.pdf.url} target="_blank">
-                            فتح PDF
+                            {t("studentCourseDetail.actions.openPdf")}
                           </Button>
                         )}
                         {isEnrolled && !completed && (
@@ -262,7 +264,7 @@ export default function StudentCourseDetailPage() {
                             <Button type="primary" icon={<CheckCircleOutlined />}
                               loading={markingId === lid}
                               onClick={() => void handleMarkComplete(lid)}>
-                              أكملت هذا الدرس
+                              {t("studentCourseDetail.actions.markLessonComplete")}
                             </Button>
                           </Tooltip>
                         )}
@@ -292,21 +294,21 @@ export default function StudentCourseDetailPage() {
                       : isUnlocked ? <FileTextOutlined style={{ color: "#fa8c16" }} />
                       : <LockOutlined style={{ color: "#bfbfbf" }} />}
                     <Text strong>{quiz.title}</Text>
-                    <Tag color="orange">اختبار</Tag>
-                    {passed && <Tag color="success">ناجح ✓</Tag>}
+                    <Tag color="orange">{t("studentCourseDetail.content.quiz")}</Tag>
+                    {passed && <Tag color="success">{t("studentCourseDetail.content.passed")}</Tag>}
                   </Space>
                 }
               >
-                {!isEnrolled ? <Text type="secondary">متاح بعد التسجيل</Text>
+                {!isEnrolled ? <Text type="secondary">{t("studentCourseDetail.enrollment.availableAfterEnroll")}</Text>
                   : !isUnlocked ? (
                     <Alert type="warning" showIcon icon={<LockOutlined />}
-                      title="أكمل الدروس السابقة لفتح هذا الاختبار" />
+                      title={t("studentCourseDetail.content.completePreviousForQuiz")} />
                   ) : (
                     <Space>
-                      {quiz.passingScore && <Text type="secondary">نسبة النجاح: {quiz.passingScore}%</Text>}
+                      {quiz.passingScore && <Text type="secondary">{t("studentCourseDetail.content.passingScore", { score: quiz.passingScore })}</Text>}
                       <Link to={`/dashboard/student/courses/${courseId}/quizzes/${qid}`}>
                         <Button type="primary" disabled={passed}>
-                          {passed ? "تم الاجتياز ✓" : "ابدأ الاختبار"}
+                          {passed ? t("studentCourseDetail.actions.passed") : t("studentCourseDetail.actions.startQuiz")}
                         </Button>
                       </Link>
                     </Space>
@@ -335,32 +337,32 @@ export default function StudentCourseDetailPage() {
                       : canAccess ? <FileTextOutlined style={{ color: "#f5222d" }} />
                       : <LockOutlined style={{ color: "#bfbfbf" }} />}
                     <Text strong>{finalExam.title}</Text>
-                    <Tag color="red">اختبار نهائي 🏆</Tag>
-                    {passed && <Tag color="gold">مكتمل ✓</Tag>}
+                    <Tag color="red">{t("studentQuiz.finalExam")}</Tag>
+                    {passed && <Tag color="gold">{t("studentCourseDetail.content.completed")}</Tag>}
                   </Space>
                 }
               >
                 {passed ? (
                   <Space>
-                    <Alert type="success" showIcon title="حصلت على شهادتك!" />
+                    <Alert type="success" showIcon title={t("studentCourseDetail.messages.gotCertificate")} />
                     <Link to="/dashboard/student/grades">
-                      <Button type="primary" icon={<TrophyOutlined />}>عرض شهادتي</Button>
+                      <Button type="primary" icon={<TrophyOutlined />}>{t("studentCourseDetail.actions.viewCertificate")}</Button>
                     </Link>
                   </Space>
                 ) : !isEnrolled ? (
-                  <Text type="secondary">متاح بعد التسجيل</Text>
+                  <Text type="secondary">{t("studentCourseDetail.enrollment.availableAfterEnroll")}</Text>
                 ) : !canAccess ? (
                   <Alert type="info" showIcon icon={<LockOutlined />}
-                    title={`أكمل جميع الدروس والاختبارات أولاً (${progress?.progressPct ?? 0}% مكتمل)`} />
+                    title={t("studentCourseDetail.messages.completeAllFirst", { pct: progress?.progressPct ?? 0 })} />
                 ) : (
                   <Space orientation="vertical" size={8}>
                     <Alert type="success" showIcon
-                      title="أنت جاهز! قدّم الاختبار الآن للحصول على شهادتك." />
+                      title={t("studentCourseDetail.messages.readyForFinal")} />
                     <Space>
-                      {finalExam.passingScore && <Text type="secondary">نسبة النجاح: {finalExam.passingScore}%</Text>}
+                      {finalExam.passingScore && <Text type="secondary">{t("studentCourseDetail.content.passingScore", { score: finalExam.passingScore })}</Text>}
                       <Link to={`/dashboard/student/courses/${courseId}/quizzes/${fid}`}>
                         <Button type="primary" danger icon={<TrophyOutlined />} size="large">
-                          ابدأ الاختبار النهائي 🏆
+                          {t("studentCourseDetail.actions.startFinalExam")}
                         </Button>
                       </Link>
                     </Space>
@@ -373,7 +375,7 @@ export default function StudentCourseDetailPage() {
       </Row>
 
       {sorted.length === 0 && !finalExam && (
-        <Card><Text type="secondary">لا توجد دروس منشورة في هذه الدورة بعد.</Text></Card>
+        <Card><Text type="secondary">{t("studentCourseDetail.content.noPublishedLessons")}</Text></Card>
       )}
     </Space>
   );

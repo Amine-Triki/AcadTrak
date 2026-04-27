@@ -8,6 +8,7 @@ import {
   CheckCircleOutlined, CloseCircleOutlined,
   CreditCardOutlined, SafetyCertificateOutlined,
 } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 import { useAuth } from "~/context/auth";
 
@@ -31,6 +32,7 @@ interface PaymentResult {
 }
 
 export default function PaymentPage() {
+  const { t } = useTranslation();
   const { message }       = App.useApp();
   const { courseId }      = useParams<{ courseId: string }>();
   const [searchParams]    = useSearchParams();
@@ -57,11 +59,11 @@ export default function PaymentPage() {
       try {
         const res  = await apiFetch(`/api/courses/${courseId}`);
         const data = (await res.json().catch(() => null)) as { course?: CourseItem } | null;
-        if (!res.ok || !data?.course) throw new Error("فشل تحميل الكورس");
+        if (!res.ok || !data?.course) throw new Error(t("payment.errors.failedLoadCourse"));
         setCourse(data.course);
         setEffective(data.course.effectivePrice ?? data.course.price);
       } catch (e) {
-        message.error(e instanceof Error ? e.message : "خطأ");
+        message.error(e instanceof Error ? e.message : t("payment.errors.generic"));
       } finally {
         setLoading(false);
       }
@@ -77,12 +79,12 @@ export default function PaymentPage() {
       });
       const data = (await res.json().catch(() => null)) as { message?: string } | null;
       if (!res.ok) {
-        throw new Error(data?.message || "فشل التسجيل");
+        throw new Error(data?.message || t("payment.errors.failedEnroll"));
       }
-      message.success("تم التسجيل بنجاح! 🎉");
+      message.success(t("payment.messages.enrolledSuccess"));
       enrolledRedirect();
     } catch (e) {
-      message.error(e instanceof Error ? e.message : "فشل التسجيل");
+      message.error(e instanceof Error ? e.message : t("payment.errors.failedEnroll"));
     } finally {
       setPaying(null);
     }
@@ -96,21 +98,21 @@ export default function PaymentPage() {
 
       // ✅ Bug 3 Fix: الـ backend يُرجع 400 عند كوبون خاطئ
       if (!res.ok) {
-        throw new Error(data?.message || "كوبون غير صالح أو منتهي الصلاحية");
+        throw new Error(data?.message || t("payment.errors.invalidCoupon"));
       }
 
-      if (!data?.course) throw new Error("فشل التحقق من الكوبون");
+      if (!data?.course) throw new Error(t("payment.errors.failedCouponCheck"));
 
       const newPrice = data.course.effectivePrice ?? data.course.price;
       setEffective(newPrice);
 
       if (newPrice < (course?.price ?? Infinity)) {
-        message.success(newPrice === 0 ? "كوبون 100%! التسجيل مجاني 🎉" : `تم تطبيق الخصم ✅ السعر الجديد: ${newPrice} USD`);
+        message.success(newPrice === 0 ? t("payment.messages.coupon100") : t("payment.messages.discountApplied", { price: newPrice }));
       } else {
-        message.warning("الكوبون صالح لكن لم يُطبَّق خصم");
+        message.warning(t("payment.messages.couponNoDiscount"));
       }
     } catch (e) {
-      message.error(e instanceof Error ? e.message : "كوبون غير صالح");
+      message.error(e instanceof Error ? e.message : t("payment.errors.invalidCoupon"));
     }
   };
 
@@ -126,12 +128,12 @@ export default function PaymentPage() {
       const data = (await res.json().catch(() => null)) as PaymentResult | null;
 
       if (!res.ok) {
-        throw new Error((data as { message?: string })?.message || "فشل بدء الدفع");
+        throw new Error((data as { message?: string })?.message || t("payment.errors.failedStartPayment"));
       }
 
       // كوبون 100% → مسجّل مباشرة
       if (data?.enrollmentId) {
-        message.success(data.message || "تم التسجيل مجاناً! 🎉");
+        message.success(data.message || t("payment.messages.freeEnrollByCoupon"));
         enrolledRedirect();
         return;
       }
@@ -142,9 +144,9 @@ export default function PaymentPage() {
         return;
       }
 
-      throw new Error("لم يُعَد رابط الدفع");
+      throw new Error(t("payment.errors.paymentUrlMissing"));
     } catch (e) {
-      message.error(e instanceof Error ? e.message : "خطأ في الدفع");
+      message.error(e instanceof Error ? e.message : t("payment.errors.paymentFailed"));
     } finally {
       setPaying(null);
     }
@@ -158,11 +160,11 @@ export default function PaymentPage() {
           type="success"
           showIcon
           icon={<CheckCircleOutlined />}
-          message="تم إرسال عملية الدفع بنجاح"
-          description="يجري الآن تأكيد العملية وتفعيل التسجيل. إذا لم يظهر الكورس مباشرة، حدّث الصفحة بعد لحظات."
+          message={t("payment.redirect.successTitle")}
+          description={t("payment.redirect.successDescription")}
           action={
             <Button type="primary" onClick={() => enrolledRedirect()}>
-              الذهاب إلى دوراتي
+              {t("payment.redirect.goToMyCourses")}
             </Button>
           }
         />
@@ -177,11 +179,11 @@ export default function PaymentPage() {
           type="error"
           showIcon
           icon={<CloseCircleOutlined />}
-          message="فشل الدفع"
-          description="تعذر إتمام عملية الدفع. يمكنك المحاولة مرة أخرى."
+          message={t("payment.redirect.failedTitle")}
+          description={t("payment.redirect.failedDescription")}
           action={
             <Button onClick={() => navigate(`/payment/${courseId}`)}>
-              حاول مجدداً
+              {t("payment.redirect.tryAgain")}
             </Button>
           }
         />
@@ -194,7 +196,7 @@ export default function PaymentPage() {
   }
 
   if (!course) {
-    return <Alert type="error" title="الكورس غير موجود" />;
+    return <Alert type="error" title={t("payment.errors.courseNotFound")} />;
   }
 
   const isFree     = course.type === "free";
@@ -206,12 +208,12 @@ export default function PaymentPage() {
       <Card>
         <Space orientation="vertical" size={20} style={{ width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <Title level={3} style={{ margin: 0 }}>إتمام التسجيل</Title>
+            <Title level={3} style={{ margin: 0 }}>{t("payment.title")}</Title>
             {/* ✅ زر الصفحة الرئيسية + زر لوحة التحكم */}
             <Space>
-              <Button size="small" href="/">الرئيسية</Button>
+              <Button size="small" href="/">{t("common.home")}</Button>
               <Button size="small" href={user?.role === "teacher" ? "/dashboard/teacher" : "/dashboard/student"}>
-                لوحتي
+                {t("common.dashboard")}
               </Button>
             </Space>
           </div>
@@ -222,10 +224,10 @@ export default function PaymentPage() {
               <Text strong style={{ fontSize: 16 }}>{course.title}</Text>
               <Text type="secondary">{course.description.slice(0, 100)}...</Text>
               <Space>
-                <Tag color={isFree ? "green" : "gold"}>{isFree ? "مجاني" : "مدفوع"}</Tag>
+                <Tag color={isFree ? "green" : "gold"}>{isFree ? t("payment.courseType.free") : t("payment.courseType.paid")}</Tag>
                 {!isFree && (
                   <Text strong style={{ fontSize: 18, color: "#4f46e5" }}>
-                    {is100Off ? "مجاني بكوبون" : `${course.price} USD`}
+                    {is100Off ? t("payment.messages.freeByCoupon") : `${course.price} USD`}
                   </Text>
                 )}
               </Space>
@@ -236,11 +238,11 @@ export default function PaymentPage() {
           {!isFree && (
             <>
               <div>
-                <Text strong>كوبون تخفيض (اختياري)</Text>
+                <Text strong>{t("payment.coupon.label")}</Text>
                 <Row gutter={8} style={{ marginTop: 8 }}>
                   <Col flex="auto">
                     <Input
-                      placeholder="أدخل كود الكوبون"
+                      placeholder={t("payment.coupon.placeholder")}
                       value={coupon}
                       onChange={(e) => setCoupon(e.target.value.toUpperCase())}
                       onPressEnter={applyCoupon}
@@ -249,7 +251,7 @@ export default function PaymentPage() {
                   </Col>
                   <Col>
                     <Button onClick={applyCoupon} disabled={!coupon.trim()}>
-                      تطبيق
+                      {t("payment.coupon.apply")}
                     </Button>
                   </Col>
                 </Row>
@@ -261,8 +263,8 @@ export default function PaymentPage() {
                     style={{ marginTop: 8 }}
                     message={
                       effectivePrice === 0
-                        ? "🎉 كوبون 100%! التسجيل مجاني"
-                        : `السعر بعد الخصم: ${effectivePrice} USD`
+                        ? t("payment.messages.coupon100")
+                        : t("payment.messages.priceAfterDiscount", { price: effectivePrice })
                     }
                   />
                 )}
@@ -274,7 +276,7 @@ export default function PaymentPage() {
           {/* المبلغ النهائي */}
           {!isFree && !is100Off && (
             <Row justify="space-between" align="middle">
-              <Col><Text type="secondary">الإجمالي</Text></Col>
+              <Col><Text type="secondary">{t("payment.total")}</Text></Col>
               <Col>
                 <Text strong style={{ fontSize: 22, color: "#4f46e5" }}>
                   {finalPrice} USD
@@ -293,7 +295,7 @@ export default function PaymentPage() {
               onClick={() => void enrollFreeCourse()}
               loading={paying !== null}
             >
-              تسجيل مجاني
+              {t("payment.actions.freeEnroll")}
             </Button>
           ) : is100Off ? (
             <Button
@@ -304,7 +306,7 @@ export default function PaymentPage() {
               onClick={() => void pay("konnect")}
               loading={paying !== null}
             >
-              تسجيل مجاني بالكوبون
+              {t("payment.actions.freeEnrollByCoupon")}
             </Button>
           ) : (
             <Space orientation="vertical" size={12} style={{ width: "100%" }}>
@@ -317,10 +319,10 @@ export default function PaymentPage() {
                 disabled={paying !== null}
                 onClick={() => void pay("konnect")}
               >
-                {paying === "konnect" ? "جاري التحويل..." : "ادفع عبر Konnect 🌍"}
+                {paying === "konnect" ? t("payment.actions.redirecting") : t("payment.actions.payWithKonnect")}
               </Button>
               <Text type="secondary" style={{ textAlign: "center", display: "block", fontSize: 12 }}>
-                Konnect — يقبل Visa/Mastercard + e-DINAR + محفظة
+                {t("payment.konnectHint")}
               </Text>
             </Space>
           )}
@@ -330,8 +332,8 @@ export default function PaymentPage() {
             <Alert
               type="info"
               showIcon
-              title="وضع الاختبار (Development فقط)"
-              description="استخدم حساب/بيانات Sandbox الخاصة بـ Konnect من لوحة المزود."
+              title={t("payment.dev.title")}
+              description={t("payment.dev.description")}
             />
           )}
         </Space>

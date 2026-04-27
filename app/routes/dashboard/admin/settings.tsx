@@ -13,6 +13,7 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 
 const { Title, Text } = Typography;
@@ -28,6 +29,7 @@ type CategoryFormValues = {
 };
 
 export default function AdminSettingsPage() {
+	const { t } = useTranslation();
 	const { message } = App.useApp();
 	const [form] = Form.useForm<CategoryFormValues>();
 	const [loading, setLoading] = useState(false);
@@ -45,12 +47,12 @@ export default function AdminSettingsPage() {
 				| null;
 
 			if (!response.ok) {
-				throw new Error(payload?.message || "Failed to load categories");
+				throw new Error(payload?.message || t("adminSettings.errors.failedLoadCategories"));
 			}
 
 			setRows(payload?.categories ?? []);
 		} catch (error) {
-			message.error(error instanceof Error ? error.message : "Failed to load categories");
+			message.error(error instanceof Error ? error.message : t("adminSettings.errors.failedLoadCategories"));
 		} finally {
 			setLoading(false);
 		}
@@ -92,14 +94,14 @@ export default function AdminSettingsPage() {
 			const payload = (await response.json().catch(() => null)) as { message?: string } | null;
 
 			if (!response.ok) {
-				throw new Error(payload?.message || "Failed to save category");
+				throw new Error(payload?.message || t("adminSettings.errors.failedSaveCategory"));
 			}
 
-			message.success(payload?.message || "Category saved");
+			message.success(payload?.message || t("adminSettings.messages.categorySaved"));
 			closeModal();
 			await fetchCategories();
 		} catch (error) {
-			message.error(error instanceof Error ? error.message : "Failed to save category");
+			message.error(error instanceof Error ? error.message : t("adminSettings.errors.failedSaveCategory"));
 		} finally {
 			setSubmitting(false);
 		}
@@ -113,36 +115,36 @@ export default function AdminSettingsPage() {
 			const payload = (await response.json().catch(() => null)) as { message?: string } | null;
 
 			if (!response.ok) {
-				throw new Error(payload?.message || "Failed to delete category");
+				throw new Error(payload?.message || t("adminSettings.errors.failedDeleteCategory"));
 			}
 
-			message.success(payload?.message || "Category deleted");
+			message.success(payload?.message || t("adminSettings.messages.categoryDeleted"));
 			await fetchCategories();
 		} catch (error) {
-			message.error(error instanceof Error ? error.message : "Failed to delete category");
+			message.error(error instanceof Error ? error.message : t("adminSettings.errors.failedDeleteCategory"));
 		}
 	};
 
 	const columns: ColumnsType<CategoryRow> = [
-		{ title: "Name", dataIndex: "name", key: "name" },
-		{ title: "Slug", dataIndex: "slug", key: "slug" },
+		{ title: t("adminSettings.table.name"), dataIndex: "name", key: "name" },
+		{ title: t("adminSettings.table.slug"), dataIndex: "slug", key: "slug" },
 		{
-			title: "Actions",
+			title: t("adminSettings.table.actions"),
 			key: "actions",
 			render: (_, row) => (
 				<Space>
 					<Button icon={<EditOutlined />} onClick={() => openEdit(row)}>
-						Edit
+						{t("adminSettings.actions.edit")}
 					</Button>
 					<Popconfirm
-						title="Delete this category?"
-						description="Deletion is blocked if this category is used by courses."
+						title={t("adminSettings.actions.deleteTitle")}
+						description={t("adminSettings.actions.deleteDescription")}
 						onConfirm={() => void deleteCategory(row.id)}
-						okText="Yes"
-						cancelText="No"
+						okText={t("adminSettings.actions.yes")}
+						cancelText={t("adminSettings.actions.no")}
 					>
 						<Button icon={<DeleteOutlined />} danger>
-							Delete
+							{t("adminSettings.actions.delete")}
 						</Button>
 					</Popconfirm>
 				</Space>
@@ -154,15 +156,15 @@ export default function AdminSettingsPage() {
 		<Card>
 			<Space style={{ width: "100%", justifyContent: "space-between", marginBottom: 16 }} wrap>
 				<div>
-					<Title level={4} style={{ margin: 0 }}>Settings</Title>
-					<Text type="secondary">Manage categories used by courses.</Text>
+					<Title level={4} style={{ margin: 0 }}>{t("adminSettings.title")}</Title>
+					<Text type="secondary">{t("adminSettings.subtitle")}</Text>
 				</div>
 				<Space>
 					<Button icon={<ReloadOutlined />} onClick={() => void fetchCategories()}>
-						Refresh
+						{t("adminSettings.actions.refresh")}
 					</Button>
 					<Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-						Add Category
+						{t("adminSettings.actions.addCategory")}
 					</Button>
 				</Space>
 			</Space>
@@ -178,21 +180,21 @@ export default function AdminSettingsPage() {
 			<Modal
 				open={open}
 				onCancel={closeModal}
-				title={editing ? "Edit Category" : "Add Category"}
-				okText={editing ? "Save" : "Create"}
+				title={editing ? t("adminSettings.modal.editTitle") : t("adminSettings.modal.addTitle")}
+				okText={editing ? t("adminSettings.modal.save") : t("adminSettings.modal.create")}
 				onOk={() => void form.submit()}
 				confirmLoading={submitting}
 			>
 				<Form<CategoryFormValues> form={form} layout="vertical" onFinish={submitCategory}>
 					<Form.Item
 						name="name"
-						label="Category Name"
+						label={t("adminSettings.modal.categoryName")}
 						rules={[
-							{ required: true, message: "Category name is required" },
-							{ min: 2, message: "At least 2 characters" },
+							{ required: true, message: t("adminSettings.modal.categoryRequired") },
+							{ min: 2, message: t("adminSettings.modal.min2") },
 						]}
 					>
-						<Input placeholder="e.g. Programming" />
+						<Input placeholder={t("adminSettings.modal.placeholder")} />
 					</Form.Item>
 				</Form>
 			</Modal>
