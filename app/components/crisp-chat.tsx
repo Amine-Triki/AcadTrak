@@ -43,7 +43,7 @@ export default function CrispChat() {
         return;
       }
 
-      crisp.configure(CRISP_WEBSITE_ID, { autoload: false });
+      crisp.configure(CRISP_WEBSITE_ID);
       crispRef.current = crisp;
       configuredRef.current = true;
     };
