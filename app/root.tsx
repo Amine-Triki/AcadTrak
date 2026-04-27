@@ -1,5 +1,4 @@
 import {
-  isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
@@ -10,7 +9,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Button, Result, ConfigProvider, App as AntApp, theme } from "antd";
+import { Button, Result, ConfigProvider, App as AntApp } from "antd";
 
 import type { Route } from "./+types/root";
 import "./app.css";
