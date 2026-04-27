@@ -11,14 +11,9 @@ export default defineConfig({
     tailwindcss(),
     reactRouter(),
     VitePWA({
-      // ✅ SPA / CSR — ssr: false
-      strategies: "injectManifest",
+      // ✅ SPA / CSR — let Workbox generate SW automatically
+      strategies: "generateSW",
       registerType: "prompt", // يسأل المستخدم قبل التحديث
-      injectManifest: {
-        swSrc: "app/sw.ts",
-        swDest: "sw.js",
-        injectionPoint: "self.__WB_MANIFEST",
-      },
       manifest: {
         name: "AcadTrak",
         short_name: "AcadTrak",
