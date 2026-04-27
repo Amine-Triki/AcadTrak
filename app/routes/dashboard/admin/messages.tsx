@@ -509,7 +509,7 @@ export default function AdminContactMessagesPage() {
       <Drawer
         title={t("adminMessages.details.title")}
         open={detailsOpen}
-        width={620}
+        size={620}
         onClose={() => setDetailsOpen(false)}
       >
         {selectedMessage ? (

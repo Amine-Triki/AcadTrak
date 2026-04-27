@@ -214,30 +214,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             {t("publicHome.hero.description")}
           </Paragraph>
 
-          {/* Search + CTA */}
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 40 }}>
-            <Input
-              prefix={<SearchOutlined style={{ color: "#9ca3af" }} />}
-              placeholder={t("publicHome.hero.searchPlaceholder")}
-              size="large"
-              style={{ width: 300, borderRadius: 8 }}
-            />
-            <Button
-              type="primary"
-              size="large"
-              icon={<ArrowRightOutlined />}
-              iconPlacement="end"
-              style={{
-                background: "#4f46e5",
-                border: "none",
-                borderRadius: 8,
-                fontWeight: 600,
-                height: 40,
-              }}
-            >
-              {t("publicHome.hero.explore")}
-            </Button>
-          </div>
+
 
           {/* Social proof */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

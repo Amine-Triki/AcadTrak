@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { useLocation } from "react-router";
 import { apiFetch } from "~/utils/api";
 
 type Role = "student" | "teacher" | "admin" | null;
@@ -30,6 +31,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const location = useLocation();
   // ✅ نمنع استدعاء /api/users/me أكثر من مرة واحدة
   const hasFetchedRef = useRef(false);
 
@@ -58,13 +60,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const shouldProbeAuth =
+    location.pathname.startsWith("/dashboard") ||
+    location.pathname.startsWith("/payment/");
+
   useEffect(() => {
+    if (!shouldProbeAuth) {
+      setIsAuthLoading(false);
+      return;
+    }
+
     // ✅ نجلب بيانات المستخدم مرة واحدة فقط عند تحميل التطبيق
     // بدل ما نستدعيها في كل component على حدة → يمنع 401 spam
     if (hasFetchedRef.current) return;
     hasFetchedRef.current = true;
     void refreshUser();
-  }, [refreshUser]);
+  }, [refreshUser, shouldProbeAuth]);
 
   return (
     <AuthContext.Provider

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { App, Alert, Button, Card, Checkbox, Form, Radio, Space, Spin, Typography, Result } from "antd";
-import type { CheckboxValueType, RadioChangeEvent } from "antd";
+import type { RadioChangeEvent } from "antd";
 import { ReloadOutlined, TrophyOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
@@ -102,7 +102,7 @@ export default function StudentCourseQuizPage() {
     });
   };
 
-  const handleMultipleAnswerChange = (questionIndex: number, values: CheckboxValueType[]) => {
+  const handleMultipleAnswerChange = (questionIndex: number, values: Array<string | number | boolean>) => {
     setAnswers((current) => {
       const next = [...current];
       next[questionIndex] = values.filter((value): value is number => typeof value === "number");

@@ -23,8 +23,9 @@ export default function PublicLayout() {
   const { token } = theme.useToken();
   const { t, i18n } = useTranslation();
 
-  // screens.md = true إذا العرض >= 768px
-  const isMobile = !screens.md;
+  // نتحول لوضع Drawer قبل نقطة الاختناق في الهيدر (حوالي 950px)
+  // screens.lg = true عندما العرض >= 992px
+  const isMobile = !screens.lg;
 
   const displayName = useMemo(() => {
     if (!user) return "";

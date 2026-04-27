@@ -39,6 +39,7 @@ interface QuizQuestion {
   text: string;
   options: string[];
   correctIndices: number[];
+  correctIndex?: number;
   explanation?: string;
 }
 
@@ -222,8 +223,8 @@ export default function TeacherQuizzesPage() {
         options: question.options.length >= 2 ? question.options : ["", ""],
         correctIndices: question.correctIndices?.length
           ? question.correctIndices
-          : typeof (question as { correctIndex?: number }).correctIndex === "number"
-            ? [(question as { correctIndex: number }).correctIndex]
+          : typeof question.correctIndex === "number"
+            ? [question.correctIndex]
             : [],
         explanation: question.explanation || "",
       })) as QuizQuestion[],

@@ -4,7 +4,7 @@ import { Outlet, Link, useLocation, useNavigate, Navigate, redirect, useLoaderDa
 import type { MenuProps } from "antd";
 import {
   Layout, Menu, Button, Avatar,
-  Dropdown, Space, theme, Badge,
+  Dropdown, Space, theme, Badge, Select,
 } from "antd";
 import { useTranslation } from "react-i18next";
 import {
@@ -16,9 +16,11 @@ import {
   MailOutlined,
   HomeOutlined,
   TrophyOutlined,
+  GlobalOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "~/context/auth";
 import { apiFetch } from "~/utils/api";
+import type { AppLanguage } from "~/i18n/resources";
 
 const { Header, Sider, Content } = Layout;
 
@@ -174,7 +176,7 @@ const buildMenuByRole = (t: (key: string) => string): Record<string, MenuItem> =
 // المكون الرئيسي
 // ━━━━━━━━━━━━━━━━━━━━━━━━
 export default function DashboardLayout() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const { user, isAuthenticated, setUser } = useAuth();
   const loaderData = useLoaderData() as {
@@ -192,6 +194,12 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const { token } = theme.useToken(); // ✅ Design Tokens من Ant Design
   const authUser = user ?? loaderData?.user ?? null;
+
+  const currentLanguage = (() => {
+    const base = (i18n.resolvedLanguage ?? i18n.language ?? "en").split("-")[0];
+    if (base === "fr" || base === "ar") return base;
+    return "en";
+  })() as AppLanguage;
 
   useEffect(() => {
     if (!user && loaderData?.user) {
@@ -236,6 +244,10 @@ export default function DashboardLayout() {
     } else if (key === "profile") {
       navigate(`/dashboard/${authUser.role}`);
     }
+  };
+
+  const handleLanguageChange = (value: AppLanguage) => {
+    void i18n.changeLanguage(value);
   };
 
   return (
@@ -330,6 +342,19 @@ export default function DashboardLayout() {
           />
 
           <Space size={token.marginSM}>
+            <Select<AppLanguage>
+              aria-label={t("common.language")}
+              size="middle"
+              prefix={<GlobalOutlined />}
+              value={currentLanguage}
+              onChange={handleLanguageChange}
+              style={{ width: 130 }}
+              options={[
+                { value: "ar", label: "العربية" },
+                { value: "fr", label: "Français" },
+                { value: "en", label: "English" },
+              ]}
+            />
 
 
             {/* 👤 قائمة المستخدم */}

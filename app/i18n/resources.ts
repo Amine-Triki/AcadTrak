@@ -476,8 +476,17 @@ export const resources = {
           notStarted: "Not started",
           readyForFinal: "Ready for final exam",
         },
+        rating: {
+          yourRating: "Your rating",
+          community: "Rating {{rating}} ({{count}} ratings)",
+          noRatings: "No ratings yet",
+        },
+        messages: {
+          ratingSaved: "Your rating was saved",
+        },
         errors: {
           failedLoadCourses: "Failed to load courses",
+          failedRateCourse: "Failed to save rating",
         },
       },
       studentQuiz: {
@@ -1371,8 +1380,17 @@ export const resources = {
           notStarted: "Pas commence",
           readyForFinal: "Pret pour l'examen final",
         },
+        rating: {
+          yourRating: "Votre note",
+          community: "Note {{rating}} ({{count}} avis)",
+          noRatings: "Aucune note pour le moment",
+        },
+        messages: {
+          ratingSaved: "Votre note a ete enregistree",
+        },
         errors: {
           failedLoadCourses: "Echec du chargement des cours",
+          failedRateCourse: "Echec de l'enregistrement de la note",
         },
       },
       studentQuiz: {
@@ -1420,68 +1438,68 @@ export const resources = {
       },
       publicAbout: {
         meta: {
-          title: "AcadTrak | About Us",
+          title: "AcadTrak | A propos",
           description:
-            "Learn more about AcadTrak, our mission, and how we are improving the learning experience for students and educators alike.",
+            "Decouvrez AcadTrak, notre mission et la facon dont nous ameliorons l'experience d'apprentissage des etudiants et des enseignants.",
         },
         hero: {
-          badge: "Our Story",
-          title: "Built for the Future of Learning",
+          badge: "Notre histoire",
+          title: "Pense pour l'avenir de l'apprentissage",
           description:
-            "We believe education should be accessible, engaging, and career-focused. AcadTrak was founded in 2021 to bridge the gap between traditional learning and modern industry demands.",
+            "Nous croyons que l'education doit etre accessible, engageante et orientee vers la carriere. AcadTrak a ete fondee en 2021 pour combler l'ecart entre l'apprentissage traditionnel et les besoins modernes de l'industrie.",
         },
         stats: {
           items: [
-            { value: "15,000+", label: "Active Students" },
-            { value: "200+", label: "Expert Courses" },
-            { value: "50+", label: "Instructors" },
-            { value: "98.2%", label: "Success Rate" },
+            { value: "15,000+", label: "Etudiants actifs" },
+            { value: "200+", label: "Cours d'experts" },
+            { value: "50+", label: "Formateurs" },
+            { value: "98.2%", label: "Taux de reussite" },
           ],
         },
         mission: {
-          label: "Our Mission",
-          title: "Empowering Learners Worldwide",
+          label: "Notre mission",
+          title: "Donner aux apprenants les moyens de reussir partout dans le monde",
           paragraph1:
-            "AcadTrak was born from a simple belief: everyone deserves access to world-class education. We partner with industry experts to create courses that are not just informative, they are transformative.",
+            "AcadTrak est nee d'une conviction simple : chacun merite un acces a une education de niveau international. Nous travaillons avec des experts du secteur pour creer des cours qui ne sont pas seulement informatifs, mais aussi transformateurs.",
           paragraph2:
-            "From beginners finding their path to professionals leveling up their skills, our platform serves learners at every stage of their journey.",
+            "Des debutants qui cherchent leur voie aux professionnels qui veulent developper leurs competences, notre plateforme accompagne les apprenants a chaque etape de leur parcours.",
         },
         values: {
-          title: "What We Stand For",
-          subtitle: "The principles that guide everything we do at AcadTrak.",
+          title: "Ce que nous defendons",
+          subtitle: "Les principes qui guident tout ce que nous faisons chez AcadTrak.",
           items: [
             {
               title: "Excellence",
               description:
-                "We deliver only top-quality, rigorously vetted course content.",
+                "Nous proposons uniquement des contenus de cours de tres haute qualite, rigoureusement verifies.",
             },
             {
-              title: "Accessibility",
+              title: "Accessibilite",
               description:
-                "World-class education for every learner, anywhere on the planet.",
+                "Une education de niveau mondial pour chaque apprenant, partout dans le monde.",
             },
             {
-              title: "Community",
+              title: "Communaute",
               description:
-                "A thriving network where students and instructors grow together.",
+                "Un reseau dynamique ou etudiants et formateurs progressent ensemble.",
             },
             {
               title: "Innovation",
               description:
-                "Constantly evolving our platform to meet tomorrow's demands.",
+                "Nous faisons evoluer la plateforme en continu pour repondre aux besoins de demain.",
             },
             {
-              title: "Trust",
+              title: "Confiance",
               description:
-                "Transparent pricing, honest reviews, and real career outcomes.",
+                "Des tarifs transparents, des avis honnetes et de veritables resultats de carriere.",
             },
           ],
         },
         cta: {
-          title: "Join Our Growing Community",
+          title: "Rejoignez notre communaute grandissante",
           description:
-            "Be part of 15,000+ learners transforming their careers with AcadTrak.",
-          button: "Get Started Free",
+            "Faites partie des 15 000+ apprenants qui transforment leur carriere avec AcadTrak.",
+          button: "Commencer gratuitement",
         },
       },
       publicHome: {
@@ -2224,8 +2242,17 @@ export const resources = {
           notStarted: "لم يبدأ بعد",
           readyForFinal: "جاهز للاختبار النهائي 🏆",
         },
+        rating: {
+          yourRating: "تقييمي",
+          community: "التقييم {{rating}} ({{count}} تقييم)",
+          noRatings: "لا توجد تقييمات بعد",
+        },
+        messages: {
+          ratingSaved: "تم حفظ تقييمك",
+        },
         errors: {
           failedLoadCourses: "فشل تحميل الدورات",
+          failedRateCourse: "فشل حفظ التقييم",
         },
       },
       studentQuiz: {

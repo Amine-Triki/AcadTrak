@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import {
   App, Button, Card, Col, Empty, Progress,
-  Row, Space, Spin, Tag, Typography,
+  Rate, Row, Space, Spin, Tag, Typography,
 } from "antd";
 import {
   BookOutlined, PlayCircleOutlined, ReloadOutlined, TrophyOutlined,
@@ -16,6 +16,8 @@ interface EnrollmentCourse {
   _id?: string; id?: string;
   title?: string; description?: string; thumbnail?: string;
   type?: "free" | "paid"; price?: number;
+  averageRating?: number;
+  totalRatingsCount?: number;
   instructor?: { id?: string; _id?: string; firstName?: string; lastName?: string; userName?: string };
 }
 
@@ -28,6 +30,17 @@ interface EnrollmentItem {
 interface CourseProgress {
   progressPct: number; completedItems: number;
   totalItems: number; canAccessFinalExam: boolean;
+}
+
+interface MyCourseRating {
+  rating: number;
+  comment?: string;
+  updatedAt?: string;
+}
+
+interface CourseRatingStats {
+  averageRating: number;
+  totalRatingsCount: number;
 }
 
 const getCourseId = (c: EnrollmentCourse | string) =>
@@ -50,6 +63,8 @@ export default function StudentCoursesPage() {
   const [loading,     setLoading]     = useState(true);
   const [enrollments, setEnrollments] = useState<EnrollmentItem[]>([]);
   const [progressMap, setProgressMap] = useState<Record<string, CourseProgress>>({});
+  const [myRatingsMap, setMyRatingsMap] = useState<Record<string, MyCourseRating | null>>({});
+  const [ratingBusyMap, setRatingBusyMap] = useState<Record<string, boolean>>({});
 
   const fetchEnrollments = async () => {
     setLoading(true);
@@ -76,9 +91,88 @@ export default function StudentCoursesPage() {
       const map: Record<string, CourseProgress> = {};
       progEntries.forEach((e) => { if (e) map[e[0]] = e[1]; });
       setProgressMap(map);
+
+      const ratingEntries = await Promise.all(
+        items.map(async (item) => {
+          const id = getCourseId(item.course);
+          if (!id) return null;
+
+          try {
+            const rRes = await apiFetch(`/api/courses/${id}/my-rating`);
+            const rData = (await rRes.json().catch(() => null)) as
+              | {
+                  rating?: MyCourseRating | null;
+                  courseRating?: CourseRatingStats;
+                }
+              | null;
+
+            if (!rRes.ok) return [id, null] as [string, MyCourseRating | null];
+
+            return [id, rData?.rating ?? null] as [string, MyCourseRating | null];
+          } catch {
+            return [id, null] as [string, MyCourseRating | null];
+          }
+        }),
+      );
+
+      const myRatings: Record<string, MyCourseRating | null> = {};
+      ratingEntries.forEach((entry) => {
+        if (entry) myRatings[entry[0]] = entry[1];
+      });
+      setMyRatingsMap(myRatings);
     } catch (err) {
       message.error(err instanceof Error ? err.message : t("studentCourses.errors.failedLoadCourses"));
     } finally { setLoading(false); }
+  };
+
+  const updateEnrollmentRatingStats = (courseId: string, stats?: CourseRatingStats) => {
+    if (!stats) return;
+
+    setEnrollments((prev) => prev.map((item) => {
+      const id = getCourseId(item.course);
+      if (id !== courseId || typeof item.course === "string") return item;
+
+      return {
+        ...item,
+        course: {
+          ...item.course,
+          averageRating: stats.averageRating,
+          totalRatingsCount: stats.totalRatingsCount,
+        },
+      };
+    }));
+  };
+
+  const rateCourse = async (courseId: string, value: number) => {
+    if (!courseId) return;
+
+    setRatingBusyMap((prev) => ({ ...prev, [courseId]: true }));
+    try {
+      const res = await apiFetch(`/api/courses/${courseId}/rate`, {
+        method: "POST",
+        body: JSON.stringify({ rating: value }),
+      });
+
+      const data = (await res.json().catch(() => null)) as
+        | {
+            message?: string;
+            rating?: MyCourseRating;
+            courseRating?: CourseRatingStats;
+          }
+        | null;
+
+      if (!res.ok) {
+        throw new Error(data?.message || t("studentCourses.errors.failedRateCourse"));
+      }
+
+      setMyRatingsMap((prev) => ({ ...prev, [courseId]: data?.rating ?? { rating: value } }));
+      updateEnrollmentRatingStats(courseId, data?.courseRating);
+      message.success(t("studentCourses.messages.ratingSaved"));
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : t("studentCourses.errors.failedRateCourse"));
+    } finally {
+      setRatingBusyMap((prev) => ({ ...prev, [courseId]: false }));
+    }
   };
 
   useEffect(() => { void fetchEnrollments(); }, []);
@@ -117,6 +211,9 @@ export default function StudentCoursesPage() {
             const pct        = prog?.progressPct ?? 0;
             const thumbnail  = typeof item.course !== "string" ? item.course.thumbnail : undefined;
             const instructor = typeof item.course !== "string" ? item.course.instructor : null;
+            const myRating = myRatingsMap[courseId]?.rating ?? 0;
+            const avgRating = typeof item.course !== "string" ? (item.course.averageRating ?? 0) : 0;
+            const totalRatings = typeof item.course !== "string" ? (item.course.totalRatingsCount ?? 0) : 0;
 
             return (
               <Col key={item._id} xs={24} sm={12} xl={8}>
@@ -178,6 +275,26 @@ export default function StudentCoursesPage() {
                         {prog?.canAccessFinalExam && pct < 100 && (
                           <Tag color="gold" style={{ fontSize: 11 }}>{t("studentCourses.progress.readyForFinal")}</Tag>
                         )}
+                      </Space>
+
+                      <Space orientation="vertical" size={4} style={{ width: "100%" }}>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          {totalRatings > 0
+                            ? t("studentCourses.rating.community", {
+                                rating: avgRating.toFixed(1),
+                                count: totalRatings,
+                              })
+                            : t("studentCourses.rating.noRatings")}
+                        </Text>
+                        <Space size={6} wrap>
+                          <Text style={{ fontSize: 12 }}>{t("studentCourses.rating.yourRating")}</Text>
+                          <Rate
+                            allowClear={false}
+                            value={myRating}
+                            onChange={(value) => void rateCourse(courseId, value)}
+                            disabled={ratingBusyMap[courseId]}
+                          />
+                        </Space>
                       </Space>
 
                       <Text type="secondary" style={{ fontSize: 11 }}>
