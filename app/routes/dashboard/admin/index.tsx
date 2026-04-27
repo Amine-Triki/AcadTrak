@@ -3,7 +3,7 @@ import { Card, Col, Row, Statistic, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 
 const { Title, Text } = Typography;
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 interface AdminStats {
 	users: number;
