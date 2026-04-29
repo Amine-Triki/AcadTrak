@@ -1,7 +1,7 @@
 // sw.ts — AcadTrak Service Worker
 // يُدار بواسطة vite-plugin-pwa (Workbox injection point)
 
-import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
+import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { clientsClaim } from 'workbox-core';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
 import {
@@ -36,6 +36,10 @@ const precacheEntries = Array.isArray(serviceWorker.__WB_MANIFEST)
 if (precacheEntries.length > 0) {
   precacheAndRoute(precacheEntries);
 }
+
+registerRoute(
+  new NavigationRoute(createHandlerBoundToURL('/index.html')),
+);
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 2. API Calls — Network First (مع offline fallback)

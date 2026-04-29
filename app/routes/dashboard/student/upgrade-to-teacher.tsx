@@ -5,7 +5,7 @@ import {
   UserSwitchOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "~/utils/api";
 import { useAuth } from "~/context/auth";
@@ -19,9 +19,13 @@ export default function UpgradeToTeacherPage() {
   const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  // ✅ إذا كان الأستاذ بالفعل، نُعيد توجيهه للـ dashboard مباشرة
+  useEffect(() => {
+    if (user?.role === "teacher") {
+      navigate("/dashboard/teacher", { replace: true });
+    }
+  }, [navigate, user?.role]);
+
   if (user?.role === "teacher") {
-    navigate("/dashboard/teacher", { replace: true });
     return null;
   }
 

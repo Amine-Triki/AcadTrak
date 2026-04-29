@@ -28,6 +28,13 @@ export default function PWAPrompt() {
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
   const [api, contextHolder] = notification.useNotification();
 
+  useEffect(() => {
+    return () => {
+      api.destroy("pwa-update");
+      api.destroy("pwa-install");
+    };
+  }, [api]);
+
   // ━━━━ استقبال حدث التثبيت من المتصفح ━━━━
   useEffect(() => {
     const handler = (e: Event) => {
@@ -41,8 +48,9 @@ export default function PWAPrompt() {
   // ━━━━ نافذة "تحديث متاح" ━━━━
   useEffect(() => {
     if (!needRefresh) return;
+    const notificationKey = "pwa-update";
     api.info({
-      key: "pwa-update",
+      key: notificationKey,
       message: "تحديث متاح 🔄",
       description: "إصدار جديد من AcadTrak متاح. حدّث الآن للحصول على أحدث الميزات.",
       duration: 0,
@@ -52,7 +60,7 @@ export default function PWAPrompt() {
           <Button
             size="small"
             onClick={() => {
-              api.destroy("pwa-update");
+              api.destroy(notificationKey);
               setNeedRefresh(false);
             }}
           >
@@ -74,10 +82,11 @@ export default function PWAPrompt() {
   // ━━━━ نافذة "تثبيت التطبيق" (بعد 5 ثواني) ━━━━
   useEffect(() => {
     if (!installPrompt) return;
+    const notificationKey = "pwa-install";
 
     const timer = setTimeout(() => {
       api.info({
-        key: "pwa-install",
+        key: notificationKey,
         message: "ثبّت AcadTrak 📱",
         description: (
           <Space orientation="vertical" size={4}>
@@ -91,7 +100,7 @@ export default function PWAPrompt() {
             <Button
               size="small"
               onClick={() => {
-                api.destroy("pwa-install");
+                api.destroy(notificationKey);
                 setInstallPrompt(null);
               }}
             >
@@ -102,7 +111,7 @@ export default function PWAPrompt() {
               size="small"
               icon={<DownloadOutlined />}
               onClick={async () => {
-                api.destroy("pwa-install");
+                api.destroy(notificationKey);
                 const prompt = installPrompt as BeforeInstallPromptEvent;
                 await prompt.prompt();
                 const result = await prompt.userChoice;
