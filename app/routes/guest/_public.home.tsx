@@ -1,8 +1,9 @@
 import type { Route } from "./+types/_public.home";
 
-
 import { Link } from "react-router";
+import { Suspense } from "react";
 import { useTranslation } from "react-i18next";
+import { Await } from "react-router";
 import {
   Alert,
   Button, Rate, Tag, Avatar, Input,
@@ -58,8 +59,10 @@ interface FeaturedCourse {
 }
 
 interface HomeLoaderData {
-  featuredCourses: FeaturedCourse[];
-  coursesError?: string;
+  coursesData?: Promise<{
+    featuredCourses: FeaturedCourse[];
+    coursesError?: string;
+  }>;
 }
 
 const CATEGORY_COLORS = [
@@ -100,30 +103,37 @@ const mapFeaturedCourse = (course: ApiCourse): FeaturedCourse => {
 };
 
 export async function clientLoader(): Promise<HomeLoaderData> {
-  try {
-    const response = await apiFetch("/api/courses");
-    const payload = (await response.json().catch(() => null)) as
-      | { courses?: ApiCourse[]; message?: string }
-      | null;
+  // ✅ Return immediately with Promise - render page ASAP
+  const coursesData = (async () => {
+    try {
+      const response = await apiFetch("/api/courses");
+      const payload = (await response.json().catch(() => null)) as
+        | { courses?: ApiCourse[]; message?: string }
+        | null;
 
-    if (!response.ok) {
+      if (!response.ok) {
+        return {
+          featuredCourses: [],
+          coursesError: payload?.message || "Failed to load featured courses.",
+        };
+      }
+
+      return {
+        featuredCourses: (payload?.courses ?? [])
+          .slice(0, 4)
+          .map(mapFeaturedCourse),
+      };
+    } catch {
       return {
         featuredCourses: [],
-        coursesError: payload?.message || "Failed to load featured courses.",
+        coursesError: "Unable to connect to the server.",
       };
     }
+  })();
 
-    const featuredCourses = (payload?.courses ?? [])
-      .slice(0, 4)
-      .map(mapFeaturedCourse);
-
-    return { featuredCourses };
-  } catch {
-    return {
-      featuredCourses: [],
-      coursesError: "Unable to connect to the server.",
-    };
-  }
+  return {
+    coursesData,
+  };
 }
 
 const FEATURES = [
@@ -135,7 +145,6 @@ const FEATURES = [
 
 export default function HomePage({ loaderData }: Route.ComponentProps) {
   const { t } = useTranslation();
-  const featuredCourses = loaderData?.featuredCourses ?? [];
 
   return (
     <div style={{ background: "#f8f9fc" }}>
@@ -285,91 +294,113 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━
-          Featured Courses
+          Featured Courses (Deferred)
       ━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "64px 48px" }}>
+      <Suspense
+        fallback={
+          <section style={{ maxWidth: 1200, margin: "0 auto", padding: "64px 48px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+              {[...Array(4)].map((_, i) => (
+                <Card
+                  key={i}
+                  style={{ borderRadius: 12, border: "1px solid #e5e7eb" }}
+                  styles={{ body: { padding: 14 } }}
+                >
+                  <div style={{ height: 200, background: "#f0f0f0", borderRadius: 8 }} />
+                </Card>
+              ))}
+            </div>
+          </section>
+        }
+      >
+        <Await resolve={loaderData?.coursesData}>
+          {(coursesData: any) => (
+            <section style={{ maxWidth: 1200, margin: "0 auto", padding: "64px 48px" }}>
 
-        {/* عنوان القسم */}
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
-          <div>
-            <Title level={2} style={{ margin: 0 }}>{t("publicHome.featured.title")}</Title>
-            <Text type="secondary">{t("publicHome.featured.subtitle")}</Text>
-          </div>
-          <Link to="/courses">
-            <Button type="link" style={{ color: "#4f46e5", padding: 0 }}>
-              {t("publicHome.featured.viewAll")} <ArrowRightOutlined />
-            </Button>
-          </Link>
-        </div>
-
-        {loaderData?.coursesError ? (
-          <Alert
-            type="warning"
-            showIcon
-            title={loaderData.coursesError}
-            style={{ marginBottom: 16 }}
-          />
-        ) : null}
-
-        {/* 4 كورسات */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 16,
-          }}
-        >
-          {featuredCourses.map((c) => (
-            <Card
-              key={c.id}
-              hoverable
-              style={{ borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}
-              styles={{ body: { padding: 14 } }}
-              cover={
-                <div style={{ position: "relative" }}>
-                  <img
-                    src={c.img}
-                    alt={c.title}
-                    style={{ width: "100%", height: 130, objectFit: "cover" }}
-                  />
-                  <Tag
-                    color={c.categoryColor}
-                    style={{ position: "absolute", top: 8, left: 8, fontSize: 10 }}
-                  >
-                    {c.category}
-                  </Tag>
+              {/* عنوان القسم */}
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
+                <div>
+                  <Title level={2} style={{ margin: 0 }}>{t("publicHome.featured.title")}</Title>
+                  <Text type="secondary">{t("publicHome.featured.subtitle")}</Text>
                 </div>
-              }
-            >
-              <div style={{ fontWeight: 600, fontSize: 13, color: "#111827", marginBottom: 8, lineHeight: 1.4, minHeight: 36 }}>
-                {c.title}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 10 }}>
-                <StarFilled style={{ color: "#f59e0b", fontSize: 12 }} />
-                <Text style={{ fontSize: 12, color: "#374151" }}>{c.rating}</Text>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontWeight: 700, color: "#4f46e5" }}>${c.price}</span>
                 <Link to="/courses">
-                  <Button
-                    type="primary"
-                    size="small"
-                    shape="circle"
-                    icon={<ArrowRightOutlined />}
-                    style={{ background: "#4f46e5", border: "none" }}
-                  />
+                  <Button type="link" style={{ color: "#4f46e5", padding: 0 }}>
+                    {t("publicHome.featured.viewAll")} <ArrowRightOutlined />
+                  </Button>
                 </Link>
               </div>
-            </Card>
-          ))}
-        </div>
 
-        {featuredCourses.length === 0 ? (
-          <Text type="secondary" style={{ display: "block", marginTop: 16 }}>
-            {t("publicHome.featured.empty")}
-          </Text>
-        ) : null}
-      </section>
+              {coursesData?.coursesError ? (
+                <Alert
+                  type="warning"
+                  showIcon
+                  title={coursesData.coursesError}
+                  style={{ marginBottom: 16 }}
+                />
+              ) : null}
+
+              {/* 4 كورسات */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gap: 16,
+                }}
+              >
+                {coursesData?.featuredCourses?.map((c: FeaturedCourse) => (
+                  <Card
+                    key={c.id}
+                    hoverable
+                    style={{ borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}
+                    styles={{ body: { padding: 14 } }}
+                    cover={
+                      <div style={{ position: "relative" }}>
+                        <img
+                          src={c.img}
+                          alt={c.title}
+                          style={{ width: "100%", height: 130, objectFit: "cover" }}
+                        />
+                        <Tag
+                          color={c.categoryColor}
+                          style={{ position: "absolute", top: 8, left: 8, fontSize: 10 }}
+                        >
+                          {c.category}
+                        </Tag>
+                      </div>
+                    }
+                  >
+                    <div style={{ fontWeight: 600, fontSize: 13, color: "#111827", marginBottom: 8, lineHeight: 1.4, minHeight: 36 }}>
+                      {c.title}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 10 }}>
+                      <StarFilled style={{ color: "#f59e0b", fontSize: 12 }} />
+                      <Text style={{ fontSize: 12, color: "#374151" }}>{c.rating}</Text>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontWeight: 700, color: "#4f46e5" }}>${c.price}</span>
+                      <Link to="/courses">
+                        <Button
+                          type="primary"
+                          size="small"
+                          shape="circle"
+                          icon={<ArrowRightOutlined />}
+                          style={{ background: "#4f46e5", border: "none" }}
+                        />
+                      </Link>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+
+              {coursesData?.featuredCourses?.length === 0 ? (
+                <Text type="secondary" style={{ display: "block", marginTop: 16 }}>
+                  {t("publicHome.featured.empty")}
+                </Text>
+              ) : null}
+            </section>
+          )}
+        </Await>
+      </Suspense>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━
           Stats

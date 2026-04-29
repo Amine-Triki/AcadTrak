@@ -8,6 +8,7 @@ import {
 } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { lazy, Suspense } from "react";
 
 import { Button, Result, ConfigProvider, App as AntApp } from "antd";
 
@@ -17,8 +18,10 @@ import "./i18n";
 import { appDirection } from "./i18n";
 
 import { AuthProvider } from "./context/auth";
-import CrispChat from "./components/crisp-chat";
-import PWAPrompt from "./components/pwa-prompt";
+
+// ✅ Lazy load heavy components
+const CrispChat = lazy(() => import("./components/crisp-chat"));
+const PWAPrompt = lazy(() => import("./components/pwa-prompt"));
 
 // 🎨 Theme الخاص بـ AcadTrak
 const acadTrakTheme = {
@@ -50,11 +53,17 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { i18n } = useTranslation();
-  const [isHydrated, setIsHydrated] = useState(false);
+
+  // ✅ Read from localStorage immediately (synchronous) to avoid hydration mismatch
+  const [lang] = useState(() => {
+    if (typeof window === "undefined") return "en";
+    const stored = localStorage.getItem("acadtrak_lang");
+    return stored && ["ar", "en"].includes(stored) ? stored : "en";
+  });
+
+  const direction = useMemo(() => appDirection(lang), [lang]);
 
   useEffect(() => {
-    setIsHydrated(true);
-
     if (import.meta.env.DEV && typeof navigator !== "undefined" && "serviceWorker" in navigator) {
       void navigator.serviceWorker.getRegistrations().then((registrations) => {
         registrations.forEach((registration) => {
@@ -64,13 +73,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Keep SSR and first client render aligned to avoid html lang hydration mismatch.
-  const lang = isHydrated
-    ? (i18n.resolvedLanguage ?? i18n.language ?? "en")
-    : "en";
-
-  const direction = useMemo(() => appDirection(lang), [lang]);
-
   return (
     <html lang={lang} dir={direction} suppressHydrationWarning>
       <head>
@@ -78,6 +80,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        {/* ✅ Prevent flash of white screen */}
+        <style>
+          {`
+            html, body { margin: 0; padding: 0; }
+            body { background-color: #f8f9fc; }
+          `}
+        </style>
         {/* ✅ PWA meta tags */}
         <meta name="theme-color" content="#4f46e5" />
         <meta name="mobile-web-app-capable" content="yes" />
@@ -90,8 +99,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <ConfigProvider theme={acadTrakTheme} direction={direction}>
           <AntApp>
             <AuthProvider>
-              <CrispChat />
-              <PWAPrompt />
+              <Suspense fallback={null}>
+                <CrispChat />
+                <PWAPrompt />
+              </Suspense>
               {children}
             </AuthProvider>
           </AntApp>

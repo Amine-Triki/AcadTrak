@@ -20,7 +20,7 @@ export default defineConfig({
         description: "منصة التعلم الإلكتروني — دوراتك في جيبك",
         start_url: "/",
         display: "standalone",
-        background_color: "#ffffff",
+        background_color: "#f8f9fc",
         theme_color: "#4f46e5",
         orientation: "portrait-primary",
         lang: "ar",

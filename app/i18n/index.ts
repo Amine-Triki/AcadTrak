@@ -18,7 +18,7 @@ const normalizeLanguage = (lng?: string): AppLanguage => {
 
 const languageDetector = new LanguageDetector();
 languageDetector.init({
-  order: ["localStorage", "navigator", "htmlTag"],
+  order: ["localStorage", "en"],
   caches: ["localStorage"],
   lookupLocalStorage: "acadtrak_lang",
 });
@@ -34,6 +34,9 @@ if (!i18n.isInitialized) {
       supportedLngs: supportedLanguages,
       nonExplicitSupportedLngs: true,
       load: "languageOnly",
+      react: {
+        useSuspense: false, // ✅ Prevent blocking on language change
+      },
     });
 
   const initial = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
