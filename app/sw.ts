@@ -12,7 +12,7 @@ import {
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
-const serviceWorker = globalThis as typeof globalThis & {
+declare let self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: unknown[];
   skipWaiting(): Promise<void>;
   addEventListener(
@@ -24,13 +24,15 @@ const serviceWorker = globalThis as typeof globalThis & {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 1. Setup
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-void serviceWorker.skipWaiting();
+void self.skipWaiting();
 clientsClaim();
 cleanupOutdatedCaches();
 
 // Workbox يحقن قائمة الـ precache هنا تلقائياً
-const precacheEntries = Array.isArray(serviceWorker.__WB_MANIFEST)
-  ? (serviceWorker.__WB_MANIFEST as Array<string | { url: string; revision?: string }> )
+const workboxManifest = self.__WB_MANIFEST;
+
+const precacheEntries = Array.isArray(workboxManifest)
+  ? (workboxManifest as Array<string | { url: string; revision?: string }> )
   : [];
 
 if (precacheEntries.length > 0) {
@@ -113,8 +115,8 @@ registerRoute(
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 6. رسائل من الـ client (skip waiting)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-serviceWorker.addEventListener('message', (event) => {
+self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') {
-    void serviceWorker.skipWaiting();
+    void self.skipWaiting();
   }
 });
