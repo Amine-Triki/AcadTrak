@@ -156,7 +156,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
         style={{
           position: "relative",
           minHeight: 540,
-          backgroundImage: "url('/1.png')",
+          backgroundImage: "url('/1.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center center",
           display: "flex",
