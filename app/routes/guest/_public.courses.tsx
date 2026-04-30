@@ -232,6 +232,21 @@ export async function clientLoader(): Promise<CoursesLoaderData> {
   }
 }
 
+export function HydrateFallback() {
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        background: "#f8f9fc",
+      }}
+    >
+      <Typography.Text type="secondary">Loading courses…</Typography.Text>
+    </div>
+  );
+}
+
 export default function CoursesPage({ loaderData }: Route.ComponentProps) {
   const { t } = useTranslation();
   const { message } = App.useApp();

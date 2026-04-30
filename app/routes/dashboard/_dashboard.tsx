@@ -5,6 +5,7 @@ import type { MenuProps } from "antd";
 import {
   Layout, Menu, Button, Avatar,
   Dropdown, Space, theme, Badge, Select,
+  Spin,
 } from "antd";
 import { useTranslation } from "react-i18next";
 import {
@@ -67,6 +68,21 @@ export async function clientLoader() {
   }
 
   return payload;
+}
+
+export function HydrateFallback() {
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        background: "#f8f9fc",
+      }}
+    >
+      <Spin size="large" />
+    </div>
+  );
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━

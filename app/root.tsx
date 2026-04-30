@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { lazy, Suspense } from "react";
 
-import { Button, Result, ConfigProvider, App as AntApp } from "antd";
+import { Button, Result, ConfigProvider, App as AntApp, Spin } from "antd";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -118,6 +118,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return <Outlet />;
+}
+
+export function HydrateFallback() {
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        background: "linear-gradient(180deg, #f8f9fc 0%, #eef2ff 100%)",
+      }}
+    >
+      <Spin size="large" />
+    </div>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
