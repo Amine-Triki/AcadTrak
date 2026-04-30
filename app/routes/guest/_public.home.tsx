@@ -78,7 +78,7 @@ const CATEGORY_COLORS = [
 ] as const;
 
 const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=320&h=180&fit=crop&fm=webp&q=70";
+  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=264&h=176&fit=crop&fm=webp&q=45";
 
 const getCategoryColor = (category: string) => {
   const hash = category

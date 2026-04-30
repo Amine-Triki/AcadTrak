@@ -29,7 +29,8 @@ const acadTrakTheme = {
     colorPrimary: "#4f46e5", // بنفسجي - لون المنصة
     colorSuccess: "#10b981",
     borderRadius: 8,
-    fontFamily: "Inter, sans-serif",
+    fontFamily:
+      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   },
   components: {
     Button: { borderRadius: 8 },
@@ -38,17 +39,11 @@ const acadTrakTheme = {
 };
 
 export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
   // ✅ PWA
   { rel: "manifest", href: "/manifest.webmanifest" },
   { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
   { rel: "icon", type: "image/png", sizes: "192x192", href: "/icons/icon-192x192.png" },
   { rel: "icon", type: "image/png", sizes: "512x512", href: "/icons/icon-512x512.png" },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
