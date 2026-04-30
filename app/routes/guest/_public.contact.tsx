@@ -27,12 +27,19 @@ import {
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
+let contactIdempotencyCounter = 0;
+
 const generateIdempotencyKey = () => {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
+  if (typeof window !== "undefined" && window.crypto?.randomUUID) {
+    return window.crypto.randomUUID();
   }
 
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const timeFragment =
+    typeof performance !== "undefined" ? performance.now().toString(36) : "0";
+
+  contactIdempotencyCounter += 1;
+
+  return `${Date.now()}-${timeFragment}-${contactIdempotencyCounter}`;
 };
 
 const CONTACT_INFO = [

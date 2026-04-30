@@ -108,6 +108,25 @@ const FALLBACK_IMAGE =
 
 const PAGE_SIZE = 8;
 
+const isMongoId = (value: string) => {
+  if (value.length !== 24) {
+    return false;
+  }
+
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    const isDigit = code >= 48 && code <= 57;
+    const isLowerHex = code >= 97 && code <= 102;
+    const isUpperHex = code >= 65 && code <= 70;
+
+    if (!isDigit && !isLowerHex && !isUpperHex) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 const getCategoryLabel = (
   category: ApiCourse["category"],
   categoryDetails?: ApiCourse["categoryDetails"],
@@ -117,7 +136,7 @@ const getCategoryLabel = (
   }
 
   if (typeof category === "string") {
-    if (/^[a-fA-F0-9]{24}$/.test(category)) {
+    if (isMongoId(category)) {
       return "General";
     }
 
@@ -136,7 +155,7 @@ const getInstructorLabel = (
   }
 
   if (typeof instructor === "string") {
-    if (/^[a-fA-F0-9]{24}$/.test(instructor)) {
+    if (isMongoId(instructor)) {
       return "AcadTrak Instructor";
     }
 
