@@ -6,11 +6,11 @@ import { useTranslation } from "react-i18next";
 import { Await } from "react-router";
 import {
   Alert,
-  Button, Rate, Tag, Avatar, Input,
-  Typography, Card, Row, Col, Statistic,
+  Button, Tag,
+  Typography, Card,
 } from "antd";
 import {
-  ArrowRightOutlined, SearchOutlined,
+  ArrowRightOutlined,
   UserOutlined, SafetyCertificateOutlined,
   ClockCircleOutlined, TrophyOutlined,
   StarFilled, RocketOutlined,
@@ -101,15 +101,6 @@ const mapFeaturedCourse = (course: ApiCourse): FeaturedCourse => {
     img: course.thumbnail || FALLBACK_IMAGE,
   };
 };
-
-export const links: Route.LinksFunction = () => [
-  {
-    rel: "preload",
-    as: "image",
-    href: "/1.webp",
-    type: "image/webp",
-  },
-];
 
 export async function clientLoader(): Promise<HomeLoaderData> {
   // ✅ Return immediately with Promise - render page ASAP

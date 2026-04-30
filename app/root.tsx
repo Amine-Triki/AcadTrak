@@ -39,6 +39,12 @@ const acadTrakTheme = {
 };
 
 export const links: Route.LinksFunction = () => [
+  {
+    rel: "preload",
+    as: "image",
+    href: "/1.webp",
+    type: "image/webp",
+  },
   // ✅ PWA
   { rel: "manifest", href: "/manifest.webmanifest" },
   { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
@@ -73,6 +79,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="google-site-verification" content="6Uv5yhzQFcfkKSPsifCwqEgyqPTqD_ebAozgsZ7ELig" />
         <Meta />
         <Links />
         {/* ✅ Prevent flash of white screen */}
