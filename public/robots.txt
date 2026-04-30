@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# منع الـ dashboard من الفهرسة
+Disallow: /dashboard/
+Disallow: /login
+Disallow: /register
+Disallow: /payment/
+
+Sitemap: https://acadtrak.pages.dev/sitemap.xml
