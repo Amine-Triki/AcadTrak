@@ -337,7 +337,14 @@ export default function PublicLayout() {
         }}
       >
         {t("publicLayout.footerText", { year: new Date().getFullYear() })} - {t("common.madeWith")} ❤ {t("common.by")} 
-        <Link to="https://amine-triki.tn"> Amine Triki</Link>
+        <a
+          href="https://amine-triki.tn"
+          target="_blank"
+          rel="noreferrer"
+          style={{ color: token.colorText, textDecoration: "underline" }}
+        >
+          Amine Triki
+        </a>
       </Footer>
     </Layout>
   );

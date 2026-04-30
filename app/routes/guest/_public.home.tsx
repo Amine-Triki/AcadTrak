@@ -78,7 +78,7 @@ const CATEGORY_COLORS = [
 ] as const;
 
 const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=60";
+  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=320&h=180&fit=crop&fm=webp&q=70";
 
 const getCategoryColor = (category: string) => {
   const hash = category
@@ -101,6 +101,15 @@ const mapFeaturedCourse = (course: ApiCourse): FeaturedCourse => {
     img: course.thumbnail || FALLBACK_IMAGE,
   };
 };
+
+export const links: Route.LinksFunction = () => [
+  {
+    rel: "preload",
+    as: "image",
+    href: "/1.webp",
+    type: "image/webp",
+  },
+];
 
 export async function clientLoader(): Promise<HomeLoaderData> {
   // ✅ Return immediately with Promise - render page ASAP
@@ -156,13 +165,27 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
         style={{
           position: "relative",
           minHeight: 540,
-          backgroundImage: "url('/1.webp')",
-          backgroundSize: "cover",
-          backgroundPosition: "center center",
           display: "flex",
           alignItems: "center",
+          overflow: "hidden",
         }}
       >
+        <img
+          src="/1.webp"
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center center",
+          }}
+        />
         {/* Overlay */}
         <div style={{ position: "absolute", inset: 0, background: "rgba(8,8,24,0.65)" }} />
 
@@ -358,6 +381,10 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                         <img
                           src={c.img}
                           alt={c.title}
+                          loading="lazy"
+                          decoding="async"
+                          width={320}
+                          height={180}
                           style={{ width: "100%", height: 130, objectFit: "cover" }}
                         />
                         <Tag
