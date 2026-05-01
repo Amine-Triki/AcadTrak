@@ -1,25 +1,16 @@
-// sw.ts — AcadTrak Service Worker
-// يُدار بواسطة vite-plugin-pwa (Workbox injection point)
+/// <reference lib="webworker" />
+/// <reference lib="es2015" />
 
-import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
+import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 import { clientsClaim } from 'workbox-core';
-import { registerRoute, NavigationRoute } from 'workbox-routing';
-import {
-  NetworkFirst,
-  StaleWhileRevalidate,
-  CacheFirst,
-} from 'workbox-strategies';
+import { registerRoute } from 'workbox-routing';
+import { NetworkFirst, StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
-declare let self: ServiceWorkerGlobalScope & {
-  __WB_MANIFEST: unknown[];
-  skipWaiting(): Promise<void>;
-  addEventListener(
-    type: 'message',
-    listener: (event: MessageEvent<{ type?: string }>) => void,
-  ): void;
-};
+export {};
+
+declare const self: ServiceWorkerGlobalScope;
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 1. Setup
@@ -27,24 +18,10 @@ declare let self: ServiceWorkerGlobalScope & {
 void self.skipWaiting();
 clientsClaim();
 cleanupOutdatedCaches();
-
-// Workbox يحقن قائمة الـ precache هنا تلقائياً
-const workboxManifest = self.__WB_MANIFEST;
-
-const precacheEntries = Array.isArray(workboxManifest)
-  ? (workboxManifest as Array<string | { url: string; revision?: string }> )
-  : [];
-
-if (precacheEntries.length > 0) {
-  precacheAndRoute(precacheEntries);
-}
-
-registerRoute(
-  new NavigationRoute(createHandlerBoundToURL('/index.html')),
-);
+precacheAndRoute(self.__WB_MANIFEST);
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 2. API Calls — Network First (مع offline fallback)
+// 2. API — Network First (5 دقائق)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 registerRoute(
   ({ url }) => url.pathname.startsWith('/api/'),
@@ -53,16 +30,13 @@ registerRoute(
     networkTimeoutSeconds: 8,
     plugins: [
       new CacheableResponsePlugin({ statuses: [0, 200] }),
-      new ExpirationPlugin({
-        maxEntries: 80,
-        maxAgeSeconds: 60 * 5, // 5 دقائق
-      }),
+      new ExpirationPlugin({ maxEntries: 80, maxAgeSeconds: 60 * 5 }),
     ],
   }),
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 3. الصور — Cache First (تدوم أسبوع)
+// 3. صور — Cache First (أسبوع)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 registerRoute(
   ({ request }) => request.destination === 'image',
@@ -70,16 +44,13 @@ registerRoute(
     cacheName: 'acadtrak-images-cache',
     plugins: [
       new CacheableResponsePlugin({ statuses: [0, 200] }),
-      new ExpirationPlugin({
-        maxEntries: 100,
-        maxAgeSeconds: 60 * 60 * 24 * 7, // 7 أيام
-      }),
+      new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 7 }),
     ],
   }),
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 4. Fonts — Cache First (تدوم سنة)
+// 4. Fonts — Cache First (سنة)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 registerRoute(
   ({ url }) =>
@@ -89,16 +60,13 @@ registerRoute(
     cacheName: 'acadtrak-fonts-cache',
     plugins: [
       new CacheableResponsePlugin({ statuses: [0, 200] }),
-      new ExpirationPlugin({
-        maxEntries: 20,
-        maxAgeSeconds: 60 * 60 * 24 * 365, // سنة
-      }),
+      new ExpirationPlugin({ maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 }),
     ],
   }),
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 5. JS/CSS Assets — Stale While Revalidate
+// 5. JS/CSS — Stale While Revalidate
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 registerRoute(
   ({ request }) =>
@@ -113,10 +81,10 @@ registerRoute(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 6. رسائل من الـ client (skip waiting)
+// 6. Skip Waiting عند التحديث
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
+  if ((event.data as { type?: string })?.type === 'SKIP_WAITING') {
     void self.skipWaiting();
   }
 });
