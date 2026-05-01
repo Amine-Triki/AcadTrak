@@ -162,7 +162,8 @@ const getInstructorLabel = (
     return instructor.trim() || "AcadTrak Instructor";
   }
 
-  const fullName = `${instructor.firstName ?? ""} ${instructor.lastName ?? ""}`.trim();
+  const fullName =
+    `${instructor.firstName ?? ""} ${instructor.lastName ?? ""}`.trim();
   if (fullName) {
     return fullName;
   }
@@ -194,7 +195,7 @@ const mapApiCourse = (course: ApiCourse): CourseCardItem => ({
   instructorId: getInstructorId(course.instructor),
   rating: Number((course.averageRating ?? 0).toFixed(1)),
   students: course.totalRatingsCount ?? 0,
-  price: course.type === "free" ? 0 : course.effectivePrice ?? course.price,
+  price: course.type === "free" ? 0 : (course.effectivePrice ?? course.price),
   img: course.thumbnail || FALLBACK_IMAGE,
   type: course.type,
 });
@@ -212,9 +213,10 @@ export function meta({}: Route.MetaArgs) {
 export async function clientLoader(): Promise<CoursesLoaderData> {
   try {
     const response = await apiFetch("/api/courses");
-    const payload = (await response.json().catch(() => null)) as
-      | { courses?: ApiCourse[]; message?: string }
-      | null;
+    const payload = (await response.json().catch(() => null)) as {
+      courses?: ApiCourse[];
+      message?: string;
+    } | null;
 
     if (!response.ok) {
       return {
@@ -232,21 +234,6 @@ export async function clientLoader(): Promise<CoursesLoaderData> {
   }
 }
 
-export function HydrateFallback() {
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        background: "#f8f9fc",
-      }}
-    >
-      <Typography.Text type="secondary">Loading courses…</Typography.Text>
-    </div>
-  );
-}
-
 export default function CoursesPage({ loaderData }: Route.ComponentProps) {
   const { t } = useTranslation();
   const { message } = App.useApp();
@@ -261,11 +248,18 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
   const [category, setCategory] = useState("All");
   const [sortBy, setSortBy] = useState("popular");
   const [page, setPage] = useState(1);
-  const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(null);
+  const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(
+    null,
+  );
 
   const categories = useMemo(() => {
-    const uniqueCategories = new Set(allCourses.map((course) => course.category));
-    return ["All", ...Array.from(uniqueCategories).sort((a, b) => a.localeCompare(b))];
+    const uniqueCategories = new Set(
+      allCourses.map((course) => course.category),
+    );
+    return [
+      "All",
+      ...Array.from(uniqueCategories).sort((a, b) => a.localeCompare(b)),
+    ];
   }, [allCourses]);
 
   const filtered = useMemo(() => {
@@ -325,27 +319,38 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
 
     setEnrollingCourseId(course.id);
     try {
-      const response = await apiFetch(`/api/enrollments/course/${course.id}/enroll`, {
-        method: "POST",
-      });
-      const payload = (await response.json().catch(() => null)) as
-        | { message?: string }
-        | null;
+      const response = await apiFetch(
+        `/api/enrollments/course/${course.id}/enroll`,
+        {
+          method: "POST",
+        },
+      );
+      const payload = (await response.json().catch(() => null)) as {
+        message?: string;
+      } | null;
 
       if (response.status === 409) {
-        message.success(payload?.message || t("publicCourses.messages.alreadyEnrolled"));
+        message.success(
+          payload?.message || t("publicCourses.messages.alreadyEnrolled"),
+        );
         navigate(`/dashboard/student/courses/${course.id}`);
         return;
       }
 
       if (!response.ok) {
-        throw new Error(payload?.message || t("publicCourses.errors.failedEnroll"));
+        throw new Error(
+          payload?.message || t("publicCourses.errors.failedEnroll"),
+        );
       }
 
       message.success(payload?.message || t("publicCourses.messages.enrolled"));
       navigate(`/dashboard/student/courses/${course.id}`);
     } catch (error) {
-      message.error(error instanceof Error ? error.message : t("publicCourses.errors.failedEnroll"));
+      message.error(
+        error instanceof Error
+          ? error.message
+          : t("publicCourses.errors.failedEnroll"),
+      );
     } finally {
       setEnrollingCourseId(null);
     }
@@ -353,7 +358,9 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
 
   const getPrimaryActionLabel = (course: CourseCardItem) => {
     if (course.type === "paid") {
-      return user ? t("publicCourses.actions.goToPayment") : t("publicCourses.actions.loginForPayment");
+      return user
+        ? t("publicCourses.actions.goToPayment")
+        : t("publicCourses.actions.loginForPayment");
     }
 
     if (!user) {
@@ -471,7 +478,10 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                 { label: t("publicCourses.sort.popular"), value: "popular" },
                 { label: t("publicCourses.sort.rating"), value: "rating" },
                 { label: t("publicCourses.sort.priceAsc"), value: "price_asc" },
-                { label: t("publicCourses.sort.priceDesc"), value: "price_desc" },
+                {
+                  label: t("publicCourses.sort.priceDesc"),
+                  value: "price_desc",
+                },
                 { label: t("publicCourses.sort.newest"), value: "newest" },
               ]}
             />
@@ -503,9 +513,15 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
         >
           <Text type="secondary">
             {search
-              ? t("publicCourses.summary.search", { count: filtered.length, search })
-              : t("publicCourses.summary.available", { count: filtered.length })}
-            {category !== "All" && ` ${t("publicCourses.summary.inCategory", { category })}`}
+              ? t("publicCourses.summary.search", {
+                  count: filtered.length,
+                  search,
+                })
+              : t("publicCourses.summary.available", {
+                  count: filtered.length,
+                })}
+            {category !== "All" &&
+              ` ${t("publicCourses.summary.inCategory", { category })}`}
           </Text>
           <Text type="secondary" style={{ fontSize: 13 }}>
             {t("publicCourses.summary.page", {
@@ -577,7 +593,9 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                             margin: 0,
                           }}
                         >
-                          {course.type === "paid" ? t("publicCourses.type.paid") : t("publicCourses.type.free")}
+                          {course.type === "paid"
+                            ? t("publicCourses.type.paid")
+                            : t("publicCourses.type.free")}
                         </Tag>
                       </div>
                     }
@@ -615,7 +633,10 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                       }}
                     >
                       {course.instructorId ? (
-                        <Link to={`/instructor/${course.instructorId}`} style={{ color: "inherit" }}>
+                        <Link
+                          to={`/instructor/${course.instructorId}`}
+                          style={{ color: "inherit" }}
+                        >
                           {course.instructor}
                         </Link>
                       ) : (
@@ -636,7 +657,11 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                         {course.rating}
                       </Text>
                       <Text type="secondary" style={{ fontSize: 12 }}>
-                        ({t("publicCourses.ratings", { count: course.students.toLocaleString() })})
+                        (
+                        {t("publicCourses.ratings", {
+                          count: course.students.toLocaleString(),
+                        })}
+                        )
                       </Text>
                     </div>
 
@@ -658,9 +683,13 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                           color: "#4f46e5",
                         }}
                       >
-                        {course.price === 0 ? t("publicCourses.type.free") : `$${course.price}`}
+                        {course.price === 0
+                          ? t("publicCourses.type.free")
+                          : `$${course.price}`}
                       </span>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <div
+                        style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+                      >
                         <Button
                           type="primary"
                           size="small"
@@ -668,7 +697,8 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                           icon={user ? undefined : <LoginOutlined />}
                           onClick={() => void handleCourseAction(course)}
                           style={{
-                            background: course.type === "paid" ? "#0f766e" : "#4f46e5",
+                            background:
+                              course.type === "paid" ? "#0f766e" : "#4f46e5",
                             border: "none",
                             borderRadius: 6,
                           }}
@@ -709,7 +739,9 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                     setPage(nextPage);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  showTotal={(total) => t("publicCourses.pagination.total", { total })}
+                  showTotal={(total) =>
+                    t("publicCourses.pagination.total", { total })
+                  }
                   showSizeChanger={false}
                 />
               </div>

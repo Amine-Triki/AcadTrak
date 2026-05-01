@@ -136,20 +136,7 @@ export async function clientLoader(): Promise<HomeLoaderData> {
   };
 }
 
-export function HydrateFallback() {
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        background: "#f8f9fc",
-      }}
-    >
-      <Typography.Text type="secondary">Loading AcadTrak…</Typography.Text>
-    </div>
-  );
-}
+
 
 const FEATURES = [
   { icon: <UserOutlined />, key: "expertInstructors" },
