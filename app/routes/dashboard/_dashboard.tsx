@@ -1,17 +1,38 @@
 // app/routes/dashboard/_dashboard.tsx
 import { useEffect, useState } from "react";
-import { Outlet, Link, useLocation, useNavigate, Navigate, redirect, useLoaderData } from "react-router";
+import {
+  Outlet,
+  Link,
+  useLocation,
+  useNavigate,
+  Navigate,
+  redirect,
+  useLoaderData,
+} from "react-router";
 import type { MenuProps } from "antd";
 import {
-  Layout, Menu, Button, Avatar,
-  Dropdown, Space, theme, Badge, Select,
+  Layout,
+  Menu,
+  Button,
+  Avatar,
+  Dropdown,
+  Space,
+  theme,
+  Badge,
+  Select,
   Spin,
 } from "antd";
 import { useTranslation } from "react-i18next";
 import {
-  DashboardOutlined, BookOutlined, UserOutlined,
-  TeamOutlined, SettingOutlined, MenuFoldOutlined,
-  MenuUnfoldOutlined, LogoutOutlined, BellOutlined,
+  DashboardOutlined,
+  BookOutlined,
+  UserOutlined,
+  TeamOutlined,
+  SettingOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  LogoutOutlined,
+  BellOutlined,
   UploadOutlined,
   FileTextOutlined,
   MailOutlined,
@@ -35,7 +56,7 @@ const ROLE_PATHS: Record<string, string[]> = {
   student: ["/dashboard/student"],
   teacher: ["/dashboard/teacher", "/dashboard/student"],
   // ✅ Admin لا يدخل /dashboard/teacher لأنه لا ينشئ دورات
-  admin:   ["/dashboard/admin", "/dashboard/student"],
+  admin: ["/dashboard/admin", "/dashboard/student"],
 };
 
 function hasAccess(role: string, pathname: string): boolean {
@@ -49,19 +70,17 @@ export async function clientLoader() {
     throw redirect("/login");
   }
 
-  const payload = (await response.json().catch(() => null)) as
-    | {
-        user?: {
-          id: string;
-          firstName: string;
-          lastName: string;
-          userName: string;
-          country: string;
-          email: string;
-          role: "student" | "teacher" | "admin";
-        };
-      }
-    | null;
+  const payload = (await response.json().catch(() => null)) as {
+    user?: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      userName: string;
+      country: string;
+      email: string;
+      role: "student" | "teacher" | "admin";
+    };
+  } | null;
 
   if (!payload?.user) {
     throw redirect("/login");
@@ -70,46 +89,44 @@ export async function clientLoader() {
   return payload;
 }
 
-export function HydrateFallback() {
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        background: "#f8f9fc",
-      }}
-    >
-      <Spin size="large" />
-    </div>
-  );
-}
-
 // ━━━━━━━━━━━━━━━━━━━━━━━━
 // القوائم — النوع الصحيح
 // ━━━━━━━━━━━━━━━━━━━━━━━━
-const buildMenuByRole = (t: (key: string) => string): Record<string, MenuItem> => ({
-
+const buildMenuByRole = (
+  t: (key: string) => string,
+): Record<string, MenuItem> => ({
   student: [
     {
       key: "/dashboard/student",
       icon: <DashboardOutlined />,
-      label: <Link to="/dashboard/student">{t("dashboardLayout.studentHome")}</Link>,
+      label: (
+        <Link to="/dashboard/student">{t("dashboardLayout.studentHome")}</Link>
+      ),
     },
     {
       key: "/dashboard/student/courses",
       icon: <BookOutlined />,
-      label: <Link to="/dashboard/student/courses">{t("studentCourses.title")}</Link>,
+      label: (
+        <Link to="/dashboard/student/courses">{t("studentCourses.title")}</Link>
+      ),
     },
     {
       key: "/dashboard/student/grades",
       icon: <TrophyOutlined />,
-      label: <Link to="/dashboard/student/grades">{t("dashboardLayout.myGrades")}</Link>,
+      label: (
+        <Link to="/dashboard/student/grades">
+          {t("dashboardLayout.myGrades")}
+        </Link>
+      ),
     },
     {
       key: "/dashboard/student/upgrade-to-teacher",
       icon: <UploadOutlined />,
-      label: <Link to="/dashboard/student/upgrade-to-teacher">{t("upgradeToTeacher.title")}</Link>,
+      label: (
+        <Link to="/dashboard/student/upgrade-to-teacher">
+          {t("upgradeToTeacher.title")}
+        </Link>
+      ),
     },
   ],
 
@@ -122,22 +139,38 @@ const buildMenuByRole = (t: (key: string) => string): Record<string, MenuItem> =
         {
           key: "/dashboard/teacher",
           icon: <DashboardOutlined />,
-          label: <Link to="/dashboard/teacher">{t("dashboardLayout.teacherHome")}</Link>,
+          label: (
+            <Link to="/dashboard/teacher">
+              {t("dashboardLayout.teacherHome")}
+            </Link>
+          ),
         },
         {
           key: "/dashboard/teacher/courses",
           icon: <UploadOutlined />,
-          label: <Link to="/dashboard/teacher/courses">{t("teacherDashboard.myCourses")}</Link>,
+          label: (
+            <Link to="/dashboard/teacher/courses">
+              {t("teacherDashboard.myCourses")}
+            </Link>
+          ),
         },
         {
           key: "/dashboard/teacher/quizzes",
           icon: <FileTextOutlined />,
-          label: <Link to="/dashboard/teacher/quizzes">{t("dashboardLayout.myQuizzes")}</Link>,
+          label: (
+            <Link to="/dashboard/teacher/quizzes">
+              {t("dashboardLayout.myQuizzes")}
+            </Link>
+          ),
         },
         {
           key: "/dashboard/teacher/students",
           icon: <TeamOutlined />,
-          label: <Link to="/dashboard/teacher/students">{t("teacherStudents.title")}</Link>,
+          label: (
+            <Link to="/dashboard/teacher/students">
+              {t("teacherStudents.title")}
+            </Link>
+          ),
         },
       ],
     },
@@ -148,12 +181,20 @@ const buildMenuByRole = (t: (key: string) => string): Record<string, MenuItem> =
         {
           key: "/dashboard/student/courses",
           icon: <BookOutlined />,
-          label: <Link to="/dashboard/student/courses">{t("dashboardLayout.enrolledCourses")}</Link>,
+          label: (
+            <Link to="/dashboard/student/courses">
+              {t("dashboardLayout.enrolledCourses")}
+            </Link>
+          ),
         },
         {
           key: "/dashboard/student/grades",
           icon: <TrophyOutlined />,
-          label: <Link to="/dashboard/student/grades">{t("dashboardLayout.myGrades")}</Link>,
+          label: (
+            <Link to="/dashboard/student/grades">
+              {t("dashboardLayout.myGrades")}
+            </Link>
+          ),
         },
       ],
     },
@@ -173,17 +214,23 @@ const buildMenuByRole = (t: (key: string) => string): Record<string, MenuItem> =
     {
       key: "/dashboard/admin/courses",
       icon: <BookOutlined />,
-      label: <Link to="/dashboard/admin/courses">{t("adminCourses.title")}</Link>,
+      label: (
+        <Link to="/dashboard/admin/courses">{t("adminCourses.title")}</Link>
+      ),
     },
     {
       key: "/dashboard/admin/messages",
       icon: <MailOutlined />,
-      label: <Link to="/dashboard/admin/messages">{t("adminMessages.title")}</Link>,
+      label: (
+        <Link to="/dashboard/admin/messages">{t("adminMessages.title")}</Link>
+      ),
     },
     {
       key: "/dashboard/admin/settings",
       icon: <SettingOutlined />,
-      label: <Link to="/dashboard/admin/settings">{t("adminSettings.title")}</Link>,
+      label: (
+        <Link to="/dashboard/admin/settings">{t("adminSettings.title")}</Link>
+      ),
     },
   ],
 });
@@ -229,7 +276,9 @@ export default function DashboardLayout() {
   }
 
   if (!authUser || !hasAccess(authUser.role!, location.pathname)) {
-    return <Navigate to={`/dashboard/${authUser?.role || "student"}`} replace />;
+    return (
+      <Navigate to={`/dashboard/${authUser?.role || "student"}`} replace />
+    );
   }
 
   const menuByRole = buildMenuByRole(t);
@@ -269,7 +318,6 @@ export default function DashboardLayout() {
   return (
     // ✅ minHeight بدل min-h-screen — Ant Design style
     <Layout style={{ minHeight: "100vh" }}>
-
       {/* ━━ Sidebar ━━ */}
       <Sider
         trigger={null}
@@ -291,7 +339,7 @@ export default function DashboardLayout() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: token.marginSM,         // ✅ token بدل px ثابتة
+            gap: token.marginSM, // ✅ token بدل px ثابتة
             padding: `${token.padding}px`,
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
           }}
@@ -302,7 +350,7 @@ export default function DashboardLayout() {
           {!collapsed && (
             <span
               style={{
-                fontWeight: token.fontWeightStrong,  // ✅ من token
+                fontWeight: token.fontWeightStrong, // ✅ من token
                 color: token.colorPrimary,
                 fontSize: token.fontSizeLG,
               }}
@@ -333,10 +381,10 @@ export default function DashboardLayout() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            paddingInline: token.paddingLG,  // ✅ paddingInline = padding left+right
+            paddingInline: token.paddingLG, // ✅ paddingInline = padding left+right
             position: "sticky",
             insetBlockStart: 0,
-            zIndex: token.zIndexPopupBase,   // ✅ z-index من token
+            zIndex: token.zIndexPopupBase, // ✅ z-index من token
             // Ant Design Layout Header له height ثابت = 64px تلقائياً
           }}
         >
@@ -372,7 +420,6 @@ export default function DashboardLayout() {
               ]}
             />
 
-
             {/* 👤 قائمة المستخدم */}
             <Dropdown
               menu={{
@@ -391,7 +438,9 @@ export default function DashboardLayout() {
                   <span style={{ color: token.colorText }}>
                     {authUser.firstName && authUser.lastName
                       ? `${authUser.firstName} ${authUser.lastName}`
-                      : authUser.userName || authUser.email || t("common.userFallback")}
+                      : authUser.userName ||
+                        authUser.email ||
+                        t("common.userFallback")}
                   </span>
                 )}
               </Space>
@@ -405,7 +454,7 @@ export default function DashboardLayout() {
             margin: token.margin,
             padding: token.padding,
             background: token.colorBgContainer,
-            borderRadius: token.borderRadiusLG,  // ✅ token
+            borderRadius: token.borderRadiusLG, // ✅ token
             minHeight: 360,
           }}
         >
