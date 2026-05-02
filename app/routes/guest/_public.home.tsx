@@ -4,16 +4,15 @@ import { Link } from "react-router";
 import { Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { Await } from "react-router";
-import {
-  Alert,
-  Button, Tag,
-  Typography, Card,
-} from "antd";
+import { Alert, Button, Tag, Typography, Card } from "antd";
 import {
   ArrowRightOutlined,
-  UserOutlined, SafetyCertificateOutlined,
-  ClockCircleOutlined, TrophyOutlined,
-  StarFilled, RocketOutlined,
+  UserOutlined,
+  SafetyCertificateOutlined,
+  ClockCircleOutlined,
+  TrophyOutlined,
+  StarFilled,
+  RocketOutlined,
 } from "@ant-design/icons";
 import { apiFetch } from "~/utils/api";
 
@@ -77,8 +76,8 @@ const CATEGORY_COLORS = [
   "volcano",
 ] as const;
 
-const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=264&h=176&fit=crop&fm=webp&q=45";
+const FALLBACK_IMAGE = "/placeholder-course.webp";
+
 
 const getCategoryColor = (category: string) => {
   const hash = category
@@ -89,7 +88,8 @@ const getCategoryColor = (category: string) => {
 };
 
 const mapFeaturedCourse = (course: ApiCourse): FeaturedCourse => {
-  const category = course.categoryDetails?.name?.trim() || course.category || "General";
+  const category =
+    course.categoryDetails?.name?.trim() || course.category || "General";
 
   return {
     id: course.id,
@@ -107,9 +107,10 @@ export async function clientLoader(): Promise<HomeLoaderData> {
   const coursesData = (async () => {
     try {
       const response = await apiFetch("/api/courses");
-      const payload = (await response.json().catch(() => null)) as
-        | { courses?: ApiCourse[]; message?: string }
-        | null;
+      const payload = (await response.json().catch(() => null)) as {
+        courses?: ApiCourse[];
+        message?: string;
+      } | null;
 
       if (!response.ok) {
         return {
@@ -136,8 +137,6 @@ export async function clientLoader(): Promise<HomeLoaderData> {
   };
 }
 
-
-
 const FEATURES = [
   { icon: <UserOutlined />, key: "expertInstructors" },
   { icon: <ClockCircleOutlined />, key: "lifetimeAccess" },
@@ -150,7 +149,6 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
 
   return (
     <div style={{ background: "#f8f9fc" }}>
-
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━
           HERO
       ━━━━━━━━━━━━━━━━━━━━━━━━ */}
@@ -180,7 +178,13 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           }}
         />
         {/* Overlay */}
-        <div style={{ position: "absolute", inset: 0, background: "rgba(8,8,24,0.65)" }} />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(8,8,24,0.65)",
+          }}
+        />
 
         {/* المحتوى — عرض محدود + محاذاة يسار */}
         <div
@@ -222,8 +226,10 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               maxWidth: 620,
             }}
           >
-            {t("publicHome.hero.titlePrefix")} {" "}
-            <span style={{ color: "#818cf8" }}>{t("publicHome.hero.titleHighlight")}</span>
+            {t("publicHome.hero.titlePrefix")}{" "}
+            <span style={{ color: "#818cf8" }}>
+              {t("publicHome.hero.titleHighlight")}
+            </span>
           </Title>
 
           {/* وصف */}
@@ -239,27 +245,34 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             {t("publicHome.hero.description")}
           </Paragraph>
 
-
-
           {/* Social proof */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ display: "flex" }}>
               {[1, 2, 3].map((i) => (
-                <img
+                <div
                   key={i}
-                  src={`https://i.pravatar.cc/32?img=${i}`}
-                  alt=""
                   style={{
-                    width: 32, height: 32,
+                    width: 32,
+                    height: 32,
                     borderRadius: "50%",
                     border: "2px solid white",
                     marginLeft: i > 1 ? -10 : 0,
+                    background: `hsl(${i * 80}, 60%, 55%)`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#fff",
+                    fontSize: 14,
+                    fontWeight: 700,
                   }}
-                />
+                >
+                  {["A", "B", "C"][i - 1]}
+                </div>
               ))}
             </div>
             <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14 }}>
-              <strong style={{ color: "#fff" }}>15k+</strong> {t("publicHome.hero.socialProof")}
+              <strong style={{ color: "#fff" }}>15k+</strong>{" "}
+              {t("publicHome.hero.socialProof")}
             </Text>
           </div>
         </div>
@@ -268,7 +281,9 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━
           Features Bar
       ━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section style={{ background: "#fff", borderBottom: "1px solid #f0f0f0" }}>
+      <section
+        style={{ background: "#fff", borderBottom: "1px solid #f0f0f0" }}
+      >
         <div
           style={{
             maxWidth: 1200,
@@ -280,11 +295,15 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           }}
         >
           {FEATURES.map((f) => (
-            <div key={f.key} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <div
+              key={f.key}
+              style={{ display: "flex", alignItems: "flex-start", gap: 12 }}
+            >
               <div
                 style={{
                   flexShrink: 0,
-                  width: 42, height: 42,
+                  width: 42,
+                  height: 42,
                   borderRadius: 10,
                   background: "#eef2ff",
                   display: "flex",
@@ -297,7 +316,9 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                 {f.icon}
               </div>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}>
+                <div
+                  style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}
+                >
                   {t(`publicHome.features.${f.key}.title`)}
                 </div>
                 <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
@@ -314,15 +335,29 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
       ━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <Suspense
         fallback={
-          <section style={{ maxWidth: 1200, margin: "0 auto", padding: "64px 48px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+          <section
+            style={{ maxWidth: 1200, margin: "0 auto", padding: "64px 48px" }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(4, 1fr)",
+                gap: 16,
+              }}
+            >
               {[...Array(4)].map((_, i) => (
                 <Card
                   key={i}
                   style={{ borderRadius: 12, border: "1px solid #e5e7eb" }}
                   styles={{ body: { padding: 14 } }}
                 >
-                  <div style={{ height: 200, background: "#f0f0f0", borderRadius: 8 }} />
+                  <div
+                    style={{
+                      height: 200,
+                      background: "#f0f0f0",
+                      borderRadius: 8,
+                    }}
+                  />
                 </Card>
               ))}
             </div>
@@ -331,13 +366,25 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
       >
         <Await resolve={loaderData?.coursesData}>
           {(coursesData: any) => (
-            <section style={{ maxWidth: 1200, margin: "0 auto", padding: "64px 48px" }}>
-
+            <section
+              style={{ maxWidth: 1200, margin: "0 auto", padding: "64px 48px" }}
+            >
               {/* عنوان القسم */}
-              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-end",
+                  justifyContent: "space-between",
+                  marginBottom: 32,
+                }}
+              >
                 <div>
-                  <Title level={2} style={{ margin: 0 }}>{t("publicHome.featured.title")}</Title>
-                  <Text type="secondary">{t("publicHome.featured.subtitle")}</Text>
+                  <Title level={2} style={{ margin: 0 }}>
+                    {t("publicHome.featured.title")}
+                  </Title>
+                  <Text type="secondary">
+                    {t("publicHome.featured.subtitle")}
+                  </Text>
                 </div>
                 <Link to="/courses">
                   <Button type="link" style={{ color: "#4f46e5", padding: 0 }}>
@@ -367,7 +414,11 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                   <Card
                     key={c.id}
                     hoverable
-                    style={{ borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}
+                    style={{
+                      borderRadius: 12,
+                      border: "1px solid #e5e7eb",
+                      overflow: "hidden",
+                    }}
                     styles={{ body: { padding: 14 } }}
                     cover={
                       <div style={{ position: "relative" }}>
@@ -378,26 +429,61 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                           decoding="async"
                           width={320}
                           height={180}
-                          style={{ width: "100%", height: 130, objectFit: "cover" }}
+                          style={{
+                            width: "100%",
+                            height: 130,
+                            objectFit: "cover",
+                          }}
                         />
                         <Tag
                           color={c.categoryColor}
-                          style={{ position: "absolute", top: 8, left: 8, fontSize: 10 }}
+                          style={{
+                            position: "absolute",
+                            top: 8,
+                            left: 8,
+                            fontSize: 10,
+                          }}
                         >
                           {c.category}
                         </Tag>
                       </div>
                     }
                   >
-                    <div style={{ fontWeight: 600, fontSize: 13, color: "#111827", marginBottom: 8, lineHeight: 1.4, minHeight: 36 }}>
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        fontSize: 13,
+                        color: "#111827",
+                        marginBottom: 8,
+                        lineHeight: 1.4,
+                        minHeight: 36,
+                      }}
+                    >
                       {c.title}
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 10 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        marginBottom: 10,
+                      }}
+                    >
                       <StarFilled style={{ color: "#f59e0b", fontSize: 12 }} />
-                      <Text style={{ fontSize: 12, color: "#374151" }}>{c.rating}</Text>
+                      <Text style={{ fontSize: 12, color: "#374151" }}>
+                        {c.rating}
+                      </Text>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span style={{ fontWeight: 700, color: "#4f46e5" }}>${c.price}</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span style={{ fontWeight: 700, color: "#4f46e5" }}>
+                        ${c.price}
+                      </span>
                       <Link to="/courses">
                         <Button
                           type="primary"
@@ -413,7 +499,10 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               </div>
 
               {coursesData?.featuredCourses?.length === 0 ? (
-                <Text type="secondary" style={{ display: "block", marginTop: 16 }}>
+                <Text
+                  type="secondary"
+                  style={{ display: "block", marginTop: 16 }}
+                >
                   {t("publicHome.featured.empty")}
                 </Text>
               ) : null}
@@ -425,7 +514,13 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━
           Stats
       ━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section style={{ background: "#fff", borderTop: "1px solid #f0f0f0", borderBottom: "1px solid #f0f0f0" }}>
+      <section
+        style={{
+          background: "#fff",
+          borderTop: "1px solid #f0f0f0",
+          borderBottom: "1px solid #f0f0f0",
+        }}
+      >
         <div
           style={{
             maxWidth: 1200,
@@ -436,7 +531,10 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           <Title level={2} style={{ textAlign: "center", marginBottom: 8 }}>
             {t("publicHome.stats.title")}
           </Title>
-          <Text type="secondary" style={{ display: "block", textAlign: "center", marginBottom: 48 }}>
+          <Text
+            type="secondary"
+            style={{ display: "block", textAlign: "center", marginBottom: 48 }}
+          >
             {t("publicHome.stats.subtitle")}
           </Text>
           <div
@@ -448,16 +546,40 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             }}
           >
             {[
-              { value: "15,000+", label: t("publicHome.stats.items.activeStudents") },
-              { value: "200+", label: t("publicHome.stats.items.expertCourses") },
-              { value: "98.2%", label: t("publicHome.stats.items.successRate") },
-              { value: "50+", label: t("publicHome.stats.items.expertInstructors") },
+              {
+                value: "15,000+",
+                label: t("publicHome.stats.items.activeStudents"),
+              },
+              {
+                value: "200+",
+                label: t("publicHome.stats.items.expertCourses"),
+              },
+              {
+                value: "98.2%",
+                label: t("publicHome.stats.items.successRate"),
+              },
+              {
+                value: "50+",
+                label: t("publicHome.stats.items.expertInstructors"),
+              },
             ].map((s) => (
               <div key={s.label}>
-                <div style={{ fontSize: 40, fontWeight: 700, color: "#4f46e5", lineHeight: 1 }}>
+                <div
+                  style={{
+                    fontSize: 40,
+                    fontWeight: 700,
+                    color: "#4f46e5",
+                    lineHeight: 1,
+                  }}
+                >
                   {s.value}
                 </div>
-                <Text type="secondary" style={{ marginTop: 8, display: "block" }}>{s.label}</Text>
+                <Text
+                  type="secondary"
+                  style={{ marginTop: 8, display: "block" }}
+                >
+                  {s.label}
+                </Text>
               </div>
             ))}
           </div>
@@ -509,9 +631,6 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           </Button>
         </div>
       </section>
-
     </div>
   );
 }
-
-
