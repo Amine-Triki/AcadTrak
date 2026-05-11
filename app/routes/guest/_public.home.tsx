@@ -155,7 +155,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
       <section
         style={{
           position: "relative",
-          minHeight: 540,
+          minHeight: "clamp(320px, 70vh, 540px)",
           display: "flex",
           alignItems: "center",
           overflow: "hidden",
@@ -194,7 +194,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             width: "100%",
             maxWidth: 1200,
             margin: "0 auto",
-            padding: "80px 48px",
+            padding: "clamp(40px, 10vw, 80px) clamp(16px, 5vw, 48px)",
           }}
         >
           {/* Badge */}
@@ -208,7 +208,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               background: "rgba(99,91,255,0.25)",
               border: "1px solid rgba(99,91,255,0.45)",
               color: "#c4c0ff",
-              fontSize: 12,
+              fontSize: "clamp(10px, 2.5vw, 12px)",
               fontWeight: 600,
               marginBottom: 24,
             }}
@@ -220,7 +220,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           <Title
             style={{
               color: "#fff",
-              fontSize: "clamp(32px, 4.5vw, 56px)",
+              fontSize: "clamp(28px, 5vw, 56px)",
               lineHeight: 1.1,
               marginBottom: 16,
               maxWidth: 620,
@@ -236,7 +236,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           <Paragraph
             style={{
               color: "rgba(255,255,255,0.72)",
-              fontSize: 16,
+              fontSize: "clamp(13px, 3.5vw, 16px)",
               maxWidth: 500,
               marginBottom: 36,
               lineHeight: 1.7,
@@ -246,14 +246,14 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           </Paragraph>
 
           {/* Social proof */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "clamp(8px, 2vw, 12px)", flexWrap: "wrap" }}>
             <div style={{ display: "flex" }}>
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
                   style={{
-                    width: 32,
-                    height: 32,
+                    width: "clamp(24px, 6vw, 32px)",
+                    height: "clamp(24px, 6vw, 32px)",
                     borderRadius: "50%",
                     border: "2px solid white",
                     marginLeft: i > 1 ? -10 : 0,
@@ -262,7 +262,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                     alignItems: "center",
                     justifyContent: "center",
                     color: "#fff",
-                    fontSize: 14,
+                    fontSize: "clamp(11px, 3vw, 14px)",
                     fontWeight: 700,
                   }}
                 >
@@ -270,7 +270,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                 </div>
               ))}
             </div>
-            <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14 }}>
+            <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "clamp(12px, 3vw, 14px)" }}>
               <strong style={{ color: "#fff" }}>15k+</strong>{" "}
               {t("publicHome.hero.socialProof")}
             </Text>
@@ -288,40 +288,40 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           style={{
             maxWidth: 1200,
             margin: "0 auto",
-            padding: "28px 48px",
+            padding: "clamp(20px, 5vw, 28px) clamp(16px, 5vw, 48px)",
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 24,
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "clamp(16px, 4vw, 24px)",
           }}
         >
           {FEATURES.map((f) => (
             <div
               key={f.key}
-              style={{ display: "flex", alignItems: "flex-start", gap: 12 }}
+              style={{ display: "flex", alignItems: "flex-start", gap: "clamp(8px, 2vw, 12px)" }}
             >
               <div
                 style={{
                   flexShrink: 0,
-                  width: 42,
-                  height: 42,
+                  width: "clamp(36px, 8vw, 42px)",
+                  height: "clamp(36px, 8vw, 42px)",
                   borderRadius: 10,
                   background: "#eef2ff",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   color: "#4f46e5",
-                  fontSize: 18,
+                  fontSize: "clamp(16px, 4vw, 18px)",
                 }}
               >
                 {f.icon}
               </div>
               <div>
                 <div
-                  style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}
+                  style={{ fontWeight: 600, fontSize: "clamp(13px, 3vw, 14px)", color: "#111827" }}
                 >
                   {t(`publicHome.features.${f.key}.title`)}
                 </div>
-                <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
+                <div style={{ fontSize: "clamp(11px, 2.5vw, 12px)", color: "#6b7280", marginTop: 2 }}>
                   {t(`publicHome.features.${f.key}.description`)}
                 </div>
               </div>
@@ -336,13 +336,13 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
       <Suspense
         fallback={
           <section
-            style={{ maxWidth: 1200, margin: "0 auto", padding: "64px 48px" }}
+            style={{ maxWidth: 1200, margin: "0 auto", padding: "clamp(40px, 8vw, 64px) clamp(16px, 5vw, 48px)" }}
           >
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: 16,
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: "clamp(12px, 3vw, 16px)",
               }}
             >
               {[...Array(4)].map((_, i) => (
@@ -367,7 +367,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
         <Await resolve={loaderData?.coursesData}>
           {(coursesData: any) => (
             <section
-              style={{ maxWidth: 1200, margin: "0 auto", padding: "64px 48px" }}
+              style={{ maxWidth: 1200, margin: "0 auto", padding: "clamp(40px, 8vw, 64px) clamp(16px, 5vw, 48px)" }}
             >
               {/* عنوان القسم */}
               <div
@@ -375,14 +375,16 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                   display: "flex",
                   alignItems: "flex-end",
                   justifyContent: "space-between",
-                  marginBottom: 32,
+                  marginBottom: "clamp(20px, 5vw, 32px)",
+                  flexWrap: "wrap",
+                  gap: 12,
                 }}
               >
                 <div>
-                  <Title level={2} style={{ margin: 0 }}>
+                  <Title level={2} style={{ margin: 0, fontSize: "clamp(22px, 5vw, 32px)" }}>
                     {t("publicHome.featured.title")}
                   </Title>
-                  <Text type="secondary">
+                  <Text type="secondary" style={{ fontSize: "clamp(12px, 3vw, 14px)" }}>
                     {t("publicHome.featured.subtitle")}
                   </Text>
                 </div>
@@ -406,8 +408,8 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
-                  gap: 16,
+                  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                  gap: "clamp(12px, 3vw, 16px)",
                 }}
               >
                 {coursesData?.featuredCourses?.map((c: FeaturedCourse) => (
@@ -525,23 +527,23 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           style={{
             maxWidth: 1200,
             margin: "0 auto",
-            padding: "64px 48px",
+            padding: "clamp(40px, 8vw, 64px) clamp(16px, 5vw, 48px)",
           }}
         >
-          <Title level={2} style={{ textAlign: "center", marginBottom: 8 }}>
+          <Title level={2} style={{ textAlign: "center", marginBottom: 8, fontSize: "clamp(24px, 5vw, 32px)" }}>
             {t("publicHome.stats.title")}
           </Title>
           <Text
             type="secondary"
-            style={{ display: "block", textAlign: "center", marginBottom: 48 }}
+            style={{ display: "block", textAlign: "center", marginBottom: "clamp(24px, 5vw, 48px)", fontSize: "clamp(13px, 3vw, 15px)" }}
           >
             {t("publicHome.stats.subtitle")}
           </Text>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: 32,
+              gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+              gap: "clamp(16px, 4vw, 32px)",
               textAlign: "center",
             }}
           >
@@ -566,7 +568,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               <div key={s.label}>
                 <div
                   style={{
-                    fontSize: 40,
+                    fontSize: "clamp(28px, 6vw, 40px)",
                     fontWeight: 700,
                     color: "#4f46e5",
                     lineHeight: 1,
@@ -576,7 +578,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                 </div>
                 <Text
                   type="secondary"
-                  style={{ marginTop: 8, display: "block" }}
+                  style={{ marginTop: 8, display: "block", fontSize: "clamp(12px, 3vw, 14px)" }}
                 >
                   {s.label}
                 </Text>
@@ -589,24 +591,24 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━
           CTA
       ━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section style={{ padding: "64px 48px" }}>
+      <section style={{ padding: "clamp(40px, 10vw, 64px) clamp(16px, 5vw, 48px)" }}>
         <div
           style={{
             maxWidth: 900,
             margin: "0 auto",
             background: "linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)",
             borderRadius: 24,
-            padding: "64px 48px",
+            padding: "clamp(32px, 8vw, 64px) clamp(16px, 5vw, 48px)",
             textAlign: "center",
           }}
         >
-          <Title level={2} style={{ color: "#fff", marginBottom: 16 }}>
+          <Title level={2} style={{ color: "#fff", marginBottom: 16, fontSize: "clamp(24px, 5vw, 32px)" }}>
             {t("publicHome.cta.title")}
           </Title>
           <Paragraph
             style={{
               color: "rgba(255,255,255,0.8)",
-              fontSize: 16,
+              fontSize: "clamp(14px, 3.5vw, 16px)",
               marginBottom: 32,
               maxWidth: 480,
               margin: "0 auto 32px",
@@ -622,9 +624,9 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               fontWeight: 700,
               border: "none",
               borderRadius: 8,
-              height: 48,
-              padding: "0 32px",
-              fontSize: 15,
+              height: "clamp(40px, 10vw, 48px)",
+              padding: "0 clamp(20px, 5vw, 32px)",
+              fontSize: "clamp(13px, 3vw, 15px)",
             }}
           >
             <Link to="/register">{t("publicHome.cta.button")}</Link>

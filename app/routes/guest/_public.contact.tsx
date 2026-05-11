@@ -144,7 +144,7 @@ export default function ContactPage() {
       <section
         style={{
           background: "linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)",
-          padding: "80px 48px",
+          padding: "clamp(40px, 10vw, 80px) clamp(16px, 5vw, 48px)",
           textAlign: "center",
         }}
       >
@@ -154,7 +154,7 @@ export default function ContactPage() {
             background: "rgba(255,255,255,0.15)",
             border: "1px solid rgba(255,255,255,0.25)",
             color: "#c4c0ff",
-            fontSize: 12,
+            fontSize: "clamp(10px, 2.5vw, 12px)",
             fontWeight: 600,
             padding: "4px 16px",
             borderRadius: 100,
@@ -165,14 +165,14 @@ export default function ContactPage() {
         </span>
         <Title
           level={1}
-          style={{ color: "#fff", fontSize: "clamp(28px, 4vw, 48px)", marginBottom: 16 }}
+          style={{ color: "#fff", fontSize: "clamp(24px, 6vw, 48px)", marginBottom: 16 }}
         >
           {t("publicContact.hero.title")}
         </Title>
         <Paragraph
           style={{
             color: "rgba(255,255,255,0.75)",
-            fontSize: 16,
+            fontSize: "clamp(14px, 4vw, 16px)",
             maxWidth: 480,
             margin: "0 auto",
             lineHeight: 1.8,
@@ -183,43 +183,43 @@ export default function ContactPage() {
       </section>
 
       {/* ━━━━━━ Contact Info Cards ━━━━━━ */}
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "64px 48px 0" }}>
+      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "clamp(32px, 8vw, 64px) clamp(16px, 5vw, 48px) 0" }}>
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 16,
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "clamp(12px, 3vw, 16px)",
           }}
         >
           {CONTACT_INFO.map((info) => (
             <Card
               key={info.key}
               style={{ borderRadius: 14, border: "1px solid #e5e7eb", textAlign: "center" }}
-              styles={{ body: { padding: 24 } }}
+              styles={{ body: { padding: "clamp(16px, 4vw, 24px)" } }}
             >
               <div
                 style={{
-                  width: 48,
-                  height: 48,
+                  width: "clamp(40px, 10vw, 48px)",
+                  height: "clamp(40px, 10vw, 48px)",
                   borderRadius: 12,
                   background: "#eef2ff",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   color: "#4f46e5",
-                  fontSize: 20,
+                  fontSize: "clamp(16px, 4vw, 20px)",
                   margin: "0 auto 16px",
                 }}
               >
                 {info.icon}
               </div>
-              <Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 4 }}>
+              <Text type="secondary" style={{ fontSize: "clamp(11px, 2.5vw, 12px)", display: "block", marginBottom: 4 }}>
                 {t(`publicContact.contactInfo.${info.key}.title`)}
               </Text>
-              <div style={{ fontWeight: 600, fontSize: 14, color: "#111827", marginBottom: 4 }}>
+              <div style={{ fontWeight: 600, fontSize: "clamp(13px, 3vw, 14px)", color: "#111827", marginBottom: 4 }}>
                 {info.value}
               </div>
-              <Text type="secondary" style={{ fontSize: 12 }}>
+              <Text type="secondary" style={{ fontSize: "clamp(11px, 2.5vw, 12px)" }}>
                 {t(`publicContact.contactInfo.${info.key}.${info.subKey}`)}
               </Text>
             </Card>
@@ -228,22 +228,22 @@ export default function ContactPage() {
       </section>
 
       {/* ━━━━━━ Form + FAQ ━━━━━━ */}
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 48px 80px" }}>
+      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "clamp(32px, 8vw, 48px) clamp(16px, 5vw, 48px) clamp(40px, 10vw, 80px)" }}>
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 40,
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "clamp(24px, 6vw, 40px)",
             alignItems: "start",
           }}
         >
           {/* ── Form ── */}
           <Card
             style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}
-            styles={{ body: { padding: 36 } }}
+            styles={{ body: { padding: "clamp(20px, 5vw, 36px)" } }}
           >
-            <Title level={3} style={{ marginBottom: 8 }}>{t("publicContact.form.title")}</Title>
-            <Text type="secondary" style={{ display: "block", marginBottom: 28 }}>
+            <Title level={3} style={{ marginBottom: 8, fontSize: "clamp(18px, 4vw, 20px)" }}>{t("publicContact.form.title")}</Title>
+            <Text type="secondary" style={{ display: "block", marginBottom: 28, fontSize: "clamp(13px, 3vw, 14px)" }}>
               {t("publicContact.form.subtitle")}
             </Text>
 
@@ -253,7 +253,7 @@ export default function ContactPage() {
               onFinish={handleSubmit}
               requiredMark={false}
             >
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 16 }}>
                 <Form.Item
                   name="firstName"
                   label={t("publicContact.form.firstName")}
@@ -331,8 +331,8 @@ export default function ContactPage() {
           </Card>
           {/* ── FAQ ── */}
           <div>
-            <Title level={3} style={{ marginBottom: 8 }}>{t("publicContact.faq.title")}</Title>
-            <Text type="secondary" style={{ display: "block", marginBottom: 28 }}>
+            <Title level={3} style={{ marginBottom: 8, fontSize: "clamp(18px, 4vw, 20px)" }}>{t("publicContact.faq.title")}</Title>
+            <Text type="secondary" style={{ display: "block", marginBottom: 28, fontSize: "clamp(13px, 3vw, 14px)" }}>
               {t("publicContact.faq.subtitle")}
             </Text>
 

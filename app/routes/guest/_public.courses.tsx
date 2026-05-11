@@ -375,7 +375,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
       <section
         style={{
           background: "linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)",
-          padding: "64px 48px",
+          padding: "clamp(32px, 8vw, 64px) clamp(16px, 5vw, 48px)",
           textAlign: "center",
         }}
       >
@@ -383,7 +383,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
           level={1}
           style={{
             color: "#fff",
-            fontSize: "clamp(24px, 3.5vw, 42px)",
+            fontSize: "clamp(22px, 5vw, 42px)",
             marginBottom: 12,
           }}
         >
@@ -392,7 +392,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
         <Text
           style={{
             color: "rgba(255,255,255,0.78)",
-            fontSize: 16,
+            fontSize: "clamp(13px, 3.5vw, 16px)",
             display: "block",
             marginBottom: 32,
           }}
@@ -400,7 +400,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
           {t("publicCourses.hero.subtitle")}
         </Text>
 
-        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+        <div style={{ maxWidth: 560, margin: "0 auto", padding: "0 16px" }}>
           <Input
             size="large"
             prefix={<SearchOutlined style={{ color: "#9ca3af" }} />}
@@ -408,7 +408,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
             value={search}
             onChange={(event) => handleSearch(event.target.value)}
             allowClear
-            style={{ borderRadius: 10, height: 48, fontSize: 15 }}
+            style={{ borderRadius: 10, height: "clamp(40px, 10vw, 48px)", fontSize: "clamp(13px, 3vw, 15px)" }}
           />
         </div>
       </section>
@@ -426,10 +426,10 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
           style={{
             maxWidth: 1200,
             margin: "0 auto",
-            padding: "0 48px",
+            padding: "0 clamp(12px, 3vw, 48px)",
             display: "flex",
             alignItems: "center",
-            gap: 8,
+            gap: "clamp(4px, 2vw, 8px)",
             overflowX: "auto",
             scrollbarWidth: "none",
           }}
@@ -440,7 +440,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
               onClick={() => handleCategory(item)}
               style={{
                 flexShrink: 0,
-                padding: "14px 18px",
+                padding: "clamp(10px, 2.5vw, 14px) clamp(12px, 3vw, 18px)",
                 border: "none",
                 borderBottom:
                   category === item
@@ -449,7 +449,7 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
                 background: "transparent",
                 color: category === item ? "#4f46e5" : "#6b7280",
                 fontWeight: category === item ? 600 : 400,
-                fontSize: 14,
+                fontSize: "clamp(12px, 2.5vw, 14px)",
                 cursor: "pointer",
                 transition: "all 0.2s",
                 whiteSpace: "nowrap",
@@ -465,15 +465,15 @@ export default function CoursesPage({ loaderData }: Route.ComponentProps) {
               flexShrink: 0,
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              gap: "clamp(4px, 2vw, 8px)",
             }}
           >
-            <FilterOutlined style={{ color: "#9ca3af", fontSize: 14 }} />
+            <FilterOutlined style={{ color: "#9ca3af", fontSize: "clamp(12px, 3vw, 14px)" }} />
             <Select
               value={sortBy}
               onChange={setSortBy}
               size="small"
-              style={{ width: 150 }}
+              style={{ width: "clamp(120px, 30vw, 150px)" }}
               options={[
                 { label: t("publicCourses.sort.popular"), value: "popular" },
                 { label: t("publicCourses.sort.rating"), value: "rating" },

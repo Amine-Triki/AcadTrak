@@ -41,7 +41,7 @@ export default function AboutPage() {
       <section
         style={{
           background: "linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)",
-          padding: "80px 48px",
+          padding: "clamp(40px, 10vw, 80px) clamp(16px, 5vw, 48px)",
           textAlign: "center",
         }}
       >
@@ -73,7 +73,7 @@ export default function AboutPage() {
         <Paragraph
           style={{
             color: "rgba(255,255,255,0.75)",
-            fontSize: 16,
+            fontSize: "clamp(14px, 4vw, 16px)",
             maxWidth: 560,
             margin: "0 auto",
             lineHeight: 1.8,
@@ -91,10 +91,10 @@ export default function AboutPage() {
           style={{
             maxWidth: 1200,
             margin: "0 auto",
-            padding: "48px",
+            padding: "clamp(24px, 5vw, 48px)",
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 24,
+            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+            gap: "clamp(16px, 4vw, 24px)",
             textAlign: "center",
           }}
         >
@@ -102,7 +102,7 @@ export default function AboutPage() {
             <div key={s.label}>
               <div
                 style={{
-                  fontSize: 40,
+                  fontSize: "clamp(28px, 6vw, 40px)",
                   fontWeight: 700,
                   color: "#4f46e5",
                   lineHeight: 1,
@@ -110,7 +110,7 @@ export default function AboutPage() {
               >
                 {s.value}
               </div>
-              <Text type="secondary" style={{ marginTop: 8, display: "block" }}>
+              <Text type="secondary" style={{ marginTop: 8, display: "block", fontSize: "clamp(12px, 3vw, 14px)" }}>
                 {s.label}
               </Text>
             </div>
@@ -120,13 +120,13 @@ export default function AboutPage() {
 
       {/* ━━━━━━ Mission ━━━━━━ */}
       <section
-        style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 48px" }}
+        style={{ maxWidth: 1200, margin: "0 auto", padding: "clamp(40px, 10vw, 80px) clamp(16px, 5vw, 48px)" }}
       >
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 64,
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "clamp(32px, 8vw, 64px)",
             alignItems: "center",
           }}
         >
@@ -166,7 +166,7 @@ export default function AboutPage() {
               background: "linear-gradient(135deg, #eef2ff, #f0f9ff)",
               borderRadius: 20,
               overflow: "hidden",
-              height: 360,
+              height: "clamp(200px, 50vw, 360px)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -182,21 +182,21 @@ export default function AboutPage() {
       </section>
 
       {/* ━━━━━━ Values ━━━━━━ */}
-      <section style={{ background: "#fff", padding: "80px 48px" }}>
+      <section style={{ background: "#fff", padding: "clamp(40px, 10vw, 80px) clamp(16px, 5vw, 48px)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <Title level={2} style={{ marginBottom: 8 }}>
+          <div style={{ textAlign: "center", marginBottom: "clamp(24px, 5vw, 48px)" }}>
+            <Title level={2} style={{ marginBottom: 8, fontSize: "clamp(24px, 6vw, 32px)" }}>
               {t("publicAbout.values.title")}
             </Title>
-            <Text type="secondary" style={{ fontSize: 15 }}>
+            <Text type="secondary" style={{ fontSize: "clamp(13px, 3vw, 15px)" }}>
               {t("publicAbout.values.subtitle")}
             </Text>
           </div>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: 20,
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: "clamp(16px, 4vw, 20px)",
             }}
           >
             {values.map((v, index) => {
@@ -224,13 +224,13 @@ export default function AboutPage() {
                     alignItems: "center",
                     justifyContent: "center",
                     color: "#4f46e5",
-                    fontSize: 20,
+                    fontSize: "clamp(16px, 4vw, 20px)",
                     marginBottom: 16,
                   }}
                 >
                   {icons[index]}
                 </div>
-                <Title level={4} style={{ marginBottom: 8 }}>
+                <Title level={4} style={{ marginBottom: 8, fontSize: "clamp(16px, 4vw, 18px)" }}>
                   {v.title}
                 </Title>
                 <Text type="secondary" style={{ lineHeight: 1.7 }}>
@@ -246,24 +246,24 @@ export default function AboutPage() {
 
 
       {/* ━━━━━━ CTA ━━━━━━ */}
-      <section style={{ padding: "0 48px 80px" }}>
+      <section style={{ padding: "0 clamp(16px, 5vw, 48px) clamp(40px, 10vw, 80px)" }}>
         <div
           style={{
             maxWidth: 1200,
             margin: "0 auto",
             background: "linear-gradient(135deg, #4338ca, #6d28d9)",
             borderRadius: 24,
-            padding: "64px 48px",
+            padding: "clamp(32px, 8vw, 64px) clamp(16px, 5vw, 48px)",
             textAlign: "center",
           }}
         >
-          <Title level={2} style={{ color: "#fff", marginBottom: 16 }}>
+          <Title level={2} style={{ color: "#fff", marginBottom: 16, fontSize: "clamp(20px, 5vw, 28px)" }}>
             {t("publicAbout.cta.title")}
           </Title>
           <Paragraph
             style={{
               color: "rgba(255,255,255,0.8)",
-              fontSize: 16,
+              fontSize: "clamp(14px, 4vw, 16px)",
               marginBottom: 32,
             }}
           >

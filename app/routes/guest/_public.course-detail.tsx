@@ -178,23 +178,23 @@ export default function PublicCourseDetailPage() {
   }
 
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 16px" }}>
-      <Row gutter={[32, 24]}>
+    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(16px, 4vw, 32px)" }}>
+      <Row gutter={["clamp(16px, 4vw, 32px)", "clamp(16px, 4vw, 24px)"]}>
 
         {/* ── الجانب الأيسر: المعلومات ─────── */}
         <Col xs={24} lg={16}>
           {/* Breadcrumb */}
-          <Space size={4} style={{ marginBottom: 12 }}>
+          <Space size={4} style={{ marginBottom: 12, fontSize: "clamp(12px, 3vw, 14px)" }}>
             <Link to="/courses"><Text type="secondary">{t("common.courses")}</Text></Link>
             <Text type="secondary">/</Text>
             {categoryName && <Text type="secondary">{categoryName}</Text>}
           </Space>
 
           {/* العنوان */}
-          <Title level={2} style={{ marginBottom: 8 }}>{course.title}</Title>
+          <Title level={2} style={{ marginBottom: 8, fontSize: "clamp(24px, 5vw, 32px)" }}>{course.title}</Title>
 
           {/* التقييم والإحصائيات */}
-          <Space size={16} style={{ marginBottom: 12 }} wrap>
+          <Space size={12} style={{ marginBottom: 12, flexWrap: "wrap", fontSize: "clamp(12px, 3vw, 14px)" }} wrap>
             {course.averageRating ? (
               <Space size={4}>
                 <StarFilled style={{ color: "#f59e0b" }} />
@@ -220,7 +220,7 @@ export default function PublicCourseDetailPage() {
           </Space>
 
           {/* الأستاذ */}
-          <Space style={{ marginBottom: 20 }}>
+          <Space style={{ marginBottom: 20, fontSize: "clamp(12px, 3vw, 14px)" }}>
             <BookOutlined />
             <Text>{t("publicCourseDetail.by")}: </Text>
             {instructorId ? (
