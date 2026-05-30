@@ -343,12 +343,18 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
                 gap: "clamp(12px, 3vw, 16px)",
+                justifyItems: "center",
               }}
             >
               {[...Array(4)].map((_, i) => (
                 <Card
                   key={i}
-                  style={{ borderRadius: 12, border: "1px solid #e5e7eb" }}
+                  style={{
+                    borderRadius: 12,
+                    border: "1px solid #e5e7eb",
+                    width: "100%",
+                    maxWidth: 320,
+                  }}
                   styles={{ body: { padding: 14 } }}
                 >
                   <div
@@ -410,6 +416,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
                   gap: "clamp(12px, 3vw, 16px)",
+                  justifyItems: "center",
                 }}
               >
                 {coursesData?.featuredCourses?.map((c: FeaturedCourse) => (
@@ -420,6 +427,8 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                       borderRadius: 12,
                       border: "1px solid #e5e7eb",
                       overflow: "hidden",
+                      width: "100%",
+                      maxWidth: 320,
                     }}
                     styles={{ body: { padding: 14 } }}
                     cover={
